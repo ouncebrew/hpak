@@ -1,0 +1,35 @@
+<brls:Box
+    width="auto"
+    height="auto"
+    focusable="true"
+    paddingLeft="20"
+    paddingRight="20"
+    paddingTop="12"
+    paddingBottom="12"
+    alignItems="center">
+
+    <brls:Label
+        id="title"
+        fontSize="22"
+        grow="1.0"
+        singleLine="true" />
+
+    <brls:Label
+        id="version"
+        fontSize="16"
+        marginLeft="10"
+        singleLine="true" />
+
+    <brls:Label
+        id="subtitle"
+        fontSize="16"
+        marginLeft="10"
+        singleLine="true" />
+
+    <brls:Label
+        id="status"
+        fontSize="16"
+        marginLeft="10"
+        singleLine="true" />
+
+</brls:Box>

@@ -1,0 +1,18 @@
+{
+    "packages": [
+        {
+            "name": "bad-apple-switch",
+            "title": "Bad Apple!! (Switch)",
+            "author": "souldbminerr",
+            "version": "bad_apple_ounce",
+            "description": "Bad Apple demo for Nintendo Switch (ounce build).",
+            "details": "Example package in a minimal libget/get-style repo for hpak.\n\nInstalls to: /switch/bad-apple-switch/bad-apple-switch.nro\n\nRelease source: https://github.com/souldbminerr/bad-apple-switch/releases/tag/bad_apple_ounce",
+            "category": "demo",
+            "url": "https://github.com/souldbminerr/bad-apple-switch",
+            "license": "GPLv2",
+            "changelog": "Initial sample-repo package entry.",
+            "filesize": 42800,
+            "extracted": 57900
+        }
+    ]
+}

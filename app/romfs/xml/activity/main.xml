@@ -1,0 +1,28 @@
+<brls:AppletFrame
+    iconInterpolation="linear"
+    footerHidden="false"
+    headerHidden="false">
+    <brls:TabFrame
+        title="hpak"
+        icon="@res/icon/icon.png">
+
+        <brls:Tab label="Home">
+            <HomeTab />
+        </brls:Tab>
+
+        <brls:Tab label="Apps">
+            <AppsTab />
+        </brls:Tab>
+
+        <brls:Tab label="Installed">
+            <InstalledTab />
+        </brls:Tab>
+
+        <brls:Separator />
+
+        <brls:Tab label="Sources">
+            <SourcesTab />
+        </brls:Tab>
+
+    </brls:TabFrame>
+</brls:AppletFrame>

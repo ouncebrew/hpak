@@ -1,0 +1,78 @@
+<brls:Box
+    width="auto"
+    height="auto"
+    axis="column"
+    grow="1.0">
+
+    <brls:ScrollingFrame
+        id="detail_scroll"
+        width="auto"
+        height="auto"
+        grow="1.0">
+
+        <brls:Box
+            width="auto"
+            height="auto"
+            axis="column"
+            paddingLeft="40"
+            paddingRight="40"
+            paddingTop="30"
+            paddingBottom="40">
+
+            <brls:Label
+                id="detail_title"
+                fontSize="34"
+                singleLine="false"
+                marginBottom="6" />
+
+            <brls:Label
+                id="detail_author"
+                fontSize="20"
+                singleLine="false"
+                marginBottom="4" />
+
+            <brls:Label
+                id="detail_version"
+                fontSize="18"
+                singleLine="false"
+                marginBottom="4" />
+
+            <brls:Label
+                id="detail_status"
+                fontSize="18"
+                singleLine="false"
+                marginBottom="16" />
+
+            <brls:Button
+                id="detail_action"
+                width="auto"
+                height="auto"
+                text="Install"
+                marginBottom="20" />
+
+            <brls:Label
+                text="Description"
+                fontSize="22"
+                marginBottom="8" />
+
+            <brls:Label
+                id="detail_desc"
+                fontSize="20"
+                singleLine="false"
+                marginBottom="18" />
+
+            <brls:Label
+                text="Details"
+                fontSize="22"
+                marginBottom="8" />
+
+            <brls:Label
+                id="detail_meta"
+                fontSize="18"
+                singleLine="false" />
+
+        </brls:Box>
+
+    </brls:ScrollingFrame>
+
+</brls:Box>

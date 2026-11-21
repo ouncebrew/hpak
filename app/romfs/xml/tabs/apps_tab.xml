@@ -1,0 +1,18 @@
+<brls:Box
+    width="auto"
+    height="auto"
+    axis="column"
+    grow="1.0">
+
+    <brls:Header
+        id="header"
+        title="All Apps"
+        subtitle="Browse available packages" />
+
+    <brls:RecyclerFrame
+        id="recycler"
+        grow="1.0"
+        paddingLeft="0"
+        paddingRight="0" />
+
+</brls:Box>

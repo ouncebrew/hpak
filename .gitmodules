@@ -1,0 +1,7 @@
+[submodule "libs/libget"]
+	path = libs/libget
+	url = https://github.com/ouncebrew/libget.git
+[submodule "libs/borealis-switch2"]
+	path = libs/borealis-switch2
+	url = https://github.com/souldbminerr/borealis-Switch2.git
+	branch = Ounce

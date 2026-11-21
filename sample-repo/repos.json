@@ -1,0 +1,10 @@
+{
+  "repos": [
+    {
+      "name": "Sample Repo",
+      "url": "http://192.168.50.240:8000",
+      "enabled": true,
+      "type": "get"
+    }
+  ]
+}

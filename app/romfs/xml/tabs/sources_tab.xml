@@ -1,0 +1,61 @@
+<brls:Box
+    width="auto"
+    height="auto"
+    grow="1.0">
+
+    <brls:ScrollingFrame
+        width="auto"
+        height="auto"
+        grow="1.0">
+
+        <brls:Box
+            width="auto"
+            height="auto"
+            axis="column"
+            paddingLeft="30"
+            paddingRight="30"
+            paddingTop="20"
+            paddingBottom="30">
+
+            <brls:Header
+                title="Sources"
+                subtitle="Manage repositories and refresh package data" />
+
+            <brls:Label
+                id="status_label"
+                text="Not loaded yet."
+                marginTop="10"
+                marginBottom="16"
+                singleLine="false" />
+
+            <brls:DetailCell
+                id="repo_path"
+                title="Config path" />
+
+            <brls:DetailCell
+                id="repo_count"
+                title="Repositories" />
+
+            <brls:DetailCell
+                id="package_count"
+                title="Packages" />
+
+            <brls:Header
+                title="Actions"
+                marginTop="20" />
+
+            <brls:DetailCell
+                id="refresh_action"
+                title="Refresh repositories" />
+
+            <brls:Label
+                id="hint_label"
+                marginTop="20"
+                text="Package data comes from libget repos in the config path. Add or edit repos.json, then refresh."
+                singleLine="false" />
+
+        </brls:Box>
+
+    </brls:ScrollingFrame>
+
+</brls:Box>
