@@ -36,3 +36,6 @@
 *.d
 *.o
 *.dnro
+*.lst
+*.map
+app/hpak.txt

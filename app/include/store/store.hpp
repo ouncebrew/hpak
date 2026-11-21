@@ -54,8 +54,10 @@ class StoreManager
     std::vector<PackageSnapshot> searchPackages(const std::string& query);
     PackageSnapshot getPackage(const std::string& name);
 
-    void installPackage(const std::string& name, std::function<void(bool success, const std::string& error)> onDone = nullptr);
-    void removePackage(const std::string& name, std::function<void(bool success, const std::string& error)> onDone = nullptr);
+    using ProgressCallback = std::function<void(float progress, const std::string& phase)>;
+
+    void installPackage(const std::string& name, std::function<void(bool success, const std::string& error)> onDone = nullptr, ProgressCallback onProgress = nullptr);
+    void removePackage(const std::string& name, std::function<void(bool success, const std::string& error)> onDone = nullptr, ProgressCallback onProgress = nullptr);
 
     std::string getConfigPath() const { return configPath; }
 

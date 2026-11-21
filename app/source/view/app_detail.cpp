@@ -99,46 +99,124 @@ void AppDetailView::onAction()
 
     auto name = package.name;
     auto alive = this->alive;
+
+    auto showResult = [this, alive](bool success, const std::string& msg) {
+        if (!*alive)
+            return;
+        busy = false;
+        refreshState();
+        auto* dialog = new brls::Dialog(msg);
+        dialog->addButton("OK", [] {});
+        dialog->open();
+    };
+
     if (doRemove)
     {
-        StoreManager::instance().removePackage(name, [this, alive](bool success, const std::string& error) {
+        // Simple working dialog for remove
+        auto* content = new brls::Box();
+        content->setAxis(brls::Axis::COLUMN);
+        content->setPadding(24, 24, 24, 24);
+        content->setWidth(500);
+        auto* label = new brls::Label();
+        label->setText("Removing package...");
+        label->setFontSize(22);
+        label->setMarginBottom(12);
+        content->addView(label);
+        auto* spinner = new brls::ProgressSpinner();
+        spinner->setWidth(48);
+        spinner->setHeight(48);
+        content->addView(spinner);
+
+        auto* progressDialog = new brls::Dialog(content);
+        progressDialog->setCancelable(false);
+        progressDialog->setBackgroundColor(nvgRGBA(0, 0, 0, 140));
+        progressDialog->open();
+
+        StoreManager::instance().removePackage(name, [this, alive, progressDialog, showResult](bool success, const std::string& error) {
             if (!*alive)
+            {
+                progressDialog->close();
                 return;
-            busy = false;
-            refreshState();
-            if (success)
-            {
-                auto* dialog = new brls::Dialog("Package removed.");
-                dialog->addButton("OK", [] {});
-                dialog->open();
             }
-            else
-            {
-                auto* dialog = new brls::Dialog(fmt::format("Remove failed: {}", error.empty() ? "unknown error" : error));
-                dialog->addButton("OK", [] {});
-                dialog->open();
-            }
+            progressDialog->close([showResult, success, error]() {
+                if (success)
+                    showResult(true, "Package removed.");
+                else
+                    showResult(false, fmt::format("Remove failed: {}", error.empty() ? "unknown error" : error));
+            });
         });
     }
     else
     {
-        StoreManager::instance().installPackage(name, [this, alive](bool success, const std::string& error) {
-            if (!*alive)
-                return;
-            busy = false;
-            refreshState();
-            if (success)
-            {
-                auto* dialog = new brls::Dialog("Package installed successfully.");
-                dialog->addButton("OK", [] {});
-                dialog->open();
-            }
-            else
-            {
-                auto* dialog = new brls::Dialog(fmt::format("Install failed: {}", error.empty() ? "unknown error" : error));
-                dialog->addButton("OK", [] {});
-                dialog->open();
-            }
-        });
+        // Install/update with combined progress bar
+        const float trackWidth = 560.0f;
+        auto* content = new brls::Box();
+        content->setAxis(brls::Axis::COLUMN);
+        content->setPadding(24, 24, 24, 24);
+        content->setWidth(620);
+
+        auto* titleLabel = new brls::Label();
+        titleLabel->setText(package.title.empty() ? package.name : package.title);
+        titleLabel->setFontSize(24);
+        titleLabel->setMarginBottom(8);
+        content->addView(titleLabel);
+
+        auto* phaseLabel = new brls::Label();
+        phaseLabel->setText("Preparing...");
+        phaseLabel->setFontSize(18);
+        phaseLabel->setMarginBottom(12);
+        content->addView(phaseLabel);
+
+        auto* track = new brls::Box();
+        track->setWidth(trackWidth);
+        track->setHeight(18);
+        track->setCornerRadius(9);
+        track->setBackgroundColor(nvgRGBA(80, 80, 80, 255));
+
+        auto* fill = new brls::Rectangle();
+        fill->setWidth(0);
+        fill->setHeight(18);
+        fill->setCornerRadius(9);
+        fill->setColor(nvgRGB(60, 140, 255));
+        track->addView(fill);
+        content->addView(track);
+
+        auto* percentLabel = new brls::Label();
+        percentLabel->setText("0%");
+        percentLabel->setFontSize(16);
+        percentLabel->setMarginTop(8);
+        content->addView(percentLabel);
+
+        auto* progressDialog = new brls::Dialog(content);
+        progressDialog->setCancelable(false);
+        progressDialog->setBackgroundColor(nvgRGBA(0, 0, 0, 140));
+        progressDialog->open();
+
+        auto progressAlive = std::make_shared<bool>(true);
+        StoreManager::instance().installPackage(
+            name,
+            [this, alive, progressAlive, progressDialog, showResult](bool success, const std::string& error) {
+                *progressAlive = false;
+                if (!*alive)
+                {
+                    progressDialog->close();
+                    return;
+                }
+                progressDialog->close([showResult, success, error]() {
+                    if (success)
+                        showResult(true, "Package installed successfully.");
+                    else
+                        showResult(false, fmt::format("Install failed: {}", error.empty() ? "unknown error" : error));
+                });
+            },
+            [alive, progressAlive, phaseLabel, fill, percentLabel, trackWidth](float progress, const std::string& phase) {
+                if (!*alive || !*progressAlive)
+                    return;
+                if (progress < 0) progress = 0;
+                if (progress > 1) progress = 1;
+                phaseLabel->setText(phase);
+                fill->setWidth(trackWidth * progress);
+                percentLabel->setText(fmt::format("{}%", (int)(progress * 100)));
+            });
     }
 }

@@ -1,5 +1,8 @@
 #include <borealis.hpp>
+#include <cstdio>
 #include <cstdlib>
+#include <cstring>
+#include <unistd.h>
 
 #include "activity/main_activity.hpp"
 #include "tab/apps_tab.hpp"
@@ -13,6 +16,15 @@ extern "C" unsigned int sceLibcHeapSize = 2 * 1024 * 1024;
 
 int main(int argc, char* argv[])
 {
+    // Log to SD card for debugging (nxlink may be unavailable)
+    if (std::freopen("sdmc:/hpak.txt", "w", stdout))
+    {
+        setvbuf(stdout, NULL, _IONBF, 0);
+        dup2(fileno(stdout), fileno(stderr));
+        setvbuf(stderr, NULL, _IONBF, 0);
+        std::printf("=== hpak log start ===\n");
+    }
+
     for (int i = 1; i < argc; i++)
     {
         if (std::strcmp(argv[i], "-d") == 0)
