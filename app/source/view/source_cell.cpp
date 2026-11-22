@@ -41,9 +41,46 @@ void SourceCell::setRepo(const RepoSnapshot& r)
     this->urlLabel->setText(r.url);
 
     this->icon->clear();
-    // Repo icon loading disabled: loading remote repo icons can cause a crash on exit
-    // in the current borealis/nanovg texture lifecycle.
-    this->icon->setVisibility(brls::Visibility::GONE);
+    this->icon->setVisibility(brls::Visibility::VISIBLE);
+
+    std::string iconUrl = r.iconUrl();
+    if (iconUrl.empty())
+    {
+        this->icon->setVisibility(brls::Visibility::GONE);
+        return;
+    }
+
+    std::string cacheDir = "sdmc:/switch/hpak/.get/cache/repo_icons";
+    std::string cachePath = cacheDir + "/" + sanitizeForPath(r.url) + ".png";
+    if (fileExists(cachePath))
+    {
+        this->icon->setImageFromFile(cachePath);
+        return;
+    }
+
+    std::string url = iconUrl;
+    std::string repoUrl = r.url;
+    std::weak_ptr<bool> aliveWeak = alive;
+    util::enqueueIconLoad({
+        .name = repoUrl,
+        .url = url,
+        .cachePath = cachePath,
+        .isAlive = [aliveWeak]() {
+            auto aliveToken = aliveWeak.lock();
+            return aliveToken && *aliveToken;
+        },
+        .onDone = [this, aliveWeak, repoUrl, cachePath](bool ok) {
+            auto aliveToken = aliveWeak.lock();
+            if (!aliveToken || !*aliveToken)
+                return;
+            if (this->repo.url != repoUrl)
+                return;
+            if (ok && fileExists(cachePath))
+                this->icon->setImageFromFile(cachePath);
+            else
+                this->icon->setVisibility(brls::Visibility::GONE);
+        }
+    });
 }
 
 SourceCell* SourceCell::create()
