@@ -15,4 +15,5 @@ struct IconLoadRequest
 };
 
 void enqueueIconLoad(IconLoadRequest req);
+void shutdownIconLoader();
 } // namespace util

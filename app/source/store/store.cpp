@@ -41,6 +41,24 @@ void StoreManager::init()
     initialized = true;
 }
 
+void StoreManager::shutdown()
+{
+    shuttingDown.store(true);
+
+    // Abort any in-flight libget/curl transfers
+    networking_callback = [](void*, double) -> int { return 1; };
+    libget_status_callback = [](int, int, int) -> int { return 1; };
+}
+
+void StoreManager::teardown()
+{
+    std::lock_guard<std::mutex> lock(mutex);
+    get.reset();
+    initialized = false;
+    loading = false;
+    deinit_networking();
+}
+
 std::string StoreManager::getLastError() const
 {
     return lastError;

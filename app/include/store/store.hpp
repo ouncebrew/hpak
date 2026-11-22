@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -79,6 +80,9 @@ class StoreManager
     void removePackage(const std::string& name, std::function<void(bool success, const std::string& error)> onDone = nullptr, ProgressCallback onProgress = nullptr);
 
     std::string getConfigPath() const { return configPath; }
+    void shutdown();
+    void teardown();
+    bool isShuttingDown() const { return shuttingDown.load(); }
 
   private:
     StoreManager() = default;
@@ -92,4 +96,5 @@ class StoreManager
     bool initialized = false;
     bool loading = false;
     std::string lastError;
+    std::atomic<bool> shuttingDown{false};
 };

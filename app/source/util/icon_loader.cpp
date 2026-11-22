@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 
 #include <borealis.hpp>
+#include <curl/curl.h>
 #include "Utils.hpp"
 
 #if defined(__SWITCH__)
@@ -22,6 +23,52 @@ static bool fileExists(const std::string& path)
 {
     struct stat st{};
     return stat(path.c_str(), &st) == 0 && st.st_size > 0;
+}
+
+static size_t iconWriteCallback(void* contents, size_t size, size_t nmemb, void* userp)
+{
+    auto* fp = static_cast<FILE*>(userp);
+    return fwrite(contents, size, nmemb, fp);
+}
+
+static bool downloadIconToDisk(const std::string& url, const std::string& localPath)
+{
+    CURL* c = curl_easy_init();
+    if (!c)
+        return false;
+
+    FILE* fp = fopen(localPath.c_str(), "wb");
+    if (!fp)
+    {
+        curl_easy_cleanup(c);
+        return false;
+    }
+
+#ifndef __SWITCH__
+    curl_easy_setopt(c, CURLOPT_CAINFO, RAMFS "res/cacert.pem");
+#else
+    curl_easy_setopt(c, CURLOPT_CAINFO, "romfs:/util/cacert.pem");
+#endif
+    curl_easy_setopt(c, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(c, CURLOPT_WRITEFUNCTION, iconWriteCallback);
+    curl_easy_setopt(c, CURLOPT_WRITEDATA, fp);
+    curl_easy_setopt(c, CURLOPT_FOLLOWLOCATION, 1L);
+    curl_easy_setopt(c, CURLOPT_USERAGENT, "hpak-icon/1.0");
+    curl_easy_setopt(c, CURLOPT_CONNECTTIMEOUT, 10L);
+    curl_easy_setopt(c, CURLOPT_LOW_SPEED_LIMIT, 1L);
+    curl_easy_setopt(c, CURLOPT_LOW_SPEED_TIME, 15L);
+    curl_easy_setopt(c, CURLOPT_NOPROGRESS, 1L);
+
+    CURLcode res = curl_easy_perform(c);
+    fclose(fp);
+    curl_easy_cleanup(c);
+
+    if (res != CURLE_OK)
+    {
+        remove(localPath.c_str());
+        return false;
+    }
+    return true;
 }
 
 struct IconLoader
@@ -105,7 +152,7 @@ struct IconLoader
                 {
                     std::string dir = req.cachePath.substr(0, req.cachePath.find_last_of('/'));
                     mkpath(dir);
-                    ok = downloadFileToDisk(req.url, req.cachePath);
+                    ok = downloadIconToDisk(req.url, req.cachePath);
                 }
             }
 
@@ -119,7 +166,8 @@ struct IconLoader
 
     void enqueue(IconLoadRequest req)
     {
-        start();
+        if (!running.load())
+            start();
         if (!running.load())
             return;
 
@@ -133,6 +181,27 @@ struct IconLoader
         queue.push_back(std::move(req));
         cv.notify_one();
     }
+
+    void shutdown()
+    {
+        bool expected = true;
+        if (!running.compare_exchange_strong(expected, false))
+            return;
+
+        cv.notify_all();
+
+#if defined(__SWITCH__)
+        if (threadCreated)
+        {
+            threadWaitForExit(&thread);
+            threadClose(&thread);
+            threadCreated = false;
+        }
+#else
+        if (stdThread.joinable())
+            stdThread.join();
+#endif
+    }
 };
 
 static IconLoader& getLoader()
@@ -144,6 +213,11 @@ static IconLoader& getLoader()
 void enqueueIconLoad(IconLoadRequest req)
 {
     getLoader().enqueue(std::move(req));
+}
+
+void shutdownIconLoader()
+{
+    getLoader().shutdown();
 }
 
 } // namespace util

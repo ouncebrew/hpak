@@ -5,10 +5,12 @@
 #include <unistd.h>
 
 #include "activity/main_activity.hpp"
+#include "store/store.hpp"
 #include "tab/apps_tab.hpp"
 #include "tab/home_tab.hpp"
 #include "tab/installed_tab.hpp"
 #include "tab/sources_tab.hpp"
+#include "util/icon_loader.hpp"
 
 #if defined(__PSV__) && defined(BOREALIS_USE_OPENGL)
 extern "C" unsigned int sceLibcHeapSize = 2 * 1024 * 1024;
@@ -45,6 +47,13 @@ int main(int argc, char* argv[])
     brls::Application::getPlatform()->setThemeVariant(brls::ThemeVariant::DARK);
     brls::Application::setGlobalQuit(false);
 
+    brls::Application::getExitEvent()->subscribe([]() {
+        brls::Logger::info("hpak: exitEvent shutdown begin");
+        StoreManager::instance().shutdown();
+        util::shutdownIconLoader();
+        brls::Logger::info("hpak: exitEvent shutdown done");
+    });
+
     brls::Application::registerXMLView("HomeTab", HomeTab::create);
     brls::Application::registerXMLView("AppsTab", AppsTab::create);
     brls::Application::registerXMLView("InstalledTab", InstalledTab::create);
@@ -54,6 +63,10 @@ int main(int argc, char* argv[])
 
     while (brls::Application::mainLoop())
         ;
+
+    brls::Logger::info("hpak: mainLoop exited, teardown begin");
+    StoreManager::instance().teardown();
+    brls::Logger::info("hpak: teardown done");
 
     return EXIT_SUCCESS;
 }
