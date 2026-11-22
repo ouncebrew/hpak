@@ -176,12 +176,15 @@ void AppDetailView::onAction()
         spinner->setWidth(48);
         spinner->setHeight(48);
         content->addView(spinner);
+        content->setFocusable(true);
+        content->setHideHighlight(true);
         content->registerAction("", brls::ControllerButton::BUTTON_B, [](brls::View*) { return true; }, true, false, brls::SOUND_NONE);
 
         auto* progressDialog = new brls::Dialog(content);
         progressDialog->setCancelable(false);
         progressDialog->setBackgroundColor(nvgRGBA(0, 0, 0, 140));
         progressDialog->open();
+        brls::Application::giveFocus(content);
 
         StoreManager::instance().removePackage(name, [this, alive, progressDialog, showResult](bool success, const std::string& error) {
             if (!*alive)
@@ -237,12 +240,15 @@ void AppDetailView::onAction()
         percentLabel->setFontSize(16);
         percentLabel->setMarginTop(8);
         content->addView(percentLabel);
+        content->setFocusable(true);
+        content->setHideHighlight(true);
         content->registerAction("", brls::ControllerButton::BUTTON_B, [](brls::View*) { return true; }, true, false, brls::SOUND_NONE);
 
         auto* progressDialog = new brls::Dialog(content);
         progressDialog->setCancelable(false);
         progressDialog->setBackgroundColor(nvgRGBA(0, 0, 0, 140));
         progressDialog->open();
+        brls::Application::giveFocus(content);
 
         auto progressAlive = std::make_shared<bool>(true);
         StoreManager::instance().installPackage(
