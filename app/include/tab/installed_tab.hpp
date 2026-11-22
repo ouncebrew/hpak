@@ -9,6 +9,7 @@ class InstalledTab : public brls::Box
   public:
     InstalledTab();
     ~InstalledTab() override;
+    void willAppear(bool resetState) override;
     static brls::View* create();
 
   private:

@@ -25,6 +25,20 @@ AppsTab::~AppsTab()
     *alive = false;
 }
 
+void AppsTab::willAppear(bool resetState)
+{
+    brls::Box::willAppear(resetState);
+    if (!dataSource)
+        return;
+    auto items = StoreManager::instance().getAllPackages();
+    if (!dataSource->sameItems(items))
+    {
+        dataSource->setItems(items);
+        recycler->reloadData();
+    }
+    header->setSubtitle(std::to_string(items.size()) + " packages available");
+}
+
 void AppsTab::loadData()
 {
     header->setSubtitle("Loading packages...");

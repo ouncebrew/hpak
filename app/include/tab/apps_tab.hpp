@@ -9,6 +9,7 @@ class AppsTab : public brls::Box
   public:
     AppsTab();
     ~AppsTab() override;
+    void willAppear(bool resetState) override;
     static brls::View* create();
 
   private:

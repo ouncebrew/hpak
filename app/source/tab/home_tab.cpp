@@ -26,6 +26,32 @@ HomeTab::~HomeTab()
     *alive = false;
 }
 
+void HomeTab::willAppear(bool resetState)
+{
+    brls::Box::willAppear(resetState);
+    if (!dataSource)
+        return;
+    auto items = StoreManager::instance().getAllPackages();
+    std::sort(items.begin(), items.end(), [](const PackageSnapshot& a, const PackageSnapshot& b) {
+        if (a.updated != b.updated)
+            return a.updated > b.updated;
+        return a.downloads > b.downloads;
+    });
+    if (items.size() > 30)
+        items.resize(30);
+
+    if (!dataSource->sameItems(items))
+    {
+        dataSource->setItems(items);
+        recycler->reloadData();
+    }
+
+    if (items.empty())
+        header->setSubtitle("No packages yet - check Sources and refresh");
+    else
+        header->setSubtitle("Recently updated packages");
+}
+
 void HomeTab::loadData()
 {
     header->setSubtitle("Loading featured packages...");

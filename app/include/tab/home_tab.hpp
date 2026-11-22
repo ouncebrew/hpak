@@ -9,6 +9,7 @@ class HomeTab : public brls::Box
   public:
     HomeTab();
     ~HomeTab() override;
+    void willAppear(bool resetState) override;
     static brls::View* create();
 
   private:

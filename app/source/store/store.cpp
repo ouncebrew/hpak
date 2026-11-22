@@ -34,9 +34,10 @@ void StoreManager::init()
     // Initialize networking (curl/sockets) as needed by libget
     init_networking();
 
-    // Default to the main 4TU Switch repo; users can manage repos later.
+    // Default to the Ouncebrew repo; users can manage repos later.
     // performInitialLoad=false so we can control loading and surface errors.
-    get = std::make_unique<Get>(configPath, "https://switch.cdn.fortheusers.org/repo", false, "get");
+    get = std::make_unique<Get>(configPath, "https://ouncebrew.github.io", false, "get");
+
     initialized = true;
 }
 

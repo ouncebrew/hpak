@@ -25,6 +25,23 @@ InstalledTab::~InstalledTab()
     *alive = false;
 }
 
+void InstalledTab::willAppear(bool resetState)
+{
+    brls::Box::willAppear(resetState);
+    if (!dataSource)
+        return;
+    auto items = StoreManager::instance().getInstalledPackages();
+    if (!dataSource->sameItems(items))
+    {
+        dataSource->setItems(items);
+        recycler->reloadData();
+    }
+    if (items.empty())
+        header->setSubtitle("No installed packages found");
+    else
+        header->setSubtitle(std::to_string(items.size()) + " installed");
+}
+
 void InstalledTab::loadData()
 {
     header->setSubtitle("Loading installed packages...");
