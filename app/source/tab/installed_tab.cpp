@@ -38,7 +38,6 @@ void InstalledTab::loadData()
         {
             dataSource->setItems(items);
             recycler->reloadData();
-            brls::sync([this]() { if (*alive) recycler->invalidate(); });
         }
         if (items.empty())
             header->setSubtitle("No installed packages found");

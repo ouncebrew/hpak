@@ -48,7 +48,6 @@ void HomeTab::loadData()
         {
             dataSource->setItems(items);
             recycler->reloadData();
-            brls::sync([this]() { if (*alive) recycler->invalidate(); });
         }
 
         if (items.empty())

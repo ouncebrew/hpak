@@ -2,20 +2,19 @@
     width="auto"
     height="auto"
     axis="column"
-    grow="1.0"
-    paddingLeft="24"
-    paddingRight="24">
+    grow="1.0">
 
     <brls:Header
         id="header"
         title="Featured"
-        subtitle="Recently updated and popular packages" />
+        subtitle="Recently updated and popular packages"
+        marginLeft="24"
+        marginRight="24" />
 
     <brls:RecyclerFrame
         id="recycler"
         grow="1.0"
-        paddingLeft="0"
-        paddingRight="24"
-        marginRight="-24" />
+        paddingLeft="24"
+        paddingRight="24" />
 
 </brls:Box>

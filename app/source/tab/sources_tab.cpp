@@ -67,7 +67,6 @@ void SourcesTab::loadData()
     auto repos = store.getRepos();
     dataSource->items = repos;
     recycler->reloadData();
-    brls::sync([this]() { if (*alive) recycler->invalidate(); });
     header->setSubtitle(std::to_string(repos.size()) + (repos.size() == 1 ? " source" : " sources"));
 }
 
