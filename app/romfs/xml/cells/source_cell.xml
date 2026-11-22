@@ -1,0 +1,37 @@
+<brls:Box
+    width="auto"
+    height="auto"
+    focusable="true"
+    paddingLeft="20"
+    paddingRight="20"
+    paddingTop="10"
+    paddingBottom="10"
+    alignItems="center">
+
+    <brls:Image
+        id="icon"
+        width="48"
+        height="48"
+        scalingType="fit"
+        cornerRadius="8"
+        marginRight="14" />
+
+    <brls:Box
+        grow="1.0"
+        axis="column"
+        justifyContent="center">
+
+        <brls:Label
+            id="name"
+            fontSize="22"
+            singleLine="true" />
+
+        <brls:Label
+            id="url"
+            fontSize="16"
+            marginTop="2"
+            singleLine="true" />
+
+    </brls:Box>
+
+</brls:Box>

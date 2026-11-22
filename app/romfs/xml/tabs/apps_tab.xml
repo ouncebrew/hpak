@@ -2,7 +2,9 @@
     width="auto"
     height="auto"
     axis="column"
-    grow="1.0">
+    grow="1.0"
+    paddingLeft="24"
+    paddingRight="24">
 
     <brls:Header
         id="header"
@@ -13,6 +15,7 @@
         id="recycler"
         grow="1.0"
         paddingLeft="0"
-        paddingRight="0" />
+        paddingRight="24"
+        marginRight="-24" />
 
 </brls:Box>

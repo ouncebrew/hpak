@@ -44,11 +44,15 @@ void HomeTab::loadData()
         if (items.size() > 30)
             items.resize(30);
 
-        dataSource->setItems(items);
-        recycler->reloadData();
+        if (!dataSource->sameItems(items))
+        {
+            dataSource->setItems(items);
+            recycler->reloadData();
+            brls::sync([this]() { if (*alive) recycler->invalidate(); });
+        }
 
         if (items.empty())
-            header->setSubtitle("No packages yet — check Sources and refresh");
+            header->setSubtitle("No packages yet - check Sources and refresh");
         else
             header->setSubtitle("Recently updated packages");
     };

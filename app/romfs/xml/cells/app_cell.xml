@@ -4,32 +4,54 @@
     focusable="true"
     paddingLeft="20"
     paddingRight="20"
-    paddingTop="12"
-    paddingBottom="12"
+    paddingTop="10"
+    paddingBottom="10"
     alignItems="center">
 
-    <brls:Label
-        id="title"
-        fontSize="22"
+    <brls:Image
+        id="icon"
+        width="56"
+        height="56"
+        scalingType="fit"
+        cornerRadius="8"
+        marginRight="14" />
+
+    <brls:Box
         grow="1.0"
-        singleLine="true" />
+        axis="column"
+        justifyContent="center">
 
-    <brls:Label
-        id="version"
-        fontSize="16"
-        marginLeft="10"
-        singleLine="true" />
+        <brls:Box
+            width="auto"
+            height="auto"
+            axis="row"
+            alignItems="center">
 
-    <brls:Label
-        id="subtitle"
-        fontSize="16"
-        marginLeft="10"
-        singleLine="true" />
+            <brls:Label
+                id="title"
+                fontSize="22"
+                grow="1.0"
+                singleLine="true" />
+
+            <brls:Label
+                id="version"
+                fontSize="16"
+                marginLeft="10"
+                singleLine="true" />
+        </brls:Box>
+
+        <brls:Label
+            id="subtitle"
+            fontSize="16"
+            marginTop="2"
+            singleLine="true" />
+
+    </brls:Box>
 
     <brls:Label
         id="status"
         fontSize="16"
-        marginLeft="10"
+        marginLeft="12"
         singleLine="true" />
 
 </brls:Box>

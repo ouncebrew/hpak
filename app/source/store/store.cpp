@@ -6,8 +6,11 @@
 #include <chrono>
 #include <cstdio>
 #include <thread>
+#include <unordered_map>
+#include <unordered_set>
 
 #include "Utils.hpp"
+#include "rapidjson/document.h"
 
 static std::string toLowerStr(const std::string& in)
 {
@@ -304,6 +307,114 @@ void StoreManager::installPackage(const std::string& name, std::function<void(bo
     });
 }
 
+std::vector<RepoSnapshot> StoreManager::getRepos()
+{
+    std::lock_guard<std::mutex> lock(mutex);
+    std::vector<RepoSnapshot> out;
+    if (!get)
+        return out;
+    for (auto& r : get->getRepos())
+    {
+        if (!r) continue;
+        RepoSnapshot s;
+        s.name = r->getName();
+        s.url = r->getUrl();
+        s.enabled = r->isEnabled();
+        s.loaded = r->isLoaded();
+        out.push_back(std::move(s));
+    }
+    return out;
+}
+
+void StoreManager::addRepo(const std::string& url, std::function<void(bool success, const std::string& error)> onDone)
+{
+    brls::async([this, url, onDone]() {
+        bool ok = false;
+        std::string err;
+        try
+        {
+            init();
+            std::string cleanUrl = url;
+            while (!cleanUrl.empty() && (cleanUrl.back() == '/' || cleanUrl.back() == ' ' || cleanUrl.back() == '\r' || cleanUrl.back() == '\n'))
+                cleanUrl.pop_back();
+            size_t start = cleanUrl.find_first_not_of(" \t\r\n");
+            if (start != std::string::npos) cleanUrl = cleanUrl.substr(start);
+            if (cleanUrl.empty())
+            {
+                err = "URL is empty";
+            }
+            else
+            {
+                // Try to fetch repo name from remote repo.json
+                std::string repoName;
+                std::string repoJson;
+                std::string jsonUrl = cleanUrl + "/repo.json";
+                if (downloadFileToMemory(jsonUrl, &repoJson))
+                {
+                    rapidjson::Document doc;
+                    doc.Parse(repoJson.c_str());
+                    if (!doc.HasParseError() && doc.IsObject() && doc.HasMember("name") && doc["name"].IsString())
+                        repoName = doc["name"].GetString();
+                }
+                if (repoName.empty())
+                {
+                    size_t hostStart = cleanUrl.find("://");
+                    std::string host = (hostStart != std::string::npos) ? cleanUrl.substr(hostStart + 3) : cleanUrl;
+                    size_t slash = host.find('/');
+                    if (slash != std::string::npos) host = host.substr(0, slash);
+                    repoName = host.empty() ? cleanUrl : host;
+                }
+
+                std::lock_guard<std::mutex> lock(mutex);
+                bool exists = false;
+                for (auto& r : get->getRepos())
+                {
+                    if (r && r->getUrl() == cleanUrl)
+                    {
+                        exists = true;
+                        break;
+                    }
+                }
+                if (exists)
+                {
+                    err = "Source already exists";
+                }
+                else
+                {
+                    std::unordered_map<std::string, std::string> toAdd;
+                    toAdd[cleanUrl] = "get";
+                    std::unordered_set<std::string> toRemove;
+                    get->addAndRemoveReposByURL(toAdd, toRemove);
+                    // Apply name from remote repo.json if available
+                    if (!repoName.empty())
+                    {
+                        for (auto& r : get->getRepos())
+                        {
+                            if (r && r->getUrl() == cleanUrl)
+                            {
+                                r->setName(repoName);
+                                break;
+                            }
+                        }
+                        get->saveRepos();
+                    }
+                    ok = true;
+                }
+            }
+        }
+        catch (const std::exception& e)
+        {
+            err = e.what();
+        }
+        catch (...)
+        {
+            err = "Unknown error adding source";
+        }
+        if (onDone)
+            brls::sync([onDone, ok, err]() { onDone(ok, err); });
+    });
+}
+
 void StoreManager::removePackage(const std::string& name, std::function<void(bool success, const std::string& error)> onDone, ProgressCallback /*onProgress*/)
 {
     brls::async([this, name, onDone]() {
@@ -337,6 +448,34 @@ void StoreManager::removePackage(const std::string& name, std::function<void(boo
             ok = false;
         }
 
+        if (onDone)
+            brls::sync([onDone, ok, err]() { onDone(ok, err); });
+    });
+}
+
+void StoreManager::removeRepo(const std::string& url, std::function<void(bool success, const std::string& error)> onDone)
+{
+    brls::async([this, url, onDone]() {
+        bool ok = false;
+        std::string err;
+        try
+        {
+            init();
+            std::lock_guard<std::mutex> lock(mutex);
+            std::unordered_map<std::string, std::string> toAdd;
+            std::unordered_set<std::string> toRemove;
+            toRemove.insert(url);
+            get->addAndRemoveReposByURL(toAdd, toRemove);
+            ok = true;
+        }
+        catch (const std::exception& e)
+        {
+            err = e.what();
+        }
+        catch (...)
+        {
+            err = "Unknown error removing source";
+        }
         if (onDone)
             brls::sync([onDone, ok, err]() { onDone(ok, err); });
     });

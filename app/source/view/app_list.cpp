@@ -11,6 +11,20 @@ void AppListDataSource::setItems(std::vector<PackageSnapshot> newItems)
     this->items = std::move(newItems);
 }
 
+bool AppListDataSource::sameItems(const std::vector<PackageSnapshot>& other) const
+{
+    if (items.size() != other.size())
+        return false;
+    for (size_t i = 0; i < items.size(); i++)
+    {
+        const auto& a = items[i];
+        const auto& b = other[i];
+        if (a.name != b.name || a.version != b.version || a.status != b.status || a.title != b.title)
+            return false;
+    }
+    return true;
+}
+
 int AppListDataSource::numberOfSections(brls::RecyclerFrame* recycler)
 {
     return 1;

@@ -1,12 +1,14 @@
 #pragma once
 
 #include <borealis.hpp>
+#include <memory>
 #include "store/store.hpp"
 
 class AppCell : public brls::RecyclerCell
 {
   public:
     AppCell();
+    ~AppCell() override;
 
     void setPackage(const PackageSnapshot& pkg);
     PackageSnapshot getPackage() const { return package; }
@@ -14,10 +16,12 @@ class AppCell : public brls::RecyclerCell
     static AppCell* create();
 
   private:
+    BRLS_BIND(brls::Image, icon, "icon");
     BRLS_BIND(brls::Label, title, "title");
     BRLS_BIND(brls::Label, version, "version");
     BRLS_BIND(brls::Label, subtitle, "subtitle");
     BRLS_BIND(brls::Label, status, "status");
 
     PackageSnapshot package;
+    std::shared_ptr<bool> alive = std::make_shared<bool>(true);
 };

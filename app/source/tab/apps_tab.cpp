@@ -32,28 +32,30 @@ void AppsTab::loadData()
     auto& store = StoreManager::instance();
     store.init();
 
+    auto refreshView = [this](bool afterRefresh, bool success, const std::string& error) {
+        auto items = StoreManager::instance().getAllPackages();
+        if (!dataSource->sameItems(items))
+        {
+            dataSource->setItems(items);
+            recycler->reloadData();
+            brls::sync([this]() { if (*alive) recycler->invalidate(); });
+        }
+        if (afterRefresh && !success)
+            header->setSubtitle(error.empty() ? "Failed to load packages" : error);
+        else
+            header->setSubtitle(std::to_string(items.size()) + " packages available");
+    };
+
     // If we already have data, show it immediately
-    auto items = store.getAllPackages();
-    if (!items.empty())
-    {
-        dataSource->setItems(items);
-        recycler->reloadData();
-        header->setSubtitle(std::to_string(items.size()) + " packages available");
-    }
+    refreshView(false, true, "");
 
     std::weak_ptr<bool> aliveWeak = alive;
-    store.refresh([this, aliveWeak](bool success, const std::string& error) {
+    store.refresh([this, aliveWeak, refreshView](bool success, const std::string& error) {
         auto token = aliveWeak.lock();
         if (!token || !*token)
             return;
 
-        auto items = StoreManager::instance().getAllPackages();
-        dataSource->setItems(items);
-        recycler->reloadData();
-        if (success)
-            header->setSubtitle(std::to_string(items.size()) + " packages available");
-        else
-            header->setSubtitle(error.empty() ? "Failed to load packages" : error);
+        refreshView(true, success, error);
     });
 }
 

@@ -39,3 +39,5 @@
 *.lst
 *.map
 app/hpak.txt
+*.lst
+*.map

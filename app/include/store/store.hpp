@@ -36,6 +36,21 @@ struct PackageSnapshot
     bool hasUpdate() const { return status == UPDATE; }
 };
 
+struct RepoSnapshot
+{
+    std::string name;
+    std::string url;
+    bool enabled = true;
+    bool loaded = false;
+    std::string iconUrl() const
+    {
+        if (url.empty()) return "";
+        std::string u = url;
+        while (!u.empty() && u.back() == '/') u.pop_back();
+        return u + "/icon.png";
+    }
+};
+
 class StoreManager
 {
   public:
@@ -53,6 +68,10 @@ class StoreManager
     std::vector<PackageSnapshot> getUpdatablePackages();
     std::vector<PackageSnapshot> searchPackages(const std::string& query);
     PackageSnapshot getPackage(const std::string& name);
+
+    std::vector<RepoSnapshot> getRepos();
+    void addRepo(const std::string& url, std::function<void(bool success, const std::string& error)> onDone = nullptr);
+    void removeRepo(const std::string& url, std::function<void(bool success, const std::string& error)> onDone = nullptr);
 
     using ProgressCallback = std::function<void(float progress, const std::string& phase)>;
 

@@ -34,8 +34,12 @@ void InstalledTab::loadData()
 
     auto refreshView = [this]() {
         auto items = StoreManager::instance().getInstalledPackages();
-        dataSource->setItems(items);
-        recycler->reloadData();
+        if (!dataSource->sameItems(items))
+        {
+            dataSource->setItems(items);
+            recycler->reloadData();
+            brls::sync([this]() { if (*alive) recycler->invalidate(); });
+        }
         if (items.empty())
             header->setSubtitle("No installed packages found");
         else

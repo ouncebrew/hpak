@@ -14,6 +14,7 @@ class AppListDataSource : public brls::RecyclerDataSource
 
     void setItems(std::vector<PackageSnapshot> items);
     const std::vector<PackageSnapshot>& getItems() const { return items; }
+    bool sameItems(const std::vector<PackageSnapshot>& other) const;
 
     int numberOfSections(brls::RecyclerFrame* recycler) override;
     int numberOfRows(brls::RecyclerFrame* recycler, int section) override;

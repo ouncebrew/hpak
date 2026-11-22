@@ -25,7 +25,7 @@ BOREALIS_LIB	:=	$(BOREALIS)/lib
 
 LIBGET		:=	../libs/libget
 
-SOURCES		:=	source source/activity source/store source/tab source/view \
+SOURCES		:=	source source/activity source/store source/tab source/util source/view \
 			$(BOREALIS_LIB)/core \
 			$(BOREALIS_LIB)/core/touch \
 			$(BOREALIS_LIB)/views \
