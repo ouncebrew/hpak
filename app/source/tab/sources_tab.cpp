@@ -121,7 +121,7 @@ void SourcesTab::addSource()
                 });
             });
         });
-    }, "Add Source", "Enter repository URL (repo.json host)", 256, "http://", 0);
+    }, "Add Source", "Enter repository base URL", 256, "https://", 0);
 }
 
 void SourcesTab::showSourceOptions(const RepoSnapshot& repo)

@@ -359,10 +359,10 @@ void StoreManager::addRepo(const std::string& url, std::function<void(bool succe
                 if (repoName.empty())
                 {
                     size_t hostStart = cleanUrl.find("://");
-                    std::string host = (hostStart != std::string::npos) ? cleanUrl.substr(hostStart + 3) : cleanUrl;
-                    size_t slash = host.find('/');
-                    if (slash != std::string::npos) host = host.substr(0, slash);
-                    repoName = host.empty() ? cleanUrl : host;
+                    std::string display = (hostStart != std::string::npos) ? cleanUrl.substr(hostStart + 3) : cleanUrl;
+                    while (!display.empty() && display.back() == '/')
+                        display.pop_back();
+                    repoName = display.empty() ? cleanUrl : display;
                 }
 
                 std::lock_guard<std::mutex> lock(mutex);

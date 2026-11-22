@@ -176,6 +176,7 @@ void AppDetailView::onAction()
         spinner->setWidth(48);
         spinner->setHeight(48);
         content->addView(spinner);
+        content->registerAction("", brls::ControllerButton::BUTTON_B, [](brls::View*) { return true; }, true, false, brls::SOUND_NONE);
 
         auto* progressDialog = new brls::Dialog(content);
         progressDialog->setCancelable(false);
@@ -236,6 +237,7 @@ void AppDetailView::onAction()
         percentLabel->setFontSize(16);
         percentLabel->setMarginTop(8);
         content->addView(percentLabel);
+        content->registerAction("", brls::ControllerButton::BUTTON_B, [](brls::View*) { return true; }, true, false, brls::SOUND_NONE);
 
         auto* progressDialog = new brls::Dialog(content);
         progressDialog->setCancelable(false);
