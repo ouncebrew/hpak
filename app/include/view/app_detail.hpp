@@ -15,6 +15,7 @@ class AppDetailView : public brls::Box
     void onAction();
 
     BRLS_BIND(brls::ScrollingFrame, scroll, "detail_scroll");
+    BRLS_BIND(brls::Image, icon, "detail_icon");
     BRLS_BIND(brls::Label, titleLabel, "detail_title");
     BRLS_BIND(brls::Label, authorLabel, "detail_author");
     BRLS_BIND(brls::Label, versionLabel, "detail_version");

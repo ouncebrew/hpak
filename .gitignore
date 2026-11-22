@@ -41,3 +41,4 @@
 app/hpak.txt
 *.lst
 *.map
+/app/build

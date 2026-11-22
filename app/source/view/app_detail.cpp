@@ -1,6 +1,14 @@
 #include "view/app_detail.hpp"
 
 #include <fmt/format.h>
+#include <sys/stat.h>
+#include "util/icon_loader.hpp"
+
+static bool fileExists(const std::string& path)
+{
+    struct stat st{};
+    return stat(path.c_str(), &st) == 0 && st.st_size > 0;
+}
 
 AppDetailView::AppDetailView(const PackageSnapshot& pkg) : package(pkg)
 {
@@ -35,6 +43,48 @@ AppDetailView::AppDetailView(const PackageSnapshot& pkg) : package(pkg)
         meta += "Installed size: " + std::to_string(package.extracted_size / 1024) + " KB\n";
     meta += "Package: " + package.name;
     this->metaLabel->setText(meta);
+
+    // Icon: try local cache, then async download
+    this->icon->clear();
+    this->icon->setVisibility(brls::Visibility::VISIBLE);
+
+    std::string cacheDir = "sdmc:/switch/hpak/.get/packages/" + package.name;
+    std::string cachePath = cacheDir + "/icon.png";
+
+    if (fileExists(cachePath))
+    {
+        this->icon->setImageFromFile(cachePath);
+    }
+    else if (package.icon_url.empty())
+    {
+        this->icon->setVisibility(brls::Visibility::GONE);
+    }
+    else
+    {
+        std::string url = package.icon_url;
+        std::string name = package.name;
+        std::weak_ptr<bool> aliveWeak = alive;
+        util::enqueueIconLoad({
+            .name = name,
+            .url = url,
+            .cachePath = cachePath,
+            .isAlive = [aliveWeak]() {
+                auto aliveToken = aliveWeak.lock();
+                return aliveToken && *aliveToken;
+            },
+            .onDone = [this, aliveWeak, name, cachePath](bool ok) {
+                auto aliveToken = aliveWeak.lock();
+                if (!aliveToken || !*aliveToken)
+                    return;
+                if (this->package.name != name)
+                    return;
+                if (ok && fileExists(cachePath))
+                    this->icon->setImageFromFile(cachePath);
+                else
+                    this->icon->setVisibility(brls::Visibility::GONE);
+            }
+        });
+    }
 
     this->actionButton->registerClickAction([this](brls::View* view) {
         this->onAction();

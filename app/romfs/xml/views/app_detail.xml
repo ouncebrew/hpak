@@ -19,29 +19,53 @@
             paddingTop="30"
             paddingBottom="40">
 
-            <brls:Label
-                id="detail_title"
-                fontSize="34"
-                singleLine="false"
-                marginBottom="6" />
+            <brls:Box
+                width="auto"
+                height="auto"
+                axis="row"
+                alignItems="center"
+                marginBottom="16">
 
-            <brls:Label
-                id="detail_author"
-                fontSize="20"
-                singleLine="false"
-                marginBottom="4" />
+                <brls:Image
+                    id="detail_icon"
+                    width="96"
+                    height="96"
+                    scalingType="fit"
+                    cornerRadius="12"
+                    marginRight="20" />
 
-            <brls:Label
-                id="detail_version"
-                fontSize="18"
-                singleLine="false"
-                marginBottom="4" />
+                <brls:Box
+                    width="auto"
+                    height="auto"
+                    grow="1.0"
+                    axis="column">
 
-            <brls:Label
-                id="detail_status"
-                fontSize="18"
-                singleLine="false"
-                marginBottom="16" />
+                    <brls:Label
+                        id="detail_title"
+                        fontSize="34"
+                        singleLine="false"
+                        marginBottom="6" />
+
+                    <brls:Label
+                        id="detail_author"
+                        fontSize="20"
+                        singleLine="false"
+                        marginBottom="4" />
+
+                    <brls:Label
+                        id="detail_version"
+                        fontSize="18"
+                        singleLine="false"
+                        marginBottom="4" />
+
+                    <brls:Label
+                        id="detail_status"
+                        fontSize="18"
+                        singleLine="false" />
+
+                </brls:Box>
+
+            </brls:Box>
 
             <brls:Button
                 id="detail_action"

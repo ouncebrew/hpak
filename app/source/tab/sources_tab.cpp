@@ -172,7 +172,6 @@ void SourcesTab::showSourceOptions(const RepoSnapshot& repo)
         });
     });
 
-    dialog->addButton("Cancel", [] {});
     dialog->open();
 }
 
