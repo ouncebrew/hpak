@@ -87,6 +87,8 @@ class StoreManager
     void teardown();
     bool isShuttingDown() const { return shuttingDown.load(); }
 
+    static std::string repoCacheSlug(const std::string& url);
+
   private:
     StoreManager() = default;
 

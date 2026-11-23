@@ -6,6 +6,7 @@
 #include <mutex>
 #include <set>
 #include <thread>
+#include <vector>
 #include <sys/stat.h>
 
 #include <borealis.hpp>
@@ -141,25 +142,78 @@ struct IconLoader
             }
 
             bool ok = false;
+            std::string resolvedPath = req.cachePath;
             bool alive = !req.isAlive || req.isAlive();
             if (alive)
             {
-                if (fileExists(req.cachePath))
+                auto tryExtensions = [](const std::string& base) {
+                    std::vector<std::string> out;
+                    out.push_back(base);
+                    auto replaceExt = [&](const char* ext) {
+                        size_t dot = base.find_last_of('.');
+                        if (dot != std::string::npos)
+                        {
+                            std::string v = base.substr(0, dot) + ext;
+                            if (v != base) out.push_back(v);
+                        }
+                    };
+                    replaceExt(".jpg");
+                    replaceExt(".jpeg");
+                    replaceExt(".png");
+                    return out;
+                };
+
+                // Check cached variants
+                for (const auto& p : tryExtensions(req.cachePath))
                 {
-                    ok = true;
+                    if (fileExists(p))
+                    {
+                        ok = true;
+                        resolvedPath = p;
+                        break;
+                    }
                 }
-                else
+
+                if (!ok)
                 {
                     std::string dir = req.cachePath.substr(0, req.cachePath.find_last_of('/'));
                     mkpath(dir);
-                    ok = downloadIconToDisk(req.url, req.cachePath);
+
+                    // Try URL as-is, then common image extensions
+                    std::vector<std::pair<std::string, std::string>> attempts;
+                    attempts.push_back({req.url, req.cachePath});
+                    auto replaceUrlExt = [&](const char* ext) {
+                        size_t dot = req.url.find_last_of('.');
+                        size_t slash = req.url.find_last_of('/');
+                        if (dot != std::string::npos && (slash == std::string::npos || dot > slash))
+                        {
+                            std::string u = req.url.substr(0, dot) + ext;
+                            std::string c = req.cachePath;
+                            size_t cdot = c.find_last_of('.');
+                            if (cdot != std::string::npos) c = c.substr(0, cdot) + ext;
+                            if (u != req.url) attempts.push_back({u, c});
+                        }
+                    };
+                    replaceUrlExt(".jpg");
+                    replaceUrlExt(".jpeg");
+                    replaceUrlExt(".png");
+
+                    for (const auto& a : attempts)
+                    {
+                        if (downloadIconToDisk(a.first, a.second))
+                        {
+                            ok = true;
+                            resolvedPath = a.second;
+                            break;
+                        }
+                    }
                 }
             }
 
             if (req.onDone)
             {
                 auto cb = req.onDone;
-                brls::sync([cb, ok]() { cb(ok); });
+                brls::sync([cb, ok, resolvedPath]() { cb(ok, resolvedPath); });
             }
         }
     }

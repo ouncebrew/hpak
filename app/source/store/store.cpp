@@ -13,6 +13,7 @@
 #include <unordered_set>
 
 #include "Utils.hpp"
+#include "ZipUtil.hpp"
 #include "rapidjson/document.h"
 #include <borealis/extern/nlohmann/json.hpp>
 
@@ -90,6 +91,45 @@ static std::string sanitizeDirectVersion(std::string ver)
     if (ver.empty() || vl == "not found" || vl == "n/a" || vl == "unknown")
         return "1.0.0";
     return ver;
+}
+
+std::string StoreManager::repoCacheSlug(const std::string& url)
+{
+    std::string s = url;
+    // Strip scheme
+    size_t pos = s.find("://");
+    if (pos != std::string::npos) s = s.substr(pos + 3);
+    // Strip trailing slashes
+    while (!s.empty() && s.back() == '/') s.pop_back();
+
+    std::string out;
+    out.reserve(s.size());
+    for (unsigned char c : s)
+    {
+        if (std::isalnum(c)) out.push_back((char)std::tolower(c));
+        else out.push_back('_');
+    }
+    // Collapse multiple underscores
+    std::string collapsed;
+    bool lastUnderscore = false;
+    for (char c : out)
+    {
+        if (c == '_')
+        {
+            if (!lastUnderscore) collapsed.push_back(c);
+            lastUnderscore = true;
+        }
+        else
+        {
+            collapsed.push_back(c);
+            lastUnderscore = false;
+        }
+    }
+    // Trim underscores
+    size_t start = collapsed.find_first_not_of('_');
+    size_t end = collapsed.find_last_not_of('_');
+    if (start == std::string::npos) return "repo";
+    return collapsed.substr(start, end - start + 1);
 }
 
 StoreManager& StoreManager::instance()
@@ -359,6 +399,77 @@ void StoreManager::refresh(std::function<void(bool success, const std::string& e
                 std::ofstream ofs(dir + "/" + dp.first + ".remote", std::ios::binary);
                 if (ofs) ofs << content;
             }
+        }
+
+        // Download repo icons.zip bundles (compatible cache prefill)
+        std::vector<std::pair<std::string, std::string>> repoIconZips; // slug, baseUrl
+        {
+            std::lock_guard<std::mutex> lock(mutex);
+            if (get)
+            {
+                for (auto& r : get->getRepos())
+                {
+                    if (!r) continue;
+                    std::string base = r->getUrl();
+                    while (!base.empty() && base.back() == '/') base.pop_back();
+                    if (base.empty()) continue;
+                    repoIconZips.push_back({StoreManager::repoCacheSlug(base), base});
+                }
+            }
+        }
+        for (auto& rz : repoIconZips)
+        {
+            if (shuttingDown.load()) break;
+            std::string tmpDir = configPath + "tmp";
+            mkpath(tmpDir);
+            std::string tmpZip = tmpDir + "/icons.zip";
+            if (!downloadFileToDisk(rz.second + "/icons.zip", tmpZip))
+                continue;
+
+            UnZip zip(tmpZip);
+            if (!zip.IsValid())
+            {
+                zip.Close();
+                std::remove(tmpZip.c_str());
+                continue;
+            }
+
+            auto mapping = zip.GetPathToFilePosMapping();
+            for (auto& entry : mapping)
+            {
+                const std::string& name = entry.first;
+                std::string lower = toLowerStr(name);
+                std::string pkgName, ext;
+                if (lower.size() > 10 && lower.rfind("/icon.png") == lower.size() - 9)
+                {
+                    pkgName = name.substr(0, name.size() - 9);
+                    ext = ".png";
+                }
+                else if (lower.size() > 10 && lower.rfind("/icon.jpg") == lower.size() - 9)
+                {
+                    pkgName = name.substr(0, name.size() - 9);
+                    ext = ".jpg";
+                }
+                else if (lower.size() > 11 && lower.rfind("/icon.jpeg") == lower.size() - 10)
+                {
+                    pkgName = name.substr(0, name.size() - 10);
+                    ext = ".jpeg";
+                }
+                else
+                    continue;
+
+                while (!pkgName.empty() && (pkgName.front() == '/' || pkgName.front() == '\\')) pkgName.erase(pkgName.begin());
+                while (!pkgName.empty() && (pkgName.back() == '/' || pkgName.back() == '\\')) pkgName.pop_back();
+                if (pkgName.empty()) continue;
+
+                std::string outDir = configPath + "packages/" + rz.first + "/" + pkgName;
+                mkpath(outDir);
+                std::string outPath = outDir + "/icon" + ext;
+                zip.Extract(outPath, entry.second);
+            }
+
+            zip.Close();
+            std::remove(tmpZip.c_str());
         }
 
         loading = false;

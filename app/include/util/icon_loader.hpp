@@ -11,7 +11,7 @@ struct IconLoadRequest
     std::string url;
     std::string cachePath;
     std::function<bool()> isAlive; // returns false if request is stale
-    std::function<void(bool ok)> onDone; // called via brls::sync on UI thread
+    std::function<void(bool ok, const std::string& resolvedPath)> onDone; // called via brls::sync on UI thread
 };
 
 void enqueueIconLoad(IconLoadRequest req);

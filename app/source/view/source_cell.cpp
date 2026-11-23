@@ -2,6 +2,7 @@
 
 #include <sys/stat.h>
 #include "Utils.hpp"
+#include "store/store.hpp"
 #include "util/icon_loader.hpp"
 
 static bool fileExists(const std::string& path)
@@ -50,11 +51,23 @@ void SourceCell::setRepo(const RepoSnapshot& r)
         return;
     }
 
-    std::string cacheDir = "sdmc:/packages/.get/cache/repo_icons";
-    std::string cachePath = cacheDir + "/" + sanitizeForPath(r.url) + ".png";
-    if (fileExists(cachePath))
+    std::string repoSlug = StoreManager::repoCacheSlug(r.url);
+    std::string cacheDir = "sdmc:/packages/.get/cache/" + repoSlug;
+    std::string cachePath = cacheDir + "/icon.png";
+
+    auto findCachedIcon = [&]() -> std::string {
+        for (const char* ext : {".png", ".jpg", ".jpeg"})
+        {
+            std::string p = cacheDir + "/icon" + ext;
+            if (fileExists(p)) return p;
+        }
+        return "";
+    };
+
+    std::string cached = findCachedIcon();
+    if (!cached.empty())
     {
-        this->icon->setImageFromFile(cachePath);
+        this->icon->setImageFromFile(cached);
         return;
     }
 
@@ -69,14 +82,14 @@ void SourceCell::setRepo(const RepoSnapshot& r)
             auto aliveToken = aliveWeak.lock();
             return aliveToken && *aliveToken;
         },
-        .onDone = [this, aliveWeak, repoUrl, cachePath](bool ok) {
+        .onDone = [this, aliveWeak, repoUrl](bool ok, const std::string& resolvedPath) {
             auto aliveToken = aliveWeak.lock();
             if (!aliveToken || !*aliveToken)
                 return;
             if (this->repo.url != repoUrl)
                 return;
-            if (ok && fileExists(cachePath))
-                this->icon->setImageFromFile(cachePath);
+            if (ok && !resolvedPath.empty() && fileExists(resolvedPath))
+                this->icon->setImageFromFile(resolvedPath);
             else
                 this->icon->setVisibility(brls::Visibility::GONE);
         }

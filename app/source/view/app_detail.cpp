@@ -48,12 +48,23 @@ AppDetailView::AppDetailView(const PackageSnapshot& pkg) : package(pkg)
     this->icon->clear();
     this->icon->setVisibility(brls::Visibility::VISIBLE);
 
-    std::string cacheDir = "sdmc:/packages/.get/packages/" + package.name;
+    std::string repoSlug = StoreManager::repoCacheSlug(package.repo_url);
+    std::string cacheDir = "sdmc:/packages/.get/packages/" + repoSlug + "/" + package.name;
     std::string cachePath = cacheDir + "/icon.png";
 
-    if (fileExists(cachePath))
+    auto findCachedIcon = [&]() -> std::string {
+        for (const char* ext : {".png", ".jpg", ".jpeg"})
+        {
+            std::string p = cacheDir + "/icon" + ext;
+            if (fileExists(p)) return p;
+        }
+        return "";
+    };
+
+    std::string cached = findCachedIcon();
+    if (!cached.empty())
     {
-        this->icon->setImageFromFile(cachePath);
+        this->icon->setImageFromFile(cached);
     }
     else if (package.icon_url.empty())
     {
@@ -72,14 +83,14 @@ AppDetailView::AppDetailView(const PackageSnapshot& pkg) : package(pkg)
                 auto aliveToken = aliveWeak.lock();
                 return aliveToken && *aliveToken;
             },
-            .onDone = [this, aliveWeak, name, cachePath](bool ok) {
+            .onDone = [this, aliveWeak, name](bool ok, const std::string& resolvedPath) {
                 auto aliveToken = aliveWeak.lock();
                 if (!aliveToken || !*aliveToken)
                     return;
                 if (this->package.name != name)
                     return;
-                if (ok && fileExists(cachePath))
-                    this->icon->setImageFromFile(cachePath);
+                if (ok && !resolvedPath.empty() && fileExists(resolvedPath))
+                    this->icon->setImageFromFile(resolvedPath);
                 else
                     this->icon->setVisibility(brls::Visibility::GONE);
             }
