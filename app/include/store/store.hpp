@@ -23,6 +23,7 @@ struct PackageSnapshot
     std::string category;
     std::string updated;
     std::string license;
+    std::string changelog;
     std::string repo_name;
     std::string repo_url;
     std::string icon_url;

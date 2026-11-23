@@ -1,7 +1,9 @@
 {
-    "name": "My App",
+    "title": "My App",
     "author": "Author Name",
     "version": "1.0.0",
-    "description": "Short description of the app.\n\nLonger details can go here, with multiple lines.",
-    "license": "GPLv2"
+    "description": "Short description of the app.",
+    "details": "Longer details can go here.\n\nMultiple lines are supported.",
+    "license": "GPLv3",
+    "changelog": "Initial release."
 }

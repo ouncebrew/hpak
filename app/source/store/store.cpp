@@ -49,11 +49,13 @@ static std::string trimWhitespace(std::string s)
 
 struct DirectPackageMeta
 {
-    std::string version;
-    std::string name;
+    std::string title;
     std::string author;
+    std::string version;
     std::string description;
+    std::string details;
     std::string license;
+    std::string changelog;
 };
 
 static DirectPackageMeta parseDirectPackageJson(const std::string& content)
@@ -69,14 +71,16 @@ static DirectPackageMeta parseDirectPackageJson(const std::string& content)
         return "";
     };
 
-    meta.version = getStr("version");
-    meta.name = getStr("name");
-    if (meta.name.empty()) meta.name = getStr("title");
+    meta.title = getStr("title");
+    if (meta.title.empty()) meta.title = getStr("name");
     meta.author = getStr("author");
+    meta.version = getStr("version");
     meta.description = getStr("description");
-    if (meta.description.empty()) meta.description = getStr("details");
     if (meta.description.empty()) meta.description = getStr("short_desc");
+    meta.details = getStr("details");
+    if (meta.details.empty()) meta.details = getStr("long_desc");
     meta.license = getStr("license");
+    meta.changelog = getStr("changelog");
     return meta;
 }
 
@@ -145,6 +149,7 @@ PackageSnapshot StoreManager::snapshotFrom(const Package& pkg)
     s.category     = pkg.getCategory();
     s.updated      = pkg.getUpdatedAt();
     s.license      = pkg.getLicense();
+    s.changelog    = pkg.getChangelog();
     s.url          = pkg.url;
     s.file         = pkg.file;
     s.directUrl    = pkg.directUrl;
@@ -169,21 +174,35 @@ PackageSnapshot StoreManager::snapshotFrom(const Package& pkg)
         auto localMeta = parseDirectPackageJson(readFileToString(localPath));
         auto remoteMeta = parseDirectPackageJson(readFileToString(remotePath));
 
+        bool repoHasFullMeta = !s.title.empty() && !s.author.empty() && !s.version.empty() &&
+                               !s.short_desc.empty() && !s.long_desc.empty() && !s.license.empty() &&
+                               !s.changelog.empty();
+
         std::string localVer = sanitizeDirectVersion(localMeta.version.empty() ? s.version : localMeta.version);
-        std::string remoteVer = sanitizeDirectVersion(remoteMeta.version.empty() ? s.version : remoteMeta.version);
+        std::string remoteVer = sanitizeDirectVersion(repoHasFullMeta ? s.version : (remoteMeta.version.empty() ? s.version : remoteMeta.version));
 
-        auto applyMeta = [&](const DirectPackageMeta& m) {
-            if (!m.name.empty()) s.title = m.name;
-            if (!m.author.empty()) s.author = m.author;
-            if (!m.description.empty()) { s.short_desc = m.description; s.long_desc = m.description; }
-            if (!m.license.empty()) s.license = m.license;
-        };
+        if (!repoHasFullMeta)
+        {
+            auto applyMeta = [&](const DirectPackageMeta& m) {
+                if (!m.title.empty()) s.title = m.title;
+                if (!m.author.empty()) s.author = m.author;
+                if (!m.description.empty()) s.short_desc = m.description;
+                if (!m.details.empty()) s.long_desc = m.details;
+                if (!m.license.empty()) s.license = m.license;
+                if (!m.changelog.empty()) s.changelog = m.changelog;
+            };
 
-        // Prefer remote metadata (latest release), fall back to local
-        if (!localMeta.version.empty() || !localMeta.name.empty() || !localMeta.author.empty() || !localMeta.description.empty() || !localMeta.license.empty())
-            applyMeta(localMeta);
-        if (!remoteMeta.version.empty() || !remoteMeta.name.empty() || !remoteMeta.author.empty() || !remoteMeta.description.empty() || !remoteMeta.license.empty())
-            applyMeta(remoteMeta);
+            auto hasMeta = [](const DirectPackageMeta& m) {
+                return !m.title.empty() || !m.author.empty() || !m.version.empty() ||
+                       !m.description.empty() || !m.details.empty() || !m.license.empty() || !m.changelog.empty();
+            };
+
+            // Prefer remote metadata (latest release), fall back to local
+            if (hasMeta(localMeta))
+                applyMeta(localMeta);
+            if (hasMeta(remoteMeta))
+                applyMeta(remoteMeta);
+        }
 
         if (fileExistsLocal(installedPath))
         {
@@ -306,6 +325,7 @@ void StoreManager::refresh(std::function<void(bool success, const std::string& e
         }
 
         // Fetch remote package.json metadata for direct-download packages
+        // Skip if repo.json already provides all details (avoids rate limits)
         std::vector<std::pair<std::string, std::string>> directPkgs; // name, baseUrl
         {
             std::lock_guard<std::mutex> lock(mutex);
@@ -315,6 +335,12 @@ void StoreManager::refresh(std::function<void(bool success, const std::string& e
                 {
                     if (p && !p->file.empty())
                     {
+                        bool hasFullRepoMeta = !p->getTitle().empty() && !p->getAuthor().empty() &&
+                                               !p->getVersion().empty() && !p->getShortDescription().empty() &&
+                                               !p->getLongDescription().empty() && !p->getLicense().empty() &&
+                                               !p->getChangelog().empty();
+                        if (hasFullRepoMeta)
+                            continue;
                         std::string base = !p->directUrl.empty() ? p->directUrl : p->url;
                         while (!base.empty() && base.back() == '/') base.pop_back();
                         directPkgs.push_back({p->getPackageName(), base});
@@ -493,12 +519,39 @@ void StoreManager::installPackage(const std::string& name, std::function<void(bo
 
                 if (ok)
                 {
-                    std::string pkgContent;
-                    std::string pkgUrl = directBase + "/package.json";
-                    downloadFileToMemory(pkgUrl, &pkgContent);
-                    auto j = nlohmann::json::parse(pkgContent, nullptr, false);
-                    if (j.is_discarded() || !j.is_object())
-                        j = nlohmann::json::object();
+                    nlohmann::json j = nlohmann::json::object();
+                    bool hasFullRepoMeta = false;
+                    {
+                        std::lock_guard<std::mutex> lock(mutex);
+                        auto pkg = findPackageLocked(name);
+                        if (pkg)
+                        {
+                            hasFullRepoMeta = !pkg->getTitle().empty() && !pkg->getAuthor().empty() &&
+                                              !pkg->getVersion().empty() && !pkg->getShortDescription().empty() &&
+                                              !pkg->getLongDescription().empty() && !pkg->getLicense().empty() &&
+                                              !pkg->getChangelog().empty();
+                            if (hasFullRepoMeta)
+                            {
+                                j["title"] = pkg->getTitle();
+                                j["author"] = pkg->getAuthor();
+                                j["version"] = pkg->getVersion();
+                                j["description"] = pkg->getShortDescription();
+                                j["details"] = pkg->getLongDescription();
+                                j["license"] = pkg->getLicense();
+                                j["changelog"] = pkg->getChangelog();
+                            }
+                        }
+                    }
+
+                    if (!hasFullRepoMeta)
+                    {
+                        std::string pkgContent;
+                        std::string pkgUrl = directBase + "/package.json";
+                        downloadFileToMemory(pkgUrl, &pkgContent);
+                        auto parsed = nlohmann::json::parse(pkgContent, nullptr, false);
+                        if (parsed.is_object())
+                            j = parsed;
+                    }
 
                     auto meta = parseDirectPackageJson(j.dump());
                     if (meta.version.empty())
