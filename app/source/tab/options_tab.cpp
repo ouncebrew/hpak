@@ -34,29 +34,35 @@ OptionsTab::OptionsTab()
 
 void OptionsTab::syncDefaultReposToggle(bool on)
 {
-    static const char* kMainUrl = "https://ouncebrew.github.io";
-    static const char* kCommunityUrl = "https://ouncebrew.github.io/community";
-
     auto& store = StoreManager::instance();
     store.init();
 
     if (on)
     {
-        bool hasMain = false, hasCommunity = false;
-        for (auto& r : store.getRepos())
+        for (auto& d : StoreManager::getDefaultRepos())
         {
-            if (r.url == kMainUrl) hasMain = true;
-            if (r.url == kCommunityUrl) hasCommunity = true;
+            if (d.url.empty())
+                continue;
+            bool has = false;
+            for (auto& r : store.getRepos())
+            {
+                if (r.url == d.url)
+                {
+                    has = true;
+                    break;
+                }
+            }
+            if (!has)
+                store.addRepo(d.url);
         }
-        if (!hasMain)
-            store.addRepo(kMainUrl);
-        if (!hasCommunity)
-            store.addRepo(kCommunityUrl);
     }
     else
     {
-        store.removeRepo(kMainUrl);
-        store.removeRepo(kCommunityUrl);
+        for (auto& d : StoreManager::getDefaultRepos())
+        {
+            if (!d.url.empty())
+                store.removeRepo(d.url);
+        }
     }
 }
 

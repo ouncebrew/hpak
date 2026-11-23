@@ -57,6 +57,12 @@ struct RepoSnapshot
     }
 };
 
+struct DefaultRepo
+{
+    std::string name;
+    std::string url;
+};
+
 class StoreManager
 {
   public:
@@ -90,6 +96,7 @@ class StoreManager
     bool isShuttingDown() const { return shuttingDown.load(); }
 
     static std::string repoCacheSlug(const std::string& url);
+    static std::vector<DefaultRepo> getDefaultRepos();
 
   private:
     StoreManager() = default;

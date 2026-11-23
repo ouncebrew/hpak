@@ -15,6 +15,7 @@
 #include "Utils.hpp"
 #include "ZipUtil.hpp"
 #include "rapidjson/document.h"
+#include "util/net_gate.hpp"
 #include "util/settings.hpp"
 #include <borealis/extern/nlohmann/json.hpp>
 
@@ -125,6 +126,44 @@ std::string StoreManager::repoCacheSlug(const std::string& url)
     return collapsed.substr(start, end - start + 1);
 }
 
+std::vector<DefaultRepo> StoreManager::getDefaultRepos()
+{
+    std::vector<DefaultRepo> out;
+    FILE* f = fopen("romfs:/util/defaultRepos.json", "rb");
+    if (f)
+    {
+        std::string content;
+        char buf[512];
+        size_t n;
+        while ((n = fread(buf, 1, sizeof(buf), f)) > 0)
+            content.append(buf, n);
+        fclose(f);
+
+        auto j = nlohmann::json::parse(content, nullptr, false);
+        if (j.is_object() && j.contains("repos") && j["repos"].is_array())
+        {
+            for (auto& e : j["repos"])
+            {
+                if (e.is_object() && e.contains("url") && e["url"].is_string())
+                {
+                    DefaultRepo d;
+                    d.url = e["url"].get<std::string>();
+                    if (e.contains("name") && e["name"].is_string())
+                        d.name = e["name"].get<std::string>();
+                    if (!d.url.empty())
+                        out.push_back(std::move(d));
+                }
+            }
+        }
+    }
+    if (out.empty())
+    {
+        // Fallback if romfs file is missing/unreadable (e.g. desktop builds).
+        out.push_back({"Ouncebrew", "https://ouncebrew.github.io"});
+    }
+    return out;
+}
+
 StoreManager& StoreManager::instance()
 {
     static StoreManager mgr;
@@ -140,41 +179,46 @@ void StoreManager::init()
     // Initialize networking (curl/sockets) as needed by libget
     init_networking();
 
-    // Default to the Ouncebrew repo; users can manage repos later.
+    // Default to the first bundled repo; users can manage repos later.
     // performInitialLoad=false so we can control loading and surface errors.
-    get = std::make_unique<Get>(configPath, "https://ouncebrew.github.io", false, "get");
+    std::string firstDefault = "https://ouncebrew.github.io";
+    {
+        auto defaults = StoreManager::getDefaultRepos();
+        if (!defaults.empty() && !defaults[0].url.empty())
+            firstDefault = defaults[0].url;
+    }
+    get = std::make_unique<Get>(configPath, firstDefault, false, "get");
 
-    // Always ensure the bundled Community source exists, same as the default
-    // Ouncebrew repo: if it's not in the repo list, add it.
     if (get)
     {
-        static const char* kMainUrl = "https://ouncebrew.github.io";
-        static const char* kCommunityUrl = "https://ouncebrew.github.io/community";
-        static const char* kCommunityName = "Ouncebrew Community";
         bool wantDefaults = HpSettings::instance().addDefaultRepos;
 
-        auto hasRepo = [&](const char* url) {
+        auto findRepo = [&](const std::string& url) -> std::shared_ptr<Repo> {
             for (auto& r : get->getRepos())
                 if (r && r->getUrl() == url)
-                    return true;
-            return false;
+                    return r;
+            return nullptr;
         };
 
         if (wantDefaults)
         {
-            if (!hasRepo(kCommunityUrl))
+            // Ensure all bundled sources exist; re-add any that are missing.
+            std::unordered_map<std::string, std::string> toAdd;
+            for (auto& d : StoreManager::getDefaultRepos())
             {
-                std::unordered_map<std::string, std::string> toAdd;
-                toAdd[kCommunityUrl] = "get";
+                if (!d.url.empty() && !findRepo(d.url))
+                    toAdd[d.url] = "get";
+            }
+            if (!toAdd.empty())
+            {
                 std::unordered_set<std::string> toRemove;
                 get->addAndRemoveReposByURL(toAdd, toRemove);
-                for (auto& r : get->getRepos())
+                for (auto& d : StoreManager::getDefaultRepos())
                 {
-                    if (r && r->getUrl() == kCommunityUrl)
-                    {
-                        r->setName(kCommunityName);
-                        break;
-                    }
+                    auto r = findRepo(d.url);
+                    if (r && !d.name.empty() &&
+                        (r->getName() == "Default Repo" || r->getName().find('/') != std::string::npos))
+                        r->setName(d.name);
                 }
                 get->saveRepos();
             }
@@ -182,16 +226,15 @@ void StoreManager::init()
         else
         {
             // Defaults disabled: drop bundled sources if present (manual adds stay).
-            bool hadMain = hasRepo(kMainUrl);
-            bool hadCommunity = hasRepo(kCommunityUrl);
-            if (hadMain || hadCommunity)
+            std::unordered_map<std::string, std::string> toAdd;
+            std::unordered_set<std::string> toRemove;
+            for (auto& d : StoreManager::getDefaultRepos())
             {
-                std::unordered_map<std::string, std::string> toAdd;
-                std::unordered_set<std::string> toRemove;
-                if (hadMain) toRemove.insert(kMainUrl);
-                if (hadCommunity) toRemove.insert(kCommunityUrl);
-                get->addAndRemoveReposByURL(toAdd, toRemove);
+                if (!d.url.empty() && findRepo(d.url))
+                    toRemove.insert(d.url);
             }
+            if (!toRemove.empty())
+                get->addAndRemoveReposByURL(toAdd, toRemove);
         }
     }
 
@@ -336,6 +379,16 @@ void StoreManager::refresh(std::function<void(bool success, const std::string& e
     brls::async([this, onDone]() {
         std::string err;
         bool ok = true;
+
+        // Gate: wait for connectivity with a persistent popup instead of
+        // hanging in network calls with no Wi-Fi/Ethernet.
+        if (!util::waitForConnection([this]() { return shuttingDown.load(); }))
+        {
+            ok = false;
+            err = "No internet connection";
+        }
+        else
+        {
         try
         {
             init();
@@ -359,6 +412,7 @@ void StoreManager::refresh(std::function<void(bool success, const std::string& e
         {
             ok = false;
             err = "Unknown error while refreshing";
+        }
         }
 
         // Fix up generic "Default Repo" names from remote repo.json

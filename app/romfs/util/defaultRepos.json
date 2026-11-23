@@ -1,0 +1,12 @@
+{
+    "repos": [
+        {
+            "name": "Ouncebrew",
+            "url": "https://ouncebrew.github.io"
+        },
+        {
+            "name": "Ouncebrew Community",
+            "url": "https://ouncebrew.github.io/community"
+        }
+    ]
+}
