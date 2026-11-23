@@ -14,6 +14,7 @@
 
 #include "Utils.hpp"
 #include "rapidjson/document.h"
+#include <borealis/extern/nlohmann/json.hpp>
 
 static std::string toLowerStr(const std::string& in)
 {
@@ -44,6 +45,47 @@ static std::string trimWhitespace(std::string s)
     if (start == std::string::npos) return "";
     size_t end = s.find_last_not_of(" \t\r\n");
     return s.substr(start, end - start + 1);
+}
+
+struct DirectPackageMeta
+{
+    std::string version;
+    std::string name;
+    std::string author;
+    std::string description;
+    std::string license;
+};
+
+static DirectPackageMeta parseDirectPackageJson(const std::string& content)
+{
+    DirectPackageMeta meta;
+    auto j = nlohmann::json::parse(content, nullptr, false);
+    if (j.is_discarded() || !j.is_object())
+        return meta;
+
+    auto getStr = [&](const char* key) -> std::string {
+        if (j.contains(key) && j[key].is_string())
+            return j[key].get<std::string>();
+        return "";
+    };
+
+    meta.version = getStr("version");
+    meta.name = getStr("name");
+    if (meta.name.empty()) meta.name = getStr("title");
+    meta.author = getStr("author");
+    meta.description = getStr("description");
+    if (meta.description.empty()) meta.description = getStr("details");
+    if (meta.description.empty()) meta.description = getStr("short_desc");
+    meta.license = getStr("license");
+    return meta;
+}
+
+static std::string sanitizeDirectVersion(std::string ver)
+{
+    std::string vl = toLowerStr(ver);
+    if (ver.empty() || vl == "not found" || vl == "n/a" || vl == "unknown")
+        return "1.0.0";
+    return ver;
 }
 
 StoreManager& StoreManager::instance()
@@ -113,39 +155,50 @@ PackageSnapshot StoreManager::snapshotFrom(const Package& pkg)
     s.screens      = pkg.getScreenshotCount();
     s.icon_url     = pkg.getIconUrl();
 
-    // Direct download package: override status based on local file + hpak.txt version
+    // Direct download package: override status/metadata from local file + package.json
     if (!s.file.empty())
     {
+        std::string directBase = !s.directUrl.empty() ? s.directUrl : s.url;
+        while (!directBase.empty() && directBase.back() == '/') directBase.pop_back();
+        if (!directBase.empty())
+            s.icon_url = directBase + "/icon.png";
+
         std::string installedPath = "sdmc:/switch/" + s.file;
-        std::string localVerPath = configPath + "direct/" + s.name + ".version";
-        std::string remoteVerPath = configPath + "direct/" + s.name + ".remote";
-        std::string localVer = trimWhitespace(readFileToString(localVerPath));
-        std::string remoteVer = trimWhitespace(readFileToString(remoteVerPath));
-        if (remoteVer.empty()) remoteVer = s.version;
-        {
-            std::string rv = toLowerStr(remoteVer);
-            if (remoteVer.empty() || rv == "not found" || rv == "n/a" || rv == "unknown")
-                remoteVer = "1.0.0";
-        }
+        std::string localPath = configPath + "direct/" + s.name + ".version";
+        std::string remotePath = configPath + "direct/" + s.name + ".remote";
+        auto localMeta = parseDirectPackageJson(readFileToString(localPath));
+        auto remoteMeta = parseDirectPackageJson(readFileToString(remotePath));
+
+        std::string localVer = sanitizeDirectVersion(localMeta.version.empty() ? s.version : localMeta.version);
+        std::string remoteVer = sanitizeDirectVersion(remoteMeta.version.empty() ? s.version : remoteMeta.version);
+
+        auto applyMeta = [&](const DirectPackageMeta& m) {
+            if (!m.name.empty()) s.title = m.name;
+            if (!m.author.empty()) s.author = m.author;
+            if (!m.description.empty()) { s.short_desc = m.description; s.long_desc = m.description; }
+            if (!m.license.empty()) s.license = m.license;
+        };
+
+        // Prefer remote metadata (latest release), fall back to local
+        if (!localMeta.version.empty() || !localMeta.name.empty() || !localMeta.author.empty() || !localMeta.description.empty() || !localMeta.license.empty())
+            applyMeta(localMeta);
+        if (!remoteMeta.version.empty() || !remoteMeta.name.empty() || !remoteMeta.author.empty() || !remoteMeta.description.empty() || !remoteMeta.license.empty())
+            applyMeta(remoteMeta);
 
         if (fileExistsLocal(installedPath))
         {
             s.status = INSTALLED;
-            if (!localVer.empty()) s.version = localVer;
-            if (!remoteVer.empty() && !localVer.empty() && remoteVer != localVer)
+            s.version = localVer;
+            if (remoteVer != localVer)
             {
                 s.status = UPDATE;
-                s.version = remoteVer;
-            }
-            else if (!remoteVer.empty())
-            {
                 s.version = remoteVer;
             }
         }
         else
         {
             s.status = GET;
-            if (!remoteVer.empty()) s.version = remoteVer;
+            s.version = remoteVer;
         }
     }
 
@@ -252,7 +305,7 @@ void StoreManager::refresh(std::function<void(bool success, const std::string& e
             }
         }
 
-        // Fetch remote hpak.txt versions for direct-download packages
+        // Fetch remote package.json metadata for direct-download packages
         std::vector<std::pair<std::string, std::string>> directPkgs; // name, baseUrl
         {
             std::lock_guard<std::mutex> lock(mutex);
@@ -272,14 +325,13 @@ void StoreManager::refresh(std::function<void(bool success, const std::string& e
         for (auto& dp : directPkgs)
         {
             if (shuttingDown.load()) break;
-            std::string ver;
-            if (downloadFileToMemory(dp.second + "/hpak.txt", &ver))
+            std::string content;
+            if (downloadFileToMemory(dp.second + "/package.json", &content))
             {
-                ver = trimWhitespace(ver);
                 std::string dir = configPath + "direct";
                 mkpath(dir);
                 std::ofstream ofs(dir + "/" + dp.first + ".remote", std::ios::binary);
-                if (ofs) ofs << ver;
+                if (ofs) ofs << content;
             }
         }
 
@@ -441,30 +493,32 @@ void StoreManager::installPackage(const std::string& name, std::function<void(bo
 
                 if (ok)
                 {
-                    std::string ver;
-                    std::string versionUrl = directBase + "/hpak.txt";
-                    if (downloadFileToMemory(versionUrl, &ver))
-                        ver = trimWhitespace(ver);
-                    if (ver.empty())
+                    std::string pkgContent;
+                    std::string pkgUrl = directBase + "/package.json";
+                    downloadFileToMemory(pkgUrl, &pkgContent);
+                    auto j = nlohmann::json::parse(pkgContent, nullptr, false);
+                    if (j.is_discarded() || !j.is_object())
+                        j = nlohmann::json::object();
+
+                    auto meta = parseDirectPackageJson(j.dump());
+                    if (meta.version.empty())
                     {
                         std::lock_guard<std::mutex> lock(mutex);
                         auto pkg = findPackageLocked(name);
-                        if (pkg) ver = pkg->getVersion();
+                        if (pkg) meta.version = pkg->getVersion();
                     }
-                    {
-                        std::string vl = toLowerStr(ver);
-                        if (ver.empty() || vl == "not found" || vl == "n/a" || vl == "unknown")
-                            ver = "1.0.0";
-                    }
+                    meta.version = sanitizeDirectVersion(meta.version);
+                    j["version"] = meta.version;
 
+                    std::string stored = j.dump(4);
                     std::string verDir = configPath + "direct";
                     mkpath(verDir);
                     std::string localVerPath = verDir + "/" + pkgName + ".version";
                     std::string remoteVerPath = verDir + "/" + pkgName + ".remote";
                     std::ofstream ofs(localVerPath, std::ios::binary);
-                    if (ofs) ofs << ver;
+                    if (ofs) ofs << stored;
                     std::ofstream ofs2(remoteVerPath, std::ios::binary);
-                    if (ofs2) ofs2 << ver;
+                    if (ofs2) ofs2 << stored;
 
                     if (onProgress)
                         brls::sync([onProgress]() { onProgress(1.0f, "Done"); });
