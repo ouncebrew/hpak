@@ -1,0 +1,38 @@
+{
+    "name": "Sample Deps Repo",
+    "packages": [
+        {
+            "name": "bar",
+            "title": "Bar (dependency)",
+            "author": "hpak",
+            "version": "1.0.0",
+            "description": "Sample dependency package.",
+            "details": "Installs bar.txt to the SD root. Pulled in automatically when installing foo.",
+            "category": "Tools",
+            "url": "http://192.168.50.240:8000/files/bar",
+            "file": "bar.txt",
+            "direct_url": "http://192.168.50.240:8000/files/bar",
+            "path": "sdmc:/",
+            "license": "MIT",
+            "changelog": "1.0.0: Initial release.",
+            "UpdateDateTime": "23/11/2026 12:00"
+        },
+        {
+            "name": "foo",
+            "title": "Foo (depends on Bar)",
+            "author": "hpak",
+            "version": "1.0.0",
+            "description": "Sample package with a dependency.",
+            "details": "Installs foo.txt to the SD root and pulls in bar automatically.",
+            "category": "Tools",
+            "url": "http://192.168.50.240:8000/files/foo",
+            "file": "foo.txt",
+            "direct_url": "http://192.168.50.240:8000/files/foo",
+            "path": "sdmc:/",
+            "license": "MIT",
+            "changelog": "1.0.0: Initial release.",
+            "UpdateDateTime": "23/11/2026 12:05",
+            "dependencies": { "bar": "1.0.x" }
+        }
+    ]
+}

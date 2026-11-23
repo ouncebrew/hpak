@@ -69,3 +69,45 @@ Then open **Sources → Refresh repositories** in hpak. The package should appea
 - This is a standard libget **get** repo layout (`repo.json` + `zips/<name>.zip`). A direct GitHub release `.nro` URL is not used as the download endpoint by GetRepo; the NRO is packaged into the repo zip instead.
 - `sample-repo/pkgbuild/` contains the downloaded source NRO used to build the zip (kept for convenience/reproducibility). You can regenerate the zip from it if needed.
 - For larger/public repos, consider generating metadata/zips with libget's `repogen.py` workflow and adding accurate `updated` timestamps/checksums.
+
+## Package fields (hpak extensions + dependencies)
+
+Versions are compared numerically with 1–4 segments (`x`, `x.x`, `x.x.x`, `x.x.x.x`);
+a leading `v` and trailing suffixes (e.g. `-ounce`) are ignored, so `1.0` equals
+`1.0.0`. Non-numeric versions (e.g. `bad_apple_ounce`) only match by exact string.
+
+Updates are directional: a remote version only shows as an update when it is
+strictly *newer* than the installed one — an older repo version never offers a
+downgrade, for regular and direct-download packages alike.
+
+Direct-download packages (installed straight from a release, no zip):
+
+```json
+{
+  "name": "my-app",
+  "file": "my-app.nro",
+  "direct_url": "https://github.com/you/my-app/releases/latest/download",
+  "path": "sdmc:/switch/",
+  "UpdateDateTime": "23/11/2026 19:00"
+}
+```
+
+- `file`: release asset name. A `.zip` asset is extracted to `sdmc:/` (replacing files); otherwise the file is placed in `path` (default `sdmc:/switch/`, created if needed).
+- `path`: install directory for single-file downloads.
+- `UpdateDateTime`: `"DD/MM/YYYY HH:MM"` (24hr, UTC) — powers Featured “recently updated” sorting. The repo updater script stamps this automatically on version changes.
+- If `repo.json` already carries `title`, `author`, `version`, `description`, `details`, `license` and `changelog`, no per-release `package.json` fetch is needed; otherwise hpak reads `<direct_url>/package.json` (same fields, multiline `details` supported) and `<direct_url>/icon.png` (`.jpg`/`.jpeg` also tried).
+
+Dependencies (regular and direct packages alike):
+
+```json
+{
+  "name": "my-app",
+  "depends": ["other-lib"],
+  "dependencies": { "other-tool": "1.2.x" }
+}
+```
+
+- `depends`: array of package names (any version satisfies).
+- `dependencies`: object mapping package name → version constraint. Constraints are 1–4 numeric segments with optional `x`/`*` wildcards (`"1.2.x"`, `"2"`); missing segments act as a prefix (`"1.0"` accepts `1.0.x`). `"*"` (or empty) accepts anything.
+- Dependencies install automatically before the package (transitively, with cycle detection); already-installed ones are skipped. Missing or version-mismatched dependencies abort the install with an error naming the package.
+- Dependents are shown in the app details (“Requires: …”).

@@ -277,6 +277,7 @@ PackageSnapshot StoreManager::snapshotFrom(const Package& pkg)
     s.updated      = pkg.getUpdatedAt();
     s.license      = pkg.getLicense();
     s.changelog    = pkg.getChangelog();
+    s.dependencies = pkg.getDependencies();
     if (auto repo = pkg.getRepo()) { s.repo_name = repo->getName(); s.repo_url = repo->getUrl(); }
     s.url          = pkg.url;
     s.file         = pkg.file;
@@ -343,7 +344,9 @@ PackageSnapshot StoreManager::snapshotFrom(const Package& pkg)
         {
             s.status = INSTALLED;
             s.version = localVer;
-            if (remoteVer != localVer)
+            // Only a strictly newer remote version is an update; anything
+            // else means we are up to date (or ahead — no downgrade offered).
+            if (compareVersions(remoteVer, localVer) > 0)
             {
                 s.status = UPDATE;
                 s.version = remoteVer;
@@ -666,6 +669,270 @@ PackageSnapshot StoreManager::getPackage(const std::string& name)
     return snap;
 }
 
+bool StoreManager::installDirectOne(const std::string& name, float p0, float p1, ProgressCallback onProgress, std::string& err)
+{
+    std::string directFile, directBase, pkgName, directPath;
+    {
+        std::lock_guard<std::mutex> lock(mutex);
+        auto pkg = findPackageLocked(name);
+        if (!pkg || pkg->file.empty())
+        {
+            err = "Package not found";
+            brls::Logger::error("hpak/install: package '{}' not found", name);
+            return false;
+        }
+        directFile = pkg->file;
+        directBase = !pkg->directUrl.empty() ? pkg->directUrl : pkg->url;
+        pkgName = pkg->getPackageName();
+        directPath = pkg->path;
+    }
+
+    auto scale = [p0, p1](float p) { return p0 + p * (p1 - p0); };
+    bool ok = false;
+
+    while (!directBase.empty() && directBase.back() == '/') directBase.pop_back();
+    std::string lowerFile = toLowerStr(directFile);
+    bool isZip = lowerFile.size() > 4 && lowerFile.rfind(".zip") == lowerFile.size() - 4;
+    std::string installDir = directPath.empty() ? "sdmc:/switch/" : directPath;
+    while (!installDir.empty() && installDir.back() != '/') installDir.push_back('/');
+
+    std::string fileUrl = directBase + "/" + directFile;
+    std::string tmpDir = configPath + "tmp";
+    mkpath(tmpDir);
+    std::string destPath = isZip ? (tmpDir + "/" + directFile) : (installDir + directFile);
+    if (!isZip) mkpath(installDir);
+
+    struct DirectProgress { std::atomic<float> progress{0.0f}; };
+    auto dstate = std::make_shared<DirectProgress>();
+    networking_callback_data = dstate.get();
+    libget_status_callback = nullptr;
+    networking_callback = [](void* clientp, double p) -> int {
+        auto* st = static_cast<DirectProgress*>(clientp);
+        if (!st) return 0;
+        float mapped = (float)p;
+        float prev = st->progress.load();
+        while (mapped > prev && !st->progress.compare_exchange_weak(prev, mapped)) {}
+        return 0;
+    };
+
+    std::atomic<bool> dlDone{false};
+    std::thread progressThread;
+    if (onProgress)
+    {
+        progressThread = std::thread([dstate, onProgress, scale, &dlDone]() {
+            int lastPct = -1;
+            while (!dlDone.load())
+            {
+                int pct = (int)(dstate->progress.load() * 100);
+                if (pct != lastPct)
+                {
+                    lastPct = pct;
+                    float pval = scale(dstate->progress.load());
+                    brls::sync([onProgress, pval]() { onProgress(pval, "Downloading..."); });
+                }
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            }
+            float pval = scale(1.0f);
+            brls::sync([onProgress, pval]() { onProgress(pval, "Downloading..."); });
+        });
+    }
+
+    ok = downloadFileToDisk(fileUrl, destPath);
+
+    dlDone.store(true);
+    if (progressThread.joinable()) progressThread.join();
+    networking_callback = nullptr;
+    networking_callback_data = nullptr;
+
+    if (ok && isZip)
+    {
+        if (onProgress)
+        {
+            float pval = scale(1.0f);
+            brls::sync([onProgress, pval]() { onProgress(pval, "Extracting..."); });
+        }
+        UnZip zip(destPath);
+        if (zip.IsValid())
+        {
+            auto paths = zip.PathDump();
+            std::string verDir = configPath + "direct";
+            mkpath(verDir);
+            std::ofstream mf(verDir + "/" + pkgName + ".files", std::ios::binary);
+            for (auto& p : paths)
+            {
+                std::string clean = p;
+                while (!clean.empty() && (clean.front() == '/' || clean.front() == '\\')) clean.erase(clean.begin());
+                if (clean.empty()) continue;
+                if (mf) mf << clean << "\n";
+            }
+            zip.ExtractAll("sdmc:/");
+            zip.Close();
+        }
+        else
+        {
+            ok = false;
+            err = "Failed to extract zip";
+        }
+        std::remove(destPath.c_str());
+    }
+
+    if (ok)
+    {
+        nlohmann::json j = nlohmann::json::object();
+        bool hasFullRepoMeta = false;
+        {
+            std::lock_guard<std::mutex> lock(mutex);
+            auto pkg = findPackageLocked(name);
+            if (pkg)
+            {
+                hasFullRepoMeta = !pkg->getTitle().empty() && !pkg->getAuthor().empty() &&
+                                  !pkg->getVersion().empty() && !pkg->getShortDescription().empty() &&
+                                  !pkg->getLongDescription().empty() && !pkg->getLicense().empty() &&
+                                  !pkg->getChangelog().empty();
+                if (hasFullRepoMeta)
+                {
+                    j["title"] = pkg->getTitle();
+                    j["author"] = pkg->getAuthor();
+                    j["version"] = pkg->getVersion();
+                    j["description"] = pkg->getShortDescription();
+                    j["details"] = pkg->getLongDescription();
+                    j["license"] = pkg->getLicense();
+                    j["changelog"] = pkg->getChangelog();
+                }
+            }
+        }
+
+        if (!hasFullRepoMeta)
+        {
+            std::string pkgContent;
+            std::string pkgUrl = directBase + "/package.json";
+            downloadFileToMemory(pkgUrl, &pkgContent);
+            auto parsed = nlohmann::json::parse(pkgContent, nullptr, false);
+            if (parsed.is_object())
+                j = parsed;
+        }
+
+        auto meta = parseDirectPackageJson(j.dump());
+        if (meta.version.empty())
+        {
+            std::lock_guard<std::mutex> lock(mutex);
+            auto pkg = findPackageLocked(name);
+            if (pkg) meta.version = pkg->getVersion();
+        }
+        meta.version = sanitizeDirectVersion(meta.version);
+        j["version"] = meta.version;
+
+        std::string stored = j.dump(4);
+        std::string verDir = configPath + "direct";
+        mkpath(verDir);
+        std::string localVerPath = verDir + "/" + pkgName + ".version";
+        std::string remoteVerPath = verDir + "/" + pkgName + ".remote";
+        std::ofstream ofs(localVerPath, std::ios::binary);
+        if (ofs) ofs << stored;
+        std::ofstream ofs2(remoteVerPath, std::ios::binary);
+        if (ofs2) ofs2 << stored;
+    }
+    else
+    {
+        if (err.empty()) err = "Download failed";
+    }
+    return ok;
+}
+
+bool StoreManager::installRegularOne(const std::string& name, float p0, float p1, ProgressCallback onProgress, std::string& err)
+{
+    std::shared_ptr<Package> pkg;
+    {
+        std::lock_guard<std::mutex> lock(mutex);
+        pkg = findPackageLocked(name);
+        if (!pkg)
+        {
+            err = "Package not found";
+            brls::Logger::error("hpak/install: package '{}' not found", name);
+            return false;
+        }
+    }
+
+    brls::Logger::info("hpak/install: found '{}' status={} version='{}' url='{}'",
+        pkg->getPackageName(), pkg->getStatus(), pkg->getVersion(), pkg->url);
+
+    auto scale = [p0, p1](float p) { return p0 + p * (p1 - p0); };
+    bool ok = false;
+
+    // Wire libget global progress callbacks for this install
+    struct ProgressState { std::atomic<float> progress{0.0f}; std::atomic<int> phase{0}; };
+    auto state = std::make_shared<ProgressState>();
+
+    networking_callback_data = state.get();
+    libget_status_callback = [](int status, int, int) -> int {
+        auto* st = static_cast<ProgressState*>(networking_callback_data);
+        if (!st) return 0;
+        st->phase.store(status);
+        if (status == STATUS_DOWNLOADING) st->progress.store(std::max(st->progress.load(), 0.0f));
+        else if (status == STATUS_ANALYZING) st->progress.store(std::max(st->progress.load(), 0.70f));
+        else if (status == STATUS_INSTALLING) st->progress.store(std::max(st->progress.load(), 0.70f));
+        return 0;
+    };
+    networking_callback = [](void* clientp, double p) -> int {
+        auto* st = static_cast<ProgressState*>(clientp);
+        if (!st) return 0;
+        int phase = st->phase.load();
+        float mapped = (float)p;
+        if (phase == STATUS_DOWNLOADING) mapped = (float)(p * 0.70);
+        else if (phase == STATUS_INSTALLING || phase == STATUS_ANALYZING) mapped = 0.70f + (float)(p * 0.30f);
+        else mapped = (float)(p * 0.70);
+        float prev = st->progress.load();
+        while (mapped > prev && !st->progress.compare_exchange_weak(prev, mapped)) {}
+        return 0;
+    };
+
+    // Periodic UI progress updates while install runs
+    std::atomic<bool> installDone{false};
+    std::thread progressThread;
+    if (onProgress)
+    {
+        progressThread = std::thread([state, onProgress, scale, &installDone]() {
+            int lastPct = -1;
+            int lastPhase = -1;
+            while (!installDone.load())
+            {
+                float prog = state->progress.load();
+                int phase = state->phase.load();
+                int pct = (int)(prog * 100);
+                if (pct != lastPct || phase != lastPhase)
+                {
+                    lastPct = pct; lastPhase = phase;
+                    std::string phaseStr = "Working...";
+                    if (phase == STATUS_DOWNLOADING) phaseStr = "Downloading...";
+                    else if (phase == STATUS_ANALYZING) phaseStr = "Analyzing...";
+                    else if (phase == STATUS_INSTALLING) phaseStr = "Extracting...";
+                    float pval = scale(prog);
+                    brls::sync([onProgress, pval, phaseStr]() { onProgress(pval, phaseStr); });
+                }
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            }
+            float prog = scale(state->progress.load());
+            int phase = state->phase.load();
+            std::string phaseStr = (phase == STATUS_INSTALLING) ? "Extracting..." : "Finishing...";
+            brls::sync([onProgress, prog, phaseStr]() { onProgress(prog, phaseStr); });
+        });
+    }
+
+    int ret = get->installSingle(*pkg);
+    installDone.store(true);
+    if (progressThread.joinable()) progressThread.join();
+
+    networking_callback = nullptr;
+    libget_status_callback = nullptr;
+    networking_callback_data = nullptr;
+
+    ok = (ret == 1);
+    brls::Logger::info("hpak/install: installSingle('{}') returned {} (ok={})", name, ret, ok);
+    if (!ok)
+        err = "Install failed";
+    return ok;
+}
+
 void StoreManager::installPackage(const std::string& name, std::function<void(bool success, const std::string& error)> onDone, ProgressCallback onProgress)
 {
     brls::async([this, name, onDone, onProgress]() {
@@ -676,259 +943,91 @@ void StoreManager::installPackage(const std::string& name, std::function<void(bo
             brls::Logger::info("hpak/install: requested '{}'", name);
             init();
 
-            // Check if this is a direct-download package
-            std::string directFile, directBase, pkgName, directPath;
-            bool isDirect = false;
+            // Resolve the full dependency closure (dependencies first, root last).
+            // Version constraints and cycles are validated here; errors abort.
+            std::vector<std::string> order;
             {
                 std::lock_guard<std::mutex> lock(mutex);
-                auto pkg = findPackageLocked(name);
-                if (pkg && !pkg->file.empty())
-                {
-                    isDirect = true;
-                    directFile = pkg->file;
-                    directBase = !pkg->directUrl.empty() ? pkg->directUrl : pkg->url;
-                    pkgName = pkg->getPackageName();
-                    directPath = pkg->path;
-                }
-            }
-
-            if (isDirect)
-            {
-                while (!directBase.empty() && directBase.back() == '/') directBase.pop_back();
-                std::string lowerFile = toLowerStr(directFile);
-                bool isZip = lowerFile.size() > 4 && lowerFile.rfind(".zip") == lowerFile.size() - 4;
-                std::string installDir = directPath.empty() ? "sdmc:/switch/" : directPath;
-                while (!installDir.empty() && installDir.back() != '/') installDir.push_back('/');
-
-                std::string fileUrl = directBase + "/" + directFile;
-                std::string tmpDir = configPath + "tmp";
-                mkpath(tmpDir);
-                std::string destPath = isZip ? (tmpDir + "/" + directFile) : (installDir + directFile);
-                if (!isZip) mkpath(installDir);
-
-                struct DirectProgress { std::atomic<float> progress{0.0f}; };
-                auto dstate = std::make_shared<DirectProgress>();
-                networking_callback_data = dstate.get();
-                libget_status_callback = nullptr;
-                networking_callback = [](void* clientp, double p) -> int {
-                    auto* st = static_cast<DirectProgress*>(clientp);
-                    if (!st) return 0;
-                    float mapped = (float)p;
-                    float prev = st->progress.load();
-                    while (mapped > prev && !st->progress.compare_exchange_weak(prev, mapped)) {}
-                    return 0;
-                };
-
-                std::atomic<bool> dlDone{false};
-                std::thread progressThread;
-                if (onProgress)
-                {
-                    auto progressCb = onProgress;
-                    progressThread = std::thread([dstate, progressCb, &dlDone]() {
-                        int lastPct = -1;
-                        while (!dlDone.load())
-                        {
-                            int pct = (int)(dstate->progress.load() * 100);
-                            if (pct != lastPct)
-                            {
-                                lastPct = pct;
-                                float pval = dstate->progress.load();
-                                brls::sync([progressCb, pval]() { progressCb(pval, "Downloading..."); });
-                            }
-                            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                        }
-                        brls::sync([progressCb]() { progressCb(1.0f, "Downloading..."); });
-                    });
-                }
-
-                ok = downloadFileToDisk(fileUrl, destPath);
-
-                dlDone.store(true);
-                if (progressThread.joinable()) progressThread.join();
-                networking_callback = nullptr;
-                networking_callback_data = nullptr;
-
-                if (ok && isZip)
-                {
-                    if (onProgress)
-                        brls::sync([onProgress]() { onProgress(1.0f, "Extracting..."); });
-                    UnZip zip(destPath);
-                    if (zip.IsValid())
-                    {
-                        auto paths = zip.PathDump();
-                        std::string verDir = configPath + "direct";
-                        mkpath(verDir);
-                        std::ofstream mf(verDir + "/" + pkgName + ".files", std::ios::binary);
-                        for (auto& p : paths)
-                        {
-                            std::string clean = p;
-                            while (!clean.empty() && (clean.front() == '/' || clean.front() == '\\')) clean.erase(clean.begin());
-                            if (clean.empty()) continue;
-                            if (mf) mf << clean << "\n";
-                        }
-                        zip.ExtractAll("sdmc:/");
-                        zip.Close();
-                    }
-                    else
-                    {
-                        ok = false;
-                        err = "Failed to extract zip";
-                    }
-                    std::remove(destPath.c_str());
-                }
-
-                if (ok)
-                {
-                    nlohmann::json j = nlohmann::json::object();
-                    bool hasFullRepoMeta = false;
-                    {
-                        std::lock_guard<std::mutex> lock(mutex);
-                        auto pkg = findPackageLocked(name);
-                        if (pkg)
-                        {
-                            hasFullRepoMeta = !pkg->getTitle().empty() && !pkg->getAuthor().empty() &&
-                                              !pkg->getVersion().empty() && !pkg->getShortDescription().empty() &&
-                                              !pkg->getLongDescription().empty() && !pkg->getLicense().empty() &&
-                                              !pkg->getChangelog().empty();
-                            if (hasFullRepoMeta)
-                            {
-                                j["title"] = pkg->getTitle();
-                                j["author"] = pkg->getAuthor();
-                                j["version"] = pkg->getVersion();
-                                j["description"] = pkg->getShortDescription();
-                                j["details"] = pkg->getLongDescription();
-                                j["license"] = pkg->getLicense();
-                                j["changelog"] = pkg->getChangelog();
-                            }
-                        }
-                    }
-
-                    if (!hasFullRepoMeta)
-                    {
-                        std::string pkgContent;
-                        std::string pkgUrl = directBase + "/package.json";
-                        downloadFileToMemory(pkgUrl, &pkgContent);
-                        auto parsed = nlohmann::json::parse(pkgContent, nullptr, false);
-                        if (parsed.is_object())
-                            j = parsed;
-                    }
-
-                    auto meta = parseDirectPackageJson(j.dump());
-                    if (meta.version.empty())
-                    {
-                        std::lock_guard<std::mutex> lock(mutex);
-                        auto pkg = findPackageLocked(name);
-                        if (pkg) meta.version = pkg->getVersion();
-                    }
-                    meta.version = sanitizeDirectVersion(meta.version);
-                    j["version"] = meta.version;
-
-                    std::string stored = j.dump(4);
-                    std::string verDir = configPath + "direct";
-                    mkpath(verDir);
-                    std::string localVerPath = verDir + "/" + pkgName + ".version";
-                    std::string remoteVerPath = verDir + "/" + pkgName + ".remote";
-                    std::ofstream ofs(localVerPath, std::ios::binary);
-                    if (ofs) ofs << stored;
-                    std::ofstream ofs2(remoteVerPath, std::ios::binary);
-                    if (ofs2) ofs2 << stored;
-
-                    if (onProgress)
-                        brls::sync([onProgress]() { onProgress(1.0f, "Done"); });
-                }
-                else
-                {
-                    if (err.empty()) err = "Download failed";
-                }
-            }
-            else
-            {
-                std::lock_guard<std::mutex> lock(mutex);
-                auto pkg = findPackageLocked(name);
-                if (!pkg)
+                if (!findPackageLocked(name))
                 {
                     err = "Package not found";
                     brls::Logger::error("hpak/install: package '{}' not found", name);
                 }
                 else
                 {
-                    brls::Logger::info("hpak/install: found '{}' status={} version='{}' url='{}'",
-                        pkg->getPackageName(), pkg->getStatus(), pkg->getVersion(), pkg->url);
-
-                    // Wire libget global progress callbacks for this install
-                    struct ProgressState { std::atomic<float> progress{0.0f}; std::atomic<int> phase{0}; };
-                    auto state = std::make_shared<ProgressState>();
-                    auto progressCb = onProgress;
-
-                    networking_callback_data = state.get();
-                    libget_status_callback = [](int status, int, int) -> int {
-                        auto* st = static_cast<ProgressState*>(networking_callback_data);
-                        if (!st) return 0;
-                        st->phase.store(status);
-                        if (status == STATUS_DOWNLOADING) st->progress.store(std::max(st->progress.load(), 0.0f));
-                        else if (status == STATUS_ANALYZING) st->progress.store(std::max(st->progress.load(), 0.70f));
-                        else if (status == STATUS_INSTALLING) st->progress.store(std::max(st->progress.load(), 0.70f));
-                        return 0;
-                    };
-                    networking_callback = [](void* clientp, double p) -> int {
-                        auto* st = static_cast<ProgressState*>(clientp);
-                        if (!st) return 0;
-                        int phase = st->phase.load();
-                        float mapped = (float)p;
-                        if (phase == STATUS_DOWNLOADING) mapped = (float)(p * 0.70);
-                        else if (phase == STATUS_INSTALLING || phase == STATUS_ANALYZING) mapped = 0.70f + (float)(p * 0.30f);
-                        else mapped = (float)(p * 0.70);
-                        float prev = st->progress.load();
-                        while (mapped > prev && !st->progress.compare_exchange_weak(prev, mapped)) {}
-                        return 0;
-                    };
-
-                    // Periodic UI progress updates while install runs
-                    std::atomic<bool> installDone{false};
-                    std::thread progressThread;
-                    if (progressCb)
-                    {
-                        progressThread = std::thread([state, progressCb, &installDone]() {
-                            int lastPct = -1;
-                            int lastPhase = -1;
-                            while (!installDone.load())
-                            {
-                                float prog = state->progress.load();
-                                int phase = state->phase.load();
-                                int pct = (int)(prog * 100);
-                                if (pct != lastPct || phase != lastPhase)
-                                {
-                                    lastPct = pct; lastPhase = phase;
-                                    std::string phaseStr = "Working...";
-                                    if (phase == STATUS_DOWNLOADING) phaseStr = "Downloading...";
-                                    else if (phase == STATUS_ANALYZING) phaseStr = "Analyzing...";
-                                    else if (phase == STATUS_INSTALLING) phaseStr = "Extracting...";
-                                    float pval = prog;
-                                    brls::sync([progressCb, pval, phaseStr]() { progressCb(pval, phaseStr); });
-                                }
-                                std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                            }
-                            float prog = state->progress.load();
-                            int phase = state->phase.load();
-                            std::string phaseStr = (phase == STATUS_INSTALLING) ? "Extracting..." : "Finishing...";
-                            brls::sync([progressCb, prog, phaseStr]() { progressCb(prog, phaseStr); });
-                        });
-                    }
-
-                    int ret = get->install(*pkg);
-                    installDone.store(true);
-                    if (progressThread.joinable()) progressThread.join();
-
-                    networking_callback = nullptr;
-                    libget_status_callback = nullptr;
-                    networking_callback_data = nullptr;
-
-                    ok = (ret == 1);
-                    brls::Logger::info("hpak/install: get->install('{}') returned {} (ok={})", name, ret, ok);
-                    if (!ok)
-                        err = "Install failed";
+                    std::vector<std::string> o;
+                    std::unordered_set<std::string> visiting, visited;
+                    std::string derr;
+                    if (!get->resolveDependencies(name, o, visiting, visited, derr))
+                        err = derr;
+                    else
+                        order = std::move(o);
                 }
             }
+            if (err.empty() && order.empty())
+                err = "Package not found";
+
+            if (err.empty())
+            {
+                int total = (int)order.size();
+                for (int i = 0; i < total; i++)
+                {
+                    const std::string& item = order[i];
+                    bool isRoot = (item == name);
+                    float p0 = (float)i / total, p1 = (float)(i + 1) / total;
+
+                    bool isDirect = false;
+                    int status = 0;
+                    {
+                        std::lock_guard<std::mutex> lock(mutex);
+                        auto pkg = findPackageLocked(item);
+                        if (!pkg)
+                        {
+                            err = "Package '" + item + "' not found";
+                            break;
+                        }
+                        isDirect = !pkg->file.empty();
+                        status = pkg->getStatus();
+                    }
+
+                    if (isDirect)
+                    {
+                        if (!isRoot)
+                        {
+                            auto snap = getPackage(item);
+                            if (snap.name.empty())
+                            {
+                                err = "Package '" + item + "' not found";
+                                break;
+                            }
+                            if (snap.installed() && !snap.hasUpdate())
+                            {
+                                brls::Logger::info("hpak/install: dependency '{}' already satisfied", item);
+                                continue;
+                            }
+                            brls::Logger::info("hpak/install: installing dependency '{}'", item);
+                        }
+                        if (!installDirectOne(item, p0, p1, onProgress, err))
+                            break;
+                    }
+                    else
+                    {
+                        if (!isRoot && (status == INSTALLED || status == LOCAL))
+                        {
+                            brls::Logger::info("hpak/install: dependency '{}' already satisfied", item);
+                            continue;
+                        }
+                        if (!isRoot)
+                            brls::Logger::info("hpak/install: installing dependency '{}'", item);
+                        if (!installRegularOne(item, p0, p1, onProgress, err))
+                            break;
+                    }
+                }
+                ok = err.empty();
+            }
+
+            if (ok && onProgress)
+                brls::sync([onProgress]() { onProgress(1.0f, "Done"); });
         }
         catch (const std::exception& e)
         {
@@ -1064,6 +1163,61 @@ void StoreManager::removePackage(const std::string& name, std::function<void(boo
         {
             init();
 
+            // Block removal when an installed package depends on this one.
+            // Flat scan (no recursion), so circular dependencies can't loop here;
+            // install-time cycles are already rejected by resolveDependencies.
+            {
+                std::lock_guard<std::mutex> lock(mutex);
+                if (!findPackageLocked(name))
+                {
+                    err = "Package not found";
+                }
+                else
+                {
+                    std::vector<std::string> blockers;
+                    for (auto& p : get->getPackages())
+                    {
+                        if (!p || p->getPackageName() == name)
+                            continue;
+                        bool needsIt = false;
+                        for (auto& dep : p->getDependencies())
+                        {
+                            if (dep.name == name)
+                            {
+                                needsIt = true;
+                                break;
+                            }
+                        }
+                        if (!needsIt)
+                            continue;
+                        bool installed = false;
+                        if (!p->file.empty())
+                            installed = snapshotFrom(*p).installed();
+                        else
+                        {
+                            int st = p->getStatus();
+                            installed = (st == INSTALLED || st == LOCAL || st == UPDATE);
+                        }
+                        if (installed)
+                            blockers.push_back(p->getPackageName());
+                    }
+                    if (!blockers.empty())
+                    {
+                        err = "Cannot remove '" + name + "': required by ";
+                        for (size_t i = 0; i < blockers.size(); i++)
+                        {
+                            if (i > 0) err += ", ";
+                            err += "'" + blockers[i] + "'";
+                        }
+                    }
+                }
+            }
+            if (!err.empty())
+            {
+                ok = false;
+            }
+            else
+            {
             std::string directFile, pkgName, directPath;
             bool isDirect = false;
             {
@@ -1122,6 +1276,7 @@ void StoreManager::removePackage(const std::string& name, std::function<void(boo
                         err = "Remove failed";
                 }
             }
+            } // end else: no installed dependents blocking removal
         }
         catch (const std::exception& e)
         {

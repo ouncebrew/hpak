@@ -1,0 +1,2 @@
+bar 1.0.0
+Installed as a dependency of foo.

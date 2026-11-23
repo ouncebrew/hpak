@@ -1,0 +1,2 @@
+foo 1.0.0
+Depends on bar (constraint 1.0.x).

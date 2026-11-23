@@ -25,6 +25,7 @@ struct PackageSnapshot
     int updated_timestamp = 0;
     std::string license;
     std::string changelog;
+    std::vector<PackageDependency> dependencies;
     std::string repo_name;
     std::string repo_url;
     std::string icon_url;
@@ -103,6 +104,12 @@ class StoreManager
 
     PackageSnapshot snapshotFrom(const Package& pkg);
     std::shared_ptr<Package> findPackageLocked(const std::string& name);
+
+    // Install a single direct-download package; progress is reported scaled
+    // into [p0, p1]. Returns true on success (err set otherwise).
+    bool installDirectOne(const std::string& name, float p0, float p1, ProgressCallback onProgress, std::string& err);
+    // Install a single regular (zip) package via libget; progress scaled into [p0, p1].
+    bool installRegularOne(const std::string& name, float p0, float p1, ProgressCallback onProgress, std::string& err);
 
     std::unique_ptr<Get> get;
     std::mutex mutex;

@@ -41,6 +41,19 @@ AppDetailView::AppDetailView(const PackageSnapshot& pkg) : package(pkg)
         meta += "Download size: " + std::to_string(package.download_size / 1024) + " KB\n";
     if (package.extracted_size > 0)
         meta += "Installed size: " + std::to_string(package.extracted_size / 1024) + " KB\n";
+    if (!package.dependencies.empty())
+    {
+        meta += "Requires: ";
+        for (size_t i = 0; i < package.dependencies.size(); i++)
+        {
+            const auto& d = package.dependencies[i];
+            if (i > 0) meta += ", ";
+            meta += d.name;
+            if (!d.version.empty() && d.version != "*")
+                meta += " (" + d.version + ")";
+        }
+        meta += "\n";
+    }
     meta += "Package: " + package.name;
     this->metaLabel->setText(meta);
 
