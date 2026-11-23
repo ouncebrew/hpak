@@ -15,6 +15,7 @@
 #include "Utils.hpp"
 #include "ZipUtil.hpp"
 #include "rapidjson/document.h"
+#include "util/settings.hpp"
 #include <borealis/extern/nlohmann/json.hpp>
 
 static std::string toLowerStr(const std::string& in)
@@ -147,32 +148,50 @@ void StoreManager::init()
     // Ouncebrew repo: if it's not in the repo list, add it.
     if (get)
     {
+        static const char* kMainUrl = "https://ouncebrew.github.io";
         static const char* kCommunityUrl = "https://ouncebrew.github.io/community";
         static const char* kCommunityName = "Ouncebrew Community";
-        bool hasCommunity = false;
-        for (auto& r : get->getRepos())
+        bool wantDefaults = HpSettings::instance().addDefaultRepos;
+
+        auto hasRepo = [&](const char* url) {
+            for (auto& r : get->getRepos())
+                if (r && r->getUrl() == url)
+                    return true;
+            return false;
+        };
+
+        if (wantDefaults)
         {
-            if (r && r->getUrl() == kCommunityUrl)
+            if (!hasRepo(kCommunityUrl))
             {
-                hasCommunity = true;
-                break;
+                std::unordered_map<std::string, std::string> toAdd;
+                toAdd[kCommunityUrl] = "get";
+                std::unordered_set<std::string> toRemove;
+                get->addAndRemoveReposByURL(toAdd, toRemove);
+                for (auto& r : get->getRepos())
+                {
+                    if (r && r->getUrl() == kCommunityUrl)
+                    {
+                        r->setName(kCommunityName);
+                        break;
+                    }
+                }
+                get->saveRepos();
             }
         }
-        if (!hasCommunity)
+        else
         {
-            std::unordered_map<std::string, std::string> toAdd;
-            toAdd[kCommunityUrl] = "get";
-            std::unordered_set<std::string> toRemove;
-            get->addAndRemoveReposByURL(toAdd, toRemove);
-            for (auto& r : get->getRepos())
+            // Defaults disabled: drop bundled sources if present (manual adds stay).
+            bool hadMain = hasRepo(kMainUrl);
+            bool hadCommunity = hasRepo(kCommunityUrl);
+            if (hadMain || hadCommunity)
             {
-                if (r && r->getUrl() == kCommunityUrl)
-                {
-                    r->setName(kCommunityName);
-                    break;
-                }
+                std::unordered_map<std::string, std::string> toAdd;
+                std::unordered_set<std::string> toRemove;
+                if (hadMain) toRemove.insert(kMainUrl);
+                if (hadCommunity) toRemove.insert(kCommunityUrl);
+                get->addAndRemoveReposByURL(toAdd, toRemove);
             }
-            get->saveRepos();
         }
     }
 

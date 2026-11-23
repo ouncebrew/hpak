@@ -28,5 +28,11 @@
             <SourcesTab />
         </brls:Tab>
 
+        <brls:Separator />
+
+        <brls:Tab label="Options">
+            <OptionsTab />
+        </brls:Tab>
+
     </brls:TabFrame>
 </brls:AppletFrame>

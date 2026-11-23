@@ -1,0 +1,38 @@
+<brls:Box
+    width="auto"
+    height="auto"
+    axis="column"
+    grow="1.0">
+
+    <brls:Header
+        id="header"
+        title="Options"
+        subtitle="App settings"
+        marginLeft="24"
+        marginRight="24" />
+
+    <brls:ScrollingFrame
+        grow="1.0">
+
+        <brls:Box
+            width="auto"
+            height="auto"
+            axis="column"
+            grow="1.0"
+            paddingLeft="24"
+            paddingRight="24">
+
+            <brls:BooleanCell
+                id="opt_repos" />
+
+            <brls:BooleanCell
+                id="opt_mouse" />
+
+            <brls:BooleanCell
+                id="opt_logging" />
+
+        </brls:Box>
+
+    </brls:ScrollingFrame>
+
+</brls:Box>

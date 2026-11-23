@@ -9,9 +9,11 @@
 #include "tab/apps_tab.hpp"
 #include "tab/home_tab.hpp"
 #include "tab/installed_tab.hpp"
+#include "tab/options_tab.hpp"
 #include "tab/sources_tab.hpp"
 #include "tab/updates_tab.hpp"
 #include "util/icon_loader.hpp"
+#include "util/settings.hpp"
 
 #if defined(__PSV__) && defined(BOREALIS_USE_OPENGL)
 extern "C" unsigned int sceLibcHeapSize = 2 * 1024 * 1024;
@@ -19,8 +21,10 @@ extern "C" unsigned int sceLibcHeapSize = 2 * 1024 * 1024;
 
 int main(int argc, char* argv[])
 {
+    HpSettings::instance().load();
+
     // Log to SD card for debugging (nxlink may be unavailable)
-    if (std::freopen("sdmc:/hpak.txt", "w", stdout))
+    if (HpSettings::instance().fileLogging && std::freopen("sdmc:/hpak.txt", "w", stdout))
     {
         setvbuf(stdout, NULL, _IONBF, 0);
         dup2(fileno(stdout), fileno(stderr));
@@ -46,7 +50,8 @@ int main(int argc, char* argv[])
 
     brls::Application::createWindow("hpak");
     brls::Application::getPlatform()->setThemeVariant(brls::ThemeVariant::DARK);
-    brls::Application::getPlatform()->getInputManager()->setPadMouseEnabled(true);
+    if (HpSettings::instance().mouseMode)
+        brls::Application::getPlatform()->getInputManager()->setPadMouseEnabled(true);
     brls::Application::setGlobalQuit(false);
 
     brls::Application::getExitEvent()->subscribe([]() {
@@ -59,6 +64,7 @@ int main(int argc, char* argv[])
     brls::Application::registerXMLView("HomeTab", HomeTab::create);
     brls::Application::registerXMLView("AppsTab", AppsTab::create);
     brls::Application::registerXMLView("InstalledTab", InstalledTab::create);
+    brls::Application::registerXMLView("OptionsTab", OptionsTab::create);
     brls::Application::registerXMLView("SourcesTab", SourcesTab::create);
     brls::Application::registerXMLView("UpdatesTab", UpdatesTab::create);
 
