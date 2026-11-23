@@ -22,6 +22,7 @@ struct PackageSnapshot
     std::string long_desc;
     std::string category;
     std::string updated;
+    int updated_timestamp = 0;
     std::string license;
     std::string changelog;
     std::string repo_name;

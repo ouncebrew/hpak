@@ -33,12 +33,12 @@ void HomeTab::willAppear(bool resetState)
         return;
     auto items = StoreManager::instance().getAllPackages();
     std::sort(items.begin(), items.end(), [](const PackageSnapshot& a, const PackageSnapshot& b) {
-        if (a.updated != b.updated)
-            return a.updated > b.updated;
+        if (a.updated_timestamp != b.updated_timestamp)
+            return a.updated_timestamp > b.updated_timestamp;
         return a.downloads > b.downloads;
     });
-    if (items.size() > 30)
-        items.resize(30);
+    if (items.size() > 5)
+        items.resize(5);
 
     if (!dataSource->sameItems(items))
     {
@@ -63,12 +63,12 @@ void HomeTab::loadData()
         auto items = StoreManager::instance().getAllPackages();
         // "Featured": prefer recently updated, then popular downloads
         std::sort(items.begin(), items.end(), [](const PackageSnapshot& a, const PackageSnapshot& b) {
-            if (a.updated != b.updated)
-                return a.updated > b.updated;
+            if (a.updated_timestamp != b.updated_timestamp)
+                return a.updated_timestamp > b.updated_timestamp;
             return a.downloads > b.downloads;
         });
-        if (items.size() > 30)
-            items.resize(30);
+        if (items.size() > 5)
+            items.resize(5);
 
         if (!dataSource->sameItems(items))
         {

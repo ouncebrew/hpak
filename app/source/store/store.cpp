@@ -180,6 +180,7 @@ PackageSnapshot StoreManager::snapshotFrom(const Package& pkg)
     s.long_desc    = pkg.getLongDescription();
     s.category     = pkg.getCategory();
     s.updated      = pkg.getUpdatedAt();
+    s.updated_timestamp = pkg.getUpdatedAtTimestamp();
     s.license      = pkg.getLicense();
     s.changelog    = pkg.getChangelog();
     if (auto repo = pkg.getRepo()) { s.repo_name = repo->getName(); s.repo_url = repo->getUrl(); }
