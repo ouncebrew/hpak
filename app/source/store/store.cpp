@@ -40,14 +40,6 @@ static std::string readFileToString(const std::string& path)
     return ss.str();
 }
 
-static std::string trimWhitespace(std::string s)
-{
-    size_t start = s.find_first_not_of(" \t\r\n");
-    if (start == std::string::npos) return "";
-    size_t end = s.find_last_not_of(" \t\r\n");
-    return s.substr(start, end - start + 1);
-}
-
 struct DirectPackageMeta
 {
     std::string title;
@@ -190,6 +182,7 @@ PackageSnapshot StoreManager::snapshotFrom(const Package& pkg)
     s.updated      = pkg.getUpdatedAt();
     s.license      = pkg.getLicense();
     s.changelog    = pkg.getChangelog();
+    if (auto repo = pkg.getRepo()) { s.repo_name = repo->getName(); s.repo_url = repo->getUrl(); }
     s.url          = pkg.url;
     s.file         = pkg.file;
     s.directUrl    = pkg.directUrl;
@@ -464,6 +457,12 @@ void StoreManager::refresh(std::function<void(bool success, const std::string& e
 
                 std::string outDir = configPath + "packages/" + rz.first + "/" + pkgName;
                 mkpath(outDir);
+                for (const char* oldExt : {".png", ".jpg", ".jpeg"})
+                {
+                    std::string oldPath = outDir + "/icon" + oldExt;
+                    if (oldPath != outDir + "/icon" + ext)
+                        std::remove(oldPath.c_str());
+                }
                 std::string outPath = outDir + "/icon" + ext;
                 zip.Extract(outPath, entry.second);
             }
