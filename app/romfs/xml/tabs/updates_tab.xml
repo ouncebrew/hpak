@@ -1,0 +1,20 @@
+<brls:Box
+    width="auto"
+    height="auto"
+    axis="column"
+    grow="1.0">
+
+    <brls:Header
+        id="header"
+        title="Updates"
+        subtitle="Packages with updates available"
+        marginLeft="24"
+        marginRight="24" />
+
+    <brls:RecyclerFrame
+        id="recycler"
+        grow="1.0"
+        paddingLeft="24"
+        paddingRight="24" />
+
+</brls:Box>

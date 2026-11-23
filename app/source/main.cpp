@@ -10,6 +10,7 @@
 #include "tab/home_tab.hpp"
 #include "tab/installed_tab.hpp"
 #include "tab/sources_tab.hpp"
+#include "tab/updates_tab.hpp"
 #include "util/icon_loader.hpp"
 
 #if defined(__PSV__) && defined(BOREALIS_USE_OPENGL)
@@ -59,6 +60,7 @@ int main(int argc, char* argv[])
     brls::Application::registerXMLView("AppsTab", AppsTab::create);
     brls::Application::registerXMLView("InstalledTab", InstalledTab::create);
     brls::Application::registerXMLView("SourcesTab", SourcesTab::create);
+    brls::Application::registerXMLView("UpdatesTab", UpdatesTab::create);
 
     brls::Application::pushActivity(new MainActivity());
 

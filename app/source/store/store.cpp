@@ -143,6 +143,39 @@ void StoreManager::init()
     // performInitialLoad=false so we can control loading and surface errors.
     get = std::make_unique<Get>(configPath, "https://ouncebrew.github.io", false, "get");
 
+    // Always ensure the bundled Community source exists, same as the default
+    // Ouncebrew repo: if it's not in the repo list, add it.
+    if (get)
+    {
+        static const char* kCommunityUrl = "https://ouncebrew.github.io/community";
+        static const char* kCommunityName = "Ouncebrew Community";
+        bool hasCommunity = false;
+        for (auto& r : get->getRepos())
+        {
+            if (r && r->getUrl() == kCommunityUrl)
+            {
+                hasCommunity = true;
+                break;
+            }
+        }
+        if (!hasCommunity)
+        {
+            std::unordered_map<std::string, std::string> toAdd;
+            toAdd[kCommunityUrl] = "get";
+            std::unordered_set<std::string> toRemove;
+            get->addAndRemoveReposByURL(toAdd, toRemove);
+            for (auto& r : get->getRepos())
+            {
+                if (r && r->getUrl() == kCommunityUrl)
+                {
+                    r->setName(kCommunityName);
+                    break;
+                }
+            }
+            get->saveRepos();
+        }
+    }
+
     initialized = true;
 }
 
@@ -180,7 +213,6 @@ PackageSnapshot StoreManager::snapshotFrom(const Package& pkg)
     s.long_desc    = pkg.getLongDescription();
     s.category     = pkg.getCategory();
     s.updated      = pkg.getUpdatedAt();
-    s.updated_timestamp = pkg.getUpdatedAtTimestamp();
     s.license      = pkg.getLicense();
     s.changelog    = pkg.getChangelog();
     if (auto repo = pkg.getRepo()) { s.repo_name = repo->getName(); s.repo_url = repo->getUrl(); }

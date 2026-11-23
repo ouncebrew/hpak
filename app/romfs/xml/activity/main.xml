@@ -18,6 +18,10 @@
             <InstalledTab />
         </brls:Tab>
 
+        <brls:Tab label="Updates">
+            <UpdatesTab />
+        </brls:Tab>
+
         <brls:Separator />
 
         <brls:Tab label="Sources">
