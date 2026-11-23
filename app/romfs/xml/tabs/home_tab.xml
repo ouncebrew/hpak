@@ -4,6 +4,47 @@
     axis="column"
     grow="1.0">
 
+    <brls:Box
+        width="auto"
+        height="auto"
+        axis="row"
+        alignItems="center"
+        justifyContent="center"
+        marginTop="16"
+        marginBottom="10"
+        marginLeft="24"
+        marginRight="24">
+
+        <brls:Image
+            image="@res/icon/icon.png"
+            width="64"
+            height="64"
+            scalingType="fit"
+            cornerRadius="12"
+            marginRight="16" />
+
+        <brls:Box
+            width="auto"
+            height="auto"
+            axis="column"
+            justifyContent="center">
+
+            <brls:Label
+                text="Welcome to hpak"
+                fontSize="24"
+                singleLine="true" />
+
+            <brls:Label
+                text="By ouncebrew"
+                fontSize="18"
+                textColor="@theme/brls/accent"
+                marginTop="2"
+                singleLine="true" />
+
+        </brls:Box>
+
+    </brls:Box>
+
     <brls:Header
         id="header"
         title="Featured"

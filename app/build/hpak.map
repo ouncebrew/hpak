@@ -86826,7 +86826,7 @@ Linker script and memory map
 .debug_pubnames
  *(.debug_pubnames)
 
-.debug_info     0x0000000000000000  0x29a84d0
+.debug_info     0x0000000000000000  0x29a8515
  *(.debug_info)
  .debug_info    0x0000000000000000    0x9492b main.o
  .debug_info    0x000000000009492b    0x4bda3 main_activity.o
@@ -86880,210 +86880,210 @@ Linker script and memory map
  .debug_info    0x00000000017124cc    0x91c5f label.o
  .debug_info    0x00000000017a412b    0x6755d progress_spinner.o
  .debug_info    0x000000000180b688    0x1854e rectangle.o
- .debug_info    0x0000000001823bd6    0xa75b3 recycler.o
- .debug_info    0x00000000018cb189    0x6ead5 scrolling_frame.o
- .debug_info    0x0000000001939c5e    0x5e8a4 sidebar.o
- .debug_info    0x0000000001998502    0x52b1a slider.o
- .debug_info    0x00000000019eb01c    0x583e3 tab_frame.o
- .debug_info    0x0000000001a433ff    0x5a8dc cell_bool.o
- .debug_info    0x0000000001a9dcdb    0x4d035 cell_detail.o
- .debug_info    0x0000000001aead10    0x7366e cell_input.o
- .debug_info    0x0000000001b5e37e    0x52168 cell_radio.o
- .debug_info    0x0000000001bb04e6    0x58619 cell_selector.o
- .debug_info    0x0000000001c08aff    0x46a9e cell_slider.o
- .debug_info    0x0000000001c4f59d    0x6def0 account.o
- .debug_info    0x0000000001cbd48d    0x76e69 battery.o
- .debug_info    0x0000000001d342f6    0x7af2e wireless.o
- .debug_info    0x0000000001daf224    0x37cca switch_audio.o
- .debug_info    0x0000000001de6eee    0x8087f switch_font.o
- .debug_info    0x0000000001e6776d    0x10430 switch_ime.o
- .debug_info    0x0000000001e77b9d    0xa525d switch_input.o
- .debug_info    0x0000000001f1cdfa    0x85b39 switch_platform.o
- .debug_info    0x0000000001fa2933    0x89c1a switch_video.o
- .debug_info    0x000000000202c54d    0x21db2 dk_renderer.o
- .debug_info    0x000000000204e2ff     0x1f50 CIntrusiveTree.o
- .debug_info    0x000000000205024f     0x4e63 CMemPool.o
- .debug_info    0x00000000020550b2     0x2d74 CShader.o
- .debug_info    0x0000000002057e26    0x1fece tinyxml2.o
- .debug_info    0x0000000002077cf4     0xe12a log.o
- .debug_info    0x0000000002085e1e     0x81d8 YGConfig.o
- .debug_info    0x000000000208dff6      0x840 YGEnums.o
- .debug_info    0x000000000208e836     0x4eff YGLayout.o
- .debug_info    0x0000000002093735    0x1c3f9 YGNode.o
- .debug_info    0x00000000020afb2e     0x73dc YGStyle.o
- .debug_info    0x00000000020b6f0a      0x1b3 YGValue.o
- .debug_info    0x00000000020b70bd    0x3ae0d Yoga.o
- .debug_info    0x00000000020f1eca     0x419d YogaUtils.o
- .debug_info    0x00000000020f6067     0x3424 event.o
- .debug_info    0x00000000020f948b    0x9ab29 Get.o
- .debug_info    0x0000000002193fb4    0xe55a6 Manifest.o
- .debug_info    0x000000000227955a    0x96ebc Package.o
- .debug_info    0x0000000002310416    0x28e2d Utils.o
- .debug_info    0x0000000002339243    0x19663 ZipUtil.o
- .debug_info    0x00000000023528a6   0x1071f4 GetRepo.o
- .debug_info    0x0000000002459a9a    0x391cb LocalRepo.o
- .debug_info    0x0000000002492c65    0xfb72b OSCRepo.o
- .debug_info    0x000000000258e390    0x21acd Repo.o
- .debug_info    0x00000000025afe5d    0x3d0e8 UniStoreRepo.o
- .debug_info    0x00000000025ecf45     0x1708 tinystr.o
- .debug_info    0x00000000025ee64d    0x13ea2 tinyxml.o
- .debug_info    0x00000000026024ef     0x92e8 tinyxmlparser.o
- .debug_info    0x000000000260b7d7    0x70838 format.o
- .debug_info    0x000000000267c00f     0xb5c0 os.o
- .debug_info    0x00000000026875cf      0x5d5 switch_wrapper.o
- .debug_info    0x0000000002687ba4    0x3eba7 nanovg.o
- .debug_info    0x00000000026c674b     0xcf7a glad.o
- .debug_info    0x00000000026d36c5      0x290 features_cpu.o
- .debug_info    0x00000000026d3955      0xa08 encoding_utf.o
- .debug_info    0x00000000026d435d     0x1d60 archive.o
- .debug_info    0x00000000026d60bd      0x9cb archive_file.o
- .debug_info    0x00000000026d6a88     0x1112 bfgrp.o
- .debug_info    0x00000000026d7b9a     0x1000 bfgrp_location.o
- .debug_info    0x00000000026d8b9a     0x17e4 bfsar.o
- .debug_info    0x00000000026da37e     0x1488 bfsar_file.o
- .debug_info    0x00000000026db806     0x1216 bfsar_group.o
- .debug_info    0x00000000026dca1c     0x1290 bfsar_sound.o
- .debug_info    0x00000000026ddcac     0x109e bfsar_string.o
- .debug_info    0x00000000026ded4a     0x133c bfsar_wave_archive.o
- .debug_info    0x00000000026e0086     0x1106 bfwar.o
- .debug_info    0x00000000026e118c      0xbcc bfwar_file.o
- .debug_info    0x00000000026e1d58     0x105e bfwav.o
- .debug_info    0x00000000026e2db6     0x1144 bfwav_info.o
- .debug_info    0x00000000026e3efa     0x1360 bfwsd.o
- .debug_info    0x00000000026e525a     0x17af bfwsd_sound_data.o
- .debug_info    0x00000000026e6a09      0xd70 bfwsd_wave_id.o
- .debug_info    0x00000000026e7779     0x148f player.o
- .debug_info    0x00000000026e8c08     0x217b player_load.o
- .debug_info    0x00000000026ead83     0x1c49 player_load_lookup.o
- .debug_info    0x00000000026ec9cc     0x1327 ioapi.o
- .debug_info    0x00000000026edcf3     0x4e4e unzip.o
- .debug_info    0x00000000026f2b41     0x69c2 zip.o
- .debug_info    0x00000000026f9503     0xa1c6 C:/devkitPro/libounce/lib\libdrako3d.a(cmd_bind_common.o)
- .debug_info    0x00000000027036c9     0x323a C:/devkitPro/libounce/lib\libdrako3d.a(dk_cmdbuf.o)
- .debug_info    0x0000000002706903     0x6748 C:/devkitPro/libounce/lib\libdrako3d.a(dk_device.o)
- .debug_info    0x000000000270d04b     0x26fa C:/devkitPro/libounce/lib\libdrako3d.a(dk_fence.o)
- .debug_info    0x000000000270f745     0x55a0 C:/devkitPro/libounce/lib\libdrako3d.a(dk_image.o)
- .debug_info    0x0000000002714ce5     0x3a46 C:/devkitPro/libounce/lib\libdrako3d.a(dk_memblock.o)
- .debug_info    0x000000000271872b     0x9f7d C:/devkitPro/libounce/lib\libdrako3d.a(dk_queue.o)
- .debug_info    0x00000000027226a8     0x28fc C:/devkitPro/libounce/lib\libdrako3d.a(dk_shader.o)
- .debug_info    0x0000000002724fa4     0x58da C:/devkitPro/libounce/lib\libdrako3d.a(dk_swapchain.o)
- .debug_info    0x000000000272a87e    0x1d930 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_base.o)
- .debug_info    0x00000000027481ae    0x118a4 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_state.o)
- .debug_info    0x0000000002759a52     0x5959 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_vbo.o)
- .debug_info    0x000000000275f3ab     0x214f C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_zcull.o)
- .debug_info    0x00000000027614fa    0x1546e C:/devkitPro/libounce/lib\libdrako3d.a(gpu_base.o)
- .debug_info    0x0000000002776968     0x42b6 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_error.o)
- .debug_info    0x000000000277ac1e     0xe3e5 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_transfer.o)
- .debug_info    0x0000000002789003     0x139a C:/devkitPro/libounce/lib\libdrako3d.a(image_formats.o)
- .debug_info    0x000000000278a39d     0x28f2 C:/devkitPro/libounce/lib\libdrako3d.a(queue_workbuf.o)
- .debug_info    0x000000000278cc8f     0x1a52 C:/devkitPro/libounce/lib\libdrako3d.a(tic_generate.o)
- .debug_info    0x000000000278e6e1     0x28c5 C:/devkitPro/libounce/lib\libdrako3d.a(tsc_generate.o)
- .debug_info    0x0000000002790fa6     0x2745 C:/devkitPro/libounce/lib\libdrako3d.a(codesegmgr.o)
- .debug_info    0x00000000027936eb     0x5204 C:/devkitPro/portlibs/switch/lib\libz.a(crc32.o)
- .debug_info    0x00000000027988ef     0x2905 C:/devkitPro/portlibs/switch/lib\libz.a(deflate.o)
- .debug_info    0x000000000279b1f4     0x1bf0 C:/devkitPro/portlibs/switch/lib\libz.a(inflate.o)
- .debug_info    0x000000000279cde4      0x3d0 C:/devkitPro/portlibs/switch/lib\libz.a(inftrees.o)
- .debug_info    0x000000000279d1b4     0x1ccd C:/devkitPro/portlibs/switch/lib\libz.a(trees.o)
- .debug_info    0x000000000279ee81      0x271 C:/devkitPro/portlibs/switch/lib\libz.a(zutil.o)
- .debug_info    0x000000000279f0f2      0x353 C:/devkitPro/portlibs/switch/lib\libz.a(adler32.o)
- .debug_info    0x000000000279f445      0x7f9 C:/devkitPro/portlibs/switch/lib\libz.a(inffast.o)
- .debug_info    0x000000000279fc3e    0x62065 C:/devkitPro/libounce/lib\libounce.a(malloc.o)
- .debug_info    0x0000000002801ca3      0x7f5 C:/devkitPro/libounce/lib\libounce.a(heap_pages.o)
- .debug_info    0x0000000002802498       0x28 C:/devkitPro/libounce/lib\libounce.a(svc_switch2.o)
- .debug_info    0x00000000028024c0       0x29 C:/devkitPro/libounce/lib\libounce.a(switch_crt0.o)
- .debug_info    0x00000000028024e9       0x28 C:/devkitPro/libounce/lib\libounce.a(readtp.o)
- .debug_info    0x0000000002802511       0x23 C:/devkitPro/libounce/lib\libounce.a(exception.o)
- .debug_info    0x0000000002802534       0x23 C:/devkitPro/libounce/lib\libounce.a(svc.o)
- .debug_info    0x0000000002802557       0x23 C:/devkitPro/libounce/lib\libounce.a(cache.o)
- .debug_info    0x000000000280257a     0x77ec C:/devkitPro/libounce/lib\libounce.a(vi2.o)
- .debug_info    0x0000000002809d66      0x3ab C:/devkitPro/libounce/lib\libounce.a(service_list.o)
- .debug_info    0x000000000280a111     0x6d2d C:/devkitPro/libounce/lib\libounce.a(nmouse.o)
- .debug_info    0x0000000002810e3e     0xd116 C:/devkitPro/libounce/lib\libounce.a(gsv.o)
- .debug_info    0x000000000281df54      0xe08 C:/devkitPro/libounce/lib\libounce.a(inet_addr.o)
- .debug_info    0x000000000281ed5c     0x573a C:/devkitPro/libounce/lib\libounce.a(socket.o)
- .debug_info    0x0000000002824496     0x3e2a C:/devkitPro/libounce/lib\libounce.a(romfs_dev.o)
- .debug_info    0x00000000028282c0       0x96 C:/devkitPro/libounce/lib\libounce.a(path_buf.o)
- .debug_info    0x0000000002828356     0x594e C:/devkitPro/libounce/lib\libounce.a(fs_dev.o)
- .debug_info    0x000000000282dca4       0xdd C:/devkitPro/libounce/lib\libounce.a(convert_errno.o)
- .debug_info    0x000000000282dd81     0x2c48 C:/devkitPro/libounce/lib\libounce.a(resolver.o)
- .debug_info    0x00000000028309c9      0xc6c C:/devkitPro/libounce/lib\libounce.a(pad_pointer.o)
- .debug_info    0x0000000002831635      0xdde C:/devkitPro/libounce/lib\libounce.a(pad.o)
- .debug_info    0x0000000002832413      0x338 C:/devkitPro/libounce/lib\libounce.a(nro_ounce.o)
- .debug_info    0x000000000283274b      0x227 C:/devkitPro/libounce/lib\libounce.a(hosversion.o)
- .debug_info    0x0000000002832972      0xa09 C:/devkitPro/libounce/lib\libounce.a(env.o)
- .debug_info    0x000000000283337b      0x94b C:/devkitPro/libounce/lib\libounce.a(dynamic.o)
- .debug_info    0x0000000002833cc6      0x197 C:/devkitPro/libounce/lib\libounce.a(diag.o)
- .debug_info    0x0000000002833e5d      0x4fa C:/devkitPro/libounce/lib\libounce.a(argv.o)
- .debug_info    0x0000000002834357      0x1e8 C:/devkitPro/libounce/lib\libounce.a(alloc.o)
- .debug_info    0x000000000283453f     0xab9b C:/devkitPro/libounce/lib\libounce.a(web.o)
- .debug_info    0x000000000283f0da     0x5bdf C:/devkitPro/libounce/lib\libounce.a(swkbd.o)
- .debug_info    0x0000000002844cb9     0x17c6 C:/devkitPro/libounce/lib\libounce.a(libapplet.o)
- .debug_info    0x000000000284647f     0x159f C:/devkitPro/libounce/lib\libounce.a(voice.o)
- .debug_info    0x0000000002847a1e      0xf0d C:/devkitPro/libounce/lib\libounce.a(sink.o)
- .debug_info    0x000000000284892b      0xeb1 C:/devkitPro/libounce/lib\libounce.a(mempool.o)
- .debug_info    0x00000000028497dc     0x168b C:/devkitPro/libounce/lib\libounce.a(driver.o)
- .debug_info    0x000000000284ae67     0x2d5d C:/devkitPro/libounce/lib\libounce.a(native_window.o)
- .debug_info    0x000000000284dbc4     0x1827 C:/devkitPro/libounce/lib\libounce.a(default_window.o)
- .debug_info    0x000000000284f3eb     0x1883 C:/devkitPro/libounce/lib\libounce.a(buffer_producer.o)
- .debug_info    0x0000000002850c6e     0x3200 C:/devkitPro/libounce/lib\libounce.a(binder.o)
- .debug_info    0x0000000002853e6e     0x100a C:/devkitPro/libounce/lib\libounce.a(fence.o)
- .debug_info    0x0000000002854e78      0x8a0 C:/devkitPro/libounce/lib\libounce.a(sha256.o)
- .debug_info    0x0000000002855718     0xb4b4 C:/devkitPro/libounce/lib\libounce.a(vi.o)
- .debug_info    0x0000000002860bcc     0x7ae6 C:/devkitPro/libounce/lib\libounce.a(time.o)
- .debug_info    0x00000000028686b2    0x15c0a C:/devkitPro/libounce/lib\libounce.a(ssl.o)
- .debug_info    0x000000000287e2bc     0x52e0 C:/devkitPro/libounce/lib\libounce.a(sm.o)
- .debug_info    0x000000000288359c     0x4d61 C:/devkitPro/libounce/lib\libounce.a(sfdnsres.o)
- .debug_info    0x00000000028882fd    0x3548e C:/devkitPro/libounce/lib\libounce.a(set.o)
- .debug_info    0x00000000028bd78b     0x578c C:/devkitPro/libounce/lib\libounce.a(psm.o)
- .debug_info    0x00000000028c2f17     0x2f50 C:/devkitPro/libounce/lib\libounce.a(pl.o)
- .debug_info    0x00000000028c5e67     0x5c96 C:/devkitPro/libounce/lib\libounce.a(nv.o)
- .debug_info    0x00000000028cbafd     0xa427 C:/devkitPro/libounce/lib\libounce.a(nifm.o)
- .debug_info    0x00000000028d5f24     0x435b C:/devkitPro/libounce/lib\libounce.a(lbl.o)
- .debug_info    0x00000000028da27f    0x13cf4 C:/devkitPro/libounce/lib\libounce.a(hidsys.o)
- .debug_info    0x00000000028edf73    0x1d3fb C:/devkitPro/libounce/lib\libounce.a(hid.o)
- .debug_info    0x000000000290b36e    0x280d2 C:/devkitPro/libounce/lib\libounce.a(fs.o)
- .debug_info    0x0000000002933440     0x212e C:/devkitPro/libounce/lib\libounce.a(csrng.o)
- .debug_info    0x000000000293556e     0xff8d C:/devkitPro/libounce/lib\libounce.a(bsd.o)
- .debug_info    0x00000000029454fb     0x4da1 C:/devkitPro/libounce/lib\libounce.a(audren.o)
- .debug_info    0x000000000294a29c    0x37bb8 C:/devkitPro/libounce/lib\libounce.a(applet.o)
- .debug_info    0x0000000002981e54     0x2ee8 C:/devkitPro/libounce/lib\libounce.a(apm.o)
- .debug_info    0x0000000002984d3c     0x566d C:/devkitPro/libounce/lib\libounce.a(acc.o)
- .debug_info    0x000000000298a3a9     0x12b1 C:/devkitPro/libounce/lib\libounce.a(sessionmgr.o)
- .debug_info    0x000000000298b65a     0x1010 C:/devkitPro/libounce/lib\libounce.a(wait.o)
- .debug_info    0x000000000298c66a      0x892 C:/devkitPro/libounce/lib\libounce.a(uevent.o)
- .debug_info    0x000000000298cefc      0x968 C:/devkitPro/libounce/lib\libounce.a(tmem.o)
- .debug_info    0x000000000298d864     0x2017 C:/devkitPro/libounce/lib\libounce.a(thread.o)
- .debug_info    0x000000000298f87b      0x5d9 C:/devkitPro/libounce/lib\libounce.a(shmem.o)
- .debug_info    0x000000000298fe54      0xa6e C:/devkitPro/libounce/lib\libounce.a(mutex.o)
- .debug_info    0x00000000029908c2      0x732 C:/devkitPro/libounce/lib\libounce.a(event.o)
- .debug_info    0x0000000002990ff4      0x395 C:/devkitPro/libounce/lib\libounce.a(condvar.o)
- .debug_info    0x0000000002991389      0xe60 C:/devkitPro/libounce/lib\libounce.a(init_malloc.o)
- .debug_info    0x00000000029921e9     0x288c C:/devkitPro/libounce/lib\libounce.a(cpu_window.o)
- .debug_info    0x0000000002994a75     0x1e02 C:/devkitPro/libounce/lib\libounce.a(audu.o)
- .debug_info    0x0000000002996877      0x23c C:/devkitPro/libounce/lib\libounce.a(utf8_to_utf16.o)
- .debug_info    0x0000000002996ab3      0x23c C:/devkitPro/libounce/lib\libounce.a(utf16_to_utf8.o)
- .debug_info    0x0000000002996cef      0x128 C:/devkitPro/libounce/lib\libounce.a(encode_utf8.o)
- .debug_info    0x0000000002996e17      0x128 C:/devkitPro/libounce/lib\libounce.a(encode_utf16.o)
- .debug_info    0x0000000002996f3f      0x177 C:/devkitPro/libounce/lib\libounce.a(decode_utf8.o)
- .debug_info    0x00000000029970b6      0x153 C:/devkitPro/libounce/lib\libounce.a(decode_utf16.o)
- .debug_info    0x0000000002997209      0x1e1 C:/devkitPro/libounce/lib\libounce.a(nxlink.o)
- .debug_info    0x00000000029973ea     0x2628 C:/devkitPro/libounce/lib\libounce.a(newlib.o)
- .debug_info    0x0000000002999a12      0xcb3 C:/devkitPro/libounce/lib\libounce.a(parcel.o)
- .debug_info    0x000000000299a6c5      0x698 C:/devkitPro/libounce/lib\libounce.a(nvhost-ctrl.o)
- .debug_info    0x000000000299ad5d     0x11fd C:/devkitPro/libounce/lib\libounce.a(virtmem.o)
- .debug_info    0x000000000299bf5a      0x9d1 C:/devkitPro/libounce/lib\libounce.a(random.o)
- .debug_info    0x000000000299c92b      0x762 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(_udivdi3.o)
- .debug_info    0x000000000299d08d      0x2fb C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(eqtf2.o)
- .debug_info    0x000000000299d388      0x2d8 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(getf2.o)
- .debug_info    0x000000000299d660      0x2c3 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(unordtf2.o)
- .debug_info    0x000000000299d923      0x38f C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(trunctfdf2.o)
- .debug_info    0x000000000299dcb2     0x6a84 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(unwind-dw2.o)
- .debug_info    0x00000000029a4736     0x389e C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(unwind-dw2-fde.o)
- .debug_info    0x00000000029a7fd4       0x48 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(__arm_za_disable.o)
- .debug_info    0x00000000029a801c       0xe2 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(sfp-exceptions.o)
- .debug_info    0x00000000029a80fe       0x93 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(__aarch64_have_sme.o)
- .debug_info    0x00000000029a8191       0x4b C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(__arm_tpidr2_save.o)
- .debug_info    0x00000000029a81dc      0x2f4 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(extenddftf2.o)
+ .debug_info    0x0000000001823bd6    0xa75f8 recycler.o
+ .debug_info    0x00000000018cb1ce    0x6ead5 scrolling_frame.o
+ .debug_info    0x0000000001939ca3    0x5e8a4 sidebar.o
+ .debug_info    0x0000000001998547    0x52b1a slider.o
+ .debug_info    0x00000000019eb061    0x583e3 tab_frame.o
+ .debug_info    0x0000000001a43444    0x5a8dc cell_bool.o
+ .debug_info    0x0000000001a9dd20    0x4d035 cell_detail.o
+ .debug_info    0x0000000001aead55    0x7366e cell_input.o
+ .debug_info    0x0000000001b5e3c3    0x52168 cell_radio.o
+ .debug_info    0x0000000001bb052b    0x58619 cell_selector.o
+ .debug_info    0x0000000001c08b44    0x46a9e cell_slider.o
+ .debug_info    0x0000000001c4f5e2    0x6def0 account.o
+ .debug_info    0x0000000001cbd4d2    0x76e69 battery.o
+ .debug_info    0x0000000001d3433b    0x7af2e wireless.o
+ .debug_info    0x0000000001daf269    0x37cca switch_audio.o
+ .debug_info    0x0000000001de6f33    0x8087f switch_font.o
+ .debug_info    0x0000000001e677b2    0x10430 switch_ime.o
+ .debug_info    0x0000000001e77be2    0xa525d switch_input.o
+ .debug_info    0x0000000001f1ce3f    0x85b39 switch_platform.o
+ .debug_info    0x0000000001fa2978    0x89c1a switch_video.o
+ .debug_info    0x000000000202c592    0x21db2 dk_renderer.o
+ .debug_info    0x000000000204e344     0x1f50 CIntrusiveTree.o
+ .debug_info    0x0000000002050294     0x4e63 CMemPool.o
+ .debug_info    0x00000000020550f7     0x2d74 CShader.o
+ .debug_info    0x0000000002057e6b    0x1fece tinyxml2.o
+ .debug_info    0x0000000002077d39     0xe12a log.o
+ .debug_info    0x0000000002085e63     0x81d8 YGConfig.o
+ .debug_info    0x000000000208e03b      0x840 YGEnums.o
+ .debug_info    0x000000000208e87b     0x4eff YGLayout.o
+ .debug_info    0x000000000209377a    0x1c3f9 YGNode.o
+ .debug_info    0x00000000020afb73     0x73dc YGStyle.o
+ .debug_info    0x00000000020b6f4f      0x1b3 YGValue.o
+ .debug_info    0x00000000020b7102    0x3ae0d Yoga.o
+ .debug_info    0x00000000020f1f0f     0x419d YogaUtils.o
+ .debug_info    0x00000000020f60ac     0x3424 event.o
+ .debug_info    0x00000000020f94d0    0x9ab29 Get.o
+ .debug_info    0x0000000002193ff9    0xe55a6 Manifest.o
+ .debug_info    0x000000000227959f    0x96ebc Package.o
+ .debug_info    0x000000000231045b    0x28e2d Utils.o
+ .debug_info    0x0000000002339288    0x19663 ZipUtil.o
+ .debug_info    0x00000000023528eb   0x1071f4 GetRepo.o
+ .debug_info    0x0000000002459adf    0x391cb LocalRepo.o
+ .debug_info    0x0000000002492caa    0xfb72b OSCRepo.o
+ .debug_info    0x000000000258e3d5    0x21acd Repo.o
+ .debug_info    0x00000000025afea2    0x3d0e8 UniStoreRepo.o
+ .debug_info    0x00000000025ecf8a     0x1708 tinystr.o
+ .debug_info    0x00000000025ee692    0x13ea2 tinyxml.o
+ .debug_info    0x0000000002602534     0x92e8 tinyxmlparser.o
+ .debug_info    0x000000000260b81c    0x70838 format.o
+ .debug_info    0x000000000267c054     0xb5c0 os.o
+ .debug_info    0x0000000002687614      0x5d5 switch_wrapper.o
+ .debug_info    0x0000000002687be9    0x3eba7 nanovg.o
+ .debug_info    0x00000000026c6790     0xcf7a glad.o
+ .debug_info    0x00000000026d370a      0x290 features_cpu.o
+ .debug_info    0x00000000026d399a      0xa08 encoding_utf.o
+ .debug_info    0x00000000026d43a2     0x1d60 archive.o
+ .debug_info    0x00000000026d6102      0x9cb archive_file.o
+ .debug_info    0x00000000026d6acd     0x1112 bfgrp.o
+ .debug_info    0x00000000026d7bdf     0x1000 bfgrp_location.o
+ .debug_info    0x00000000026d8bdf     0x17e4 bfsar.o
+ .debug_info    0x00000000026da3c3     0x1488 bfsar_file.o
+ .debug_info    0x00000000026db84b     0x1216 bfsar_group.o
+ .debug_info    0x00000000026dca61     0x1290 bfsar_sound.o
+ .debug_info    0x00000000026ddcf1     0x109e bfsar_string.o
+ .debug_info    0x00000000026ded8f     0x133c bfsar_wave_archive.o
+ .debug_info    0x00000000026e00cb     0x1106 bfwar.o
+ .debug_info    0x00000000026e11d1      0xbcc bfwar_file.o
+ .debug_info    0x00000000026e1d9d     0x105e bfwav.o
+ .debug_info    0x00000000026e2dfb     0x1144 bfwav_info.o
+ .debug_info    0x00000000026e3f3f     0x1360 bfwsd.o
+ .debug_info    0x00000000026e529f     0x17af bfwsd_sound_data.o
+ .debug_info    0x00000000026e6a4e      0xd70 bfwsd_wave_id.o
+ .debug_info    0x00000000026e77be     0x148f player.o
+ .debug_info    0x00000000026e8c4d     0x217b player_load.o
+ .debug_info    0x00000000026eadc8     0x1c49 player_load_lookup.o
+ .debug_info    0x00000000026eca11     0x1327 ioapi.o
+ .debug_info    0x00000000026edd38     0x4e4e unzip.o
+ .debug_info    0x00000000026f2b86     0x69c2 zip.o
+ .debug_info    0x00000000026f9548     0xa1c6 C:/devkitPro/libounce/lib\libdrako3d.a(cmd_bind_common.o)
+ .debug_info    0x000000000270370e     0x323a C:/devkitPro/libounce/lib\libdrako3d.a(dk_cmdbuf.o)
+ .debug_info    0x0000000002706948     0x6748 C:/devkitPro/libounce/lib\libdrako3d.a(dk_device.o)
+ .debug_info    0x000000000270d090     0x26fa C:/devkitPro/libounce/lib\libdrako3d.a(dk_fence.o)
+ .debug_info    0x000000000270f78a     0x55a0 C:/devkitPro/libounce/lib\libdrako3d.a(dk_image.o)
+ .debug_info    0x0000000002714d2a     0x3a46 C:/devkitPro/libounce/lib\libdrako3d.a(dk_memblock.o)
+ .debug_info    0x0000000002718770     0x9f7d C:/devkitPro/libounce/lib\libdrako3d.a(dk_queue.o)
+ .debug_info    0x00000000027226ed     0x28fc C:/devkitPro/libounce/lib\libdrako3d.a(dk_shader.o)
+ .debug_info    0x0000000002724fe9     0x58da C:/devkitPro/libounce/lib\libdrako3d.a(dk_swapchain.o)
+ .debug_info    0x000000000272a8c3    0x1d930 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_base.o)
+ .debug_info    0x00000000027481f3    0x118a4 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_state.o)
+ .debug_info    0x0000000002759a97     0x5959 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_vbo.o)
+ .debug_info    0x000000000275f3f0     0x214f C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_zcull.o)
+ .debug_info    0x000000000276153f    0x1546e C:/devkitPro/libounce/lib\libdrako3d.a(gpu_base.o)
+ .debug_info    0x00000000027769ad     0x42b6 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_error.o)
+ .debug_info    0x000000000277ac63     0xe3e5 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_transfer.o)
+ .debug_info    0x0000000002789048     0x139a C:/devkitPro/libounce/lib\libdrako3d.a(image_formats.o)
+ .debug_info    0x000000000278a3e2     0x28f2 C:/devkitPro/libounce/lib\libdrako3d.a(queue_workbuf.o)
+ .debug_info    0x000000000278ccd4     0x1a52 C:/devkitPro/libounce/lib\libdrako3d.a(tic_generate.o)
+ .debug_info    0x000000000278e726     0x28c5 C:/devkitPro/libounce/lib\libdrako3d.a(tsc_generate.o)
+ .debug_info    0x0000000002790feb     0x2745 C:/devkitPro/libounce/lib\libdrako3d.a(codesegmgr.o)
+ .debug_info    0x0000000002793730     0x5204 C:/devkitPro/portlibs/switch/lib\libz.a(crc32.o)
+ .debug_info    0x0000000002798934     0x2905 C:/devkitPro/portlibs/switch/lib\libz.a(deflate.o)
+ .debug_info    0x000000000279b239     0x1bf0 C:/devkitPro/portlibs/switch/lib\libz.a(inflate.o)
+ .debug_info    0x000000000279ce29      0x3d0 C:/devkitPro/portlibs/switch/lib\libz.a(inftrees.o)
+ .debug_info    0x000000000279d1f9     0x1ccd C:/devkitPro/portlibs/switch/lib\libz.a(trees.o)
+ .debug_info    0x000000000279eec6      0x271 C:/devkitPro/portlibs/switch/lib\libz.a(zutil.o)
+ .debug_info    0x000000000279f137      0x353 C:/devkitPro/portlibs/switch/lib\libz.a(adler32.o)
+ .debug_info    0x000000000279f48a      0x7f9 C:/devkitPro/portlibs/switch/lib\libz.a(inffast.o)
+ .debug_info    0x000000000279fc83    0x62065 C:/devkitPro/libounce/lib\libounce.a(malloc.o)
+ .debug_info    0x0000000002801ce8      0x7f5 C:/devkitPro/libounce/lib\libounce.a(heap_pages.o)
+ .debug_info    0x00000000028024dd       0x28 C:/devkitPro/libounce/lib\libounce.a(svc_switch2.o)
+ .debug_info    0x0000000002802505       0x29 C:/devkitPro/libounce/lib\libounce.a(switch_crt0.o)
+ .debug_info    0x000000000280252e       0x28 C:/devkitPro/libounce/lib\libounce.a(readtp.o)
+ .debug_info    0x0000000002802556       0x23 C:/devkitPro/libounce/lib\libounce.a(exception.o)
+ .debug_info    0x0000000002802579       0x23 C:/devkitPro/libounce/lib\libounce.a(svc.o)
+ .debug_info    0x000000000280259c       0x23 C:/devkitPro/libounce/lib\libounce.a(cache.o)
+ .debug_info    0x00000000028025bf     0x77ec C:/devkitPro/libounce/lib\libounce.a(vi2.o)
+ .debug_info    0x0000000002809dab      0x3ab C:/devkitPro/libounce/lib\libounce.a(service_list.o)
+ .debug_info    0x000000000280a156     0x6d2d C:/devkitPro/libounce/lib\libounce.a(nmouse.o)
+ .debug_info    0x0000000002810e83     0xd116 C:/devkitPro/libounce/lib\libounce.a(gsv.o)
+ .debug_info    0x000000000281df99      0xe08 C:/devkitPro/libounce/lib\libounce.a(inet_addr.o)
+ .debug_info    0x000000000281eda1     0x573a C:/devkitPro/libounce/lib\libounce.a(socket.o)
+ .debug_info    0x00000000028244db     0x3e2a C:/devkitPro/libounce/lib\libounce.a(romfs_dev.o)
+ .debug_info    0x0000000002828305       0x96 C:/devkitPro/libounce/lib\libounce.a(path_buf.o)
+ .debug_info    0x000000000282839b     0x594e C:/devkitPro/libounce/lib\libounce.a(fs_dev.o)
+ .debug_info    0x000000000282dce9       0xdd C:/devkitPro/libounce/lib\libounce.a(convert_errno.o)
+ .debug_info    0x000000000282ddc6     0x2c48 C:/devkitPro/libounce/lib\libounce.a(resolver.o)
+ .debug_info    0x0000000002830a0e      0xc6c C:/devkitPro/libounce/lib\libounce.a(pad_pointer.o)
+ .debug_info    0x000000000283167a      0xdde C:/devkitPro/libounce/lib\libounce.a(pad.o)
+ .debug_info    0x0000000002832458      0x338 C:/devkitPro/libounce/lib\libounce.a(nro_ounce.o)
+ .debug_info    0x0000000002832790      0x227 C:/devkitPro/libounce/lib\libounce.a(hosversion.o)
+ .debug_info    0x00000000028329b7      0xa09 C:/devkitPro/libounce/lib\libounce.a(env.o)
+ .debug_info    0x00000000028333c0      0x94b C:/devkitPro/libounce/lib\libounce.a(dynamic.o)
+ .debug_info    0x0000000002833d0b      0x197 C:/devkitPro/libounce/lib\libounce.a(diag.o)
+ .debug_info    0x0000000002833ea2      0x4fa C:/devkitPro/libounce/lib\libounce.a(argv.o)
+ .debug_info    0x000000000283439c      0x1e8 C:/devkitPro/libounce/lib\libounce.a(alloc.o)
+ .debug_info    0x0000000002834584     0xab9b C:/devkitPro/libounce/lib\libounce.a(web.o)
+ .debug_info    0x000000000283f11f     0x5bdf C:/devkitPro/libounce/lib\libounce.a(swkbd.o)
+ .debug_info    0x0000000002844cfe     0x17c6 C:/devkitPro/libounce/lib\libounce.a(libapplet.o)
+ .debug_info    0x00000000028464c4     0x159f C:/devkitPro/libounce/lib\libounce.a(voice.o)
+ .debug_info    0x0000000002847a63      0xf0d C:/devkitPro/libounce/lib\libounce.a(sink.o)
+ .debug_info    0x0000000002848970      0xeb1 C:/devkitPro/libounce/lib\libounce.a(mempool.o)
+ .debug_info    0x0000000002849821     0x168b C:/devkitPro/libounce/lib\libounce.a(driver.o)
+ .debug_info    0x000000000284aeac     0x2d5d C:/devkitPro/libounce/lib\libounce.a(native_window.o)
+ .debug_info    0x000000000284dc09     0x1827 C:/devkitPro/libounce/lib\libounce.a(default_window.o)
+ .debug_info    0x000000000284f430     0x1883 C:/devkitPro/libounce/lib\libounce.a(buffer_producer.o)
+ .debug_info    0x0000000002850cb3     0x3200 C:/devkitPro/libounce/lib\libounce.a(binder.o)
+ .debug_info    0x0000000002853eb3     0x100a C:/devkitPro/libounce/lib\libounce.a(fence.o)
+ .debug_info    0x0000000002854ebd      0x8a0 C:/devkitPro/libounce/lib\libounce.a(sha256.o)
+ .debug_info    0x000000000285575d     0xb4b4 C:/devkitPro/libounce/lib\libounce.a(vi.o)
+ .debug_info    0x0000000002860c11     0x7ae6 C:/devkitPro/libounce/lib\libounce.a(time.o)
+ .debug_info    0x00000000028686f7    0x15c0a C:/devkitPro/libounce/lib\libounce.a(ssl.o)
+ .debug_info    0x000000000287e301     0x52e0 C:/devkitPro/libounce/lib\libounce.a(sm.o)
+ .debug_info    0x00000000028835e1     0x4d61 C:/devkitPro/libounce/lib\libounce.a(sfdnsres.o)
+ .debug_info    0x0000000002888342    0x3548e C:/devkitPro/libounce/lib\libounce.a(set.o)
+ .debug_info    0x00000000028bd7d0     0x578c C:/devkitPro/libounce/lib\libounce.a(psm.o)
+ .debug_info    0x00000000028c2f5c     0x2f50 C:/devkitPro/libounce/lib\libounce.a(pl.o)
+ .debug_info    0x00000000028c5eac     0x5c96 C:/devkitPro/libounce/lib\libounce.a(nv.o)
+ .debug_info    0x00000000028cbb42     0xa427 C:/devkitPro/libounce/lib\libounce.a(nifm.o)
+ .debug_info    0x00000000028d5f69     0x435b C:/devkitPro/libounce/lib\libounce.a(lbl.o)
+ .debug_info    0x00000000028da2c4    0x13cf4 C:/devkitPro/libounce/lib\libounce.a(hidsys.o)
+ .debug_info    0x00000000028edfb8    0x1d3fb C:/devkitPro/libounce/lib\libounce.a(hid.o)
+ .debug_info    0x000000000290b3b3    0x280d2 C:/devkitPro/libounce/lib\libounce.a(fs.o)
+ .debug_info    0x0000000002933485     0x212e C:/devkitPro/libounce/lib\libounce.a(csrng.o)
+ .debug_info    0x00000000029355b3     0xff8d C:/devkitPro/libounce/lib\libounce.a(bsd.o)
+ .debug_info    0x0000000002945540     0x4da1 C:/devkitPro/libounce/lib\libounce.a(audren.o)
+ .debug_info    0x000000000294a2e1    0x37bb8 C:/devkitPro/libounce/lib\libounce.a(applet.o)
+ .debug_info    0x0000000002981e99     0x2ee8 C:/devkitPro/libounce/lib\libounce.a(apm.o)
+ .debug_info    0x0000000002984d81     0x566d C:/devkitPro/libounce/lib\libounce.a(acc.o)
+ .debug_info    0x000000000298a3ee     0x12b1 C:/devkitPro/libounce/lib\libounce.a(sessionmgr.o)
+ .debug_info    0x000000000298b69f     0x1010 C:/devkitPro/libounce/lib\libounce.a(wait.o)
+ .debug_info    0x000000000298c6af      0x892 C:/devkitPro/libounce/lib\libounce.a(uevent.o)
+ .debug_info    0x000000000298cf41      0x968 C:/devkitPro/libounce/lib\libounce.a(tmem.o)
+ .debug_info    0x000000000298d8a9     0x2017 C:/devkitPro/libounce/lib\libounce.a(thread.o)
+ .debug_info    0x000000000298f8c0      0x5d9 C:/devkitPro/libounce/lib\libounce.a(shmem.o)
+ .debug_info    0x000000000298fe99      0xa6e C:/devkitPro/libounce/lib\libounce.a(mutex.o)
+ .debug_info    0x0000000002990907      0x732 C:/devkitPro/libounce/lib\libounce.a(event.o)
+ .debug_info    0x0000000002991039      0x395 C:/devkitPro/libounce/lib\libounce.a(condvar.o)
+ .debug_info    0x00000000029913ce      0xe60 C:/devkitPro/libounce/lib\libounce.a(init_malloc.o)
+ .debug_info    0x000000000299222e     0x288c C:/devkitPro/libounce/lib\libounce.a(cpu_window.o)
+ .debug_info    0x0000000002994aba     0x1e02 C:/devkitPro/libounce/lib\libounce.a(audu.o)
+ .debug_info    0x00000000029968bc      0x23c C:/devkitPro/libounce/lib\libounce.a(utf8_to_utf16.o)
+ .debug_info    0x0000000002996af8      0x23c C:/devkitPro/libounce/lib\libounce.a(utf16_to_utf8.o)
+ .debug_info    0x0000000002996d34      0x128 C:/devkitPro/libounce/lib\libounce.a(encode_utf8.o)
+ .debug_info    0x0000000002996e5c      0x128 C:/devkitPro/libounce/lib\libounce.a(encode_utf16.o)
+ .debug_info    0x0000000002996f84      0x177 C:/devkitPro/libounce/lib\libounce.a(decode_utf8.o)
+ .debug_info    0x00000000029970fb      0x153 C:/devkitPro/libounce/lib\libounce.a(decode_utf16.o)
+ .debug_info    0x000000000299724e      0x1e1 C:/devkitPro/libounce/lib\libounce.a(nxlink.o)
+ .debug_info    0x000000000299742f     0x2628 C:/devkitPro/libounce/lib\libounce.a(newlib.o)
+ .debug_info    0x0000000002999a57      0xcb3 C:/devkitPro/libounce/lib\libounce.a(parcel.o)
+ .debug_info    0x000000000299a70a      0x698 C:/devkitPro/libounce/lib\libounce.a(nvhost-ctrl.o)
+ .debug_info    0x000000000299ada2     0x11fd C:/devkitPro/libounce/lib\libounce.a(virtmem.o)
+ .debug_info    0x000000000299bf9f      0x9d1 C:/devkitPro/libounce/lib\libounce.a(random.o)
+ .debug_info    0x000000000299c970      0x762 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(_udivdi3.o)
+ .debug_info    0x000000000299d0d2      0x2fb C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(eqtf2.o)
+ .debug_info    0x000000000299d3cd      0x2d8 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(getf2.o)
+ .debug_info    0x000000000299d6a5      0x2c3 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(unordtf2.o)
+ .debug_info    0x000000000299d968      0x38f C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(trunctfdf2.o)
+ .debug_info    0x000000000299dcf7     0x6a84 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(unwind-dw2.o)
+ .debug_info    0x00000000029a477b     0x389e C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(unwind-dw2-fde.o)
+ .debug_info    0x00000000029a8019       0x48 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(__arm_za_disable.o)
+ .debug_info    0x00000000029a8061       0xe2 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(sfp-exceptions.o)
+ .debug_info    0x00000000029a8143       0x93 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(__aarch64_have_sme.o)
+ .debug_info    0x00000000029a81d6       0x4b C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(__arm_tpidr2_save.o)
+ .debug_info    0x00000000029a8221      0x2f4 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(extenddftf2.o)
 
 .debug_abbrev   0x0000000000000000    0xba09f
  *(.debug_abbrev)
@@ -87344,7 +87344,7 @@ Linker script and memory map
  .debug_abbrev  0x00000000000b9f18       0x28 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(__arm_tpidr2_save.o)
  .debug_abbrev  0x00000000000b9f40      0x15f C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(extenddftf2.o)
 
-.debug_line     0x0000000000000000   0x63d916
+.debug_line     0x0000000000000000   0x63d93d
  *(.debug_line)
  .debug_line    0x0000000000000000    0x10aa4 main.o
  .debug_line    0x0000000000010aa4     0x48e2 main_activity.o
@@ -87398,210 +87398,210 @@ Linker script and memory map
  .debug_line    0x00000000002d6446     0xe3b9 label.o
  .debug_line    0x00000000002e47ff     0x83d0 progress_spinner.o
  .debug_line    0x00000000002ecbcf     0x19cd rectangle.o
- .debug_line    0x00000000002ee59c    0x167f5 recycler.o
- .debug_line    0x0000000000304d91     0x9200 scrolling_frame.o
- .debug_line    0x000000000030df91     0x84e4 sidebar.o
- .debug_line    0x0000000000316475     0x628d slider.o
- .debug_line    0x000000000031c702     0x74e9 tab_frame.o
- .debug_line    0x0000000000323beb     0x676e cell_bool.o
- .debug_line    0x000000000032a359     0x5bd3 cell_detail.o
- .debug_line    0x000000000032ff2c     0xb7cc cell_input.o
- .debug_line    0x000000000033b6f8     0x6c86 cell_radio.o
- .debug_line    0x000000000034237e     0x6ee8 cell_selector.o
- .debug_line    0x0000000000349266     0x427e cell_slider.o
- .debug_line    0x000000000034d4e4     0xe056 account.o
- .debug_line    0x000000000035b53a     0xedc6 battery.o
- .debug_line    0x000000000036a300     0xfa64 wireless.o
- .debug_line    0x0000000000379d64     0xb2ce switch_audio.o
- .debug_line    0x0000000000385032    0x11c71 switch_font.o
- .debug_line    0x0000000000396ca3     0x1a55 switch_ime.o
- .debug_line    0x00000000003986f8    0x15456 switch_input.o
- .debug_line    0x00000000003adb4e    0x11711 switch_platform.o
- .debug_line    0x00000000003bf25f    0x11e27 switch_video.o
- .debug_line    0x00000000003d1086     0x56e8 dk_renderer.o
- .debug_line    0x00000000003d676e      0xda1 CIntrusiveTree.o
- .debug_line    0x00000000003d750f     0x1004 CMemPool.o
- .debug_line    0x00000000003d8513      0x2da CShader.o
- .debug_line    0x00000000003d87ed     0xd877 tinyxml2.o
- .debug_line    0x00000000003e6064      0x273 log.o
- .debug_line    0x00000000003e62d7      0x6ba YGConfig.o
- .debug_line    0x00000000003e6991      0x55a YGEnums.o
- .debug_line    0x00000000003e6eeb      0x79a YGLayout.o
- .debug_line    0x00000000003e7685     0x444e YGNode.o
- .debug_line    0x00000000003ebad3      0x89d YGStyle.o
- .debug_line    0x00000000003ec370       0x56 YGValue.o
- .debug_line    0x00000000003ec3c6     0xf7a3 Yoga.o
- .debug_line    0x00000000003fbb69      0x442 YogaUtils.o
- .debug_line    0x00000000003fbfab      0x3f3 event.o
- .debug_line    0x00000000003fc39e    0x1c57c Get.o
- .debug_line    0x000000000041891a    0x27506 Manifest.o
- .debug_line    0x000000000043fe20    0x1e52c Package.o
- .debug_line    0x000000000045e34c     0x6954 Utils.o
- .debug_line    0x0000000000464ca0     0x2ee2 ZipUtil.o
- .debug_line    0x0000000000467b82    0x2f3ca GetRepo.o
- .debug_line    0x0000000000496f4c     0xbc89 LocalRepo.o
- .debug_line    0x00000000004a2bd5    0x2ccba OSCRepo.o
- .debug_line    0x00000000004cf88f     0x3b2f Repo.o
- .debug_line    0x00000000004d33be     0xb41b UniStoreRepo.o
- .debug_line    0x00000000004de7d9      0x728 tinystr.o
- .debug_line    0x00000000004def01     0x7997 tinyxml.o
- .debug_line    0x00000000004e6898     0x3145 tinyxmlparser.o
- .debug_line    0x00000000004e99dd    0x1ce27 format.o
- .debug_line    0x0000000000506804      0xe13 os.o
- .debug_line    0x0000000000507617      0x169 switch_wrapper.o
- .debug_line    0x0000000000507780    0x29a32 nanovg.o
- .debug_line    0x00000000005311b2     0x2a03 glad.o
- .debug_line    0x0000000000533bb5      0x189 features_cpu.o
- .debug_line    0x0000000000533d3e      0x7be encoding_utf.o
- .debug_line    0x00000000005344fc      0x9b5 archive.o
- .debug_line    0x0000000000534eb1      0x162 archive_file.o
- .debug_line    0x0000000000535013      0x341 bfgrp.o
- .debug_line    0x0000000000535354      0x279 bfgrp_location.o
- .debug_line    0x00000000005355cd      0x573 bfsar.o
- .debug_line    0x0000000000535b40      0x358 bfsar_file.o
- .debug_line    0x0000000000535e98      0x1f3 bfsar_group.o
- .debug_line    0x000000000053608b      0x23d bfsar_sound.o
- .debug_line    0x00000000005362c8      0x27c bfsar_string.o
- .debug_line    0x0000000000536544      0x288 bfsar_wave_archive.o
- .debug_line    0x00000000005367cc      0x341 bfwar.o
- .debug_line    0x0000000000536b0d      0x111 bfwar_file.o
- .debug_line    0x0000000000536c1e      0x324 bfwav.o
- .debug_line    0x0000000000536f42      0x23e bfwav_info.o
- .debug_line    0x0000000000537180      0x3ff bfwsd.o
- .debug_line    0x000000000053757f      0x497 bfwsd_sound_data.o
- .debug_line    0x0000000000537a16      0x131 bfwsd_wave_id.o
- .debug_line    0x0000000000537b47      0x59b player.o
- .debug_line    0x00000000005380e2      0x558 player_load.o
- .debug_line    0x000000000053863a      0x339 player_load_lookup.o
- .debug_line    0x0000000000538973      0x3f5 ioapi.o
- .debug_line    0x0000000000538d68     0x2b1a unzip.o
- .debug_line    0x000000000053b882     0x41ab zip.o
- .debug_line    0x000000000053fa2d     0x1739 C:/devkitPro/libounce/lib\libdrako3d.a(cmd_bind_common.o)
- .debug_line    0x0000000000541166      0xcf9 C:/devkitPro/libounce/lib\libdrako3d.a(dk_cmdbuf.o)
- .debug_line    0x0000000000541e5f     0x2018 C:/devkitPro/libounce/lib\libdrako3d.a(dk_device.o)
- .debug_line    0x0000000000543e77      0x295 C:/devkitPro/libounce/lib\libdrako3d.a(dk_fence.o)
- .debug_line    0x000000000054410c     0x19c2 C:/devkitPro/libounce/lib\libdrako3d.a(dk_image.o)
- .debug_line    0x0000000000545ace      0xcfe C:/devkitPro/libounce/lib\libdrako3d.a(dk_memblock.o)
- .debug_line    0x00000000005467cc     0x1fda C:/devkitPro/libounce/lib\libdrako3d.a(dk_queue.o)
- .debug_line    0x00000000005487a6      0x2d6 C:/devkitPro/libounce/lib\libdrako3d.a(dk_shader.o)
- .debug_line    0x0000000000548a7c      0xce4 C:/devkitPro/libounce/lib\libdrako3d.a(dk_swapchain.o)
- .debug_line    0x0000000000549760     0x3a73 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_base.o)
- .debug_line    0x000000000054d1d3     0x29f5 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_state.o)
- .debug_line    0x000000000054fbc8      0xbb4 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_vbo.o)
- .debug_line    0x000000000055077c      0x14d C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_zcull.o)
- .debug_line    0x00000000005508c9      0xbea C:/devkitPro/libounce/lib\libdrako3d.a(gpu_base.o)
- .debug_line    0x00000000005514b3      0x57e C:/devkitPro/libounce/lib\libdrako3d.a(gpu_error.o)
- .debug_line    0x0000000000551a31     0x1593 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_transfer.o)
- .debug_line    0x0000000000552fc4      0x228 C:/devkitPro/libounce/lib\libdrako3d.a(image_formats.o)
- .debug_line    0x00000000005531ec      0x2a1 C:/devkitPro/libounce/lib\libdrako3d.a(queue_workbuf.o)
- .debug_line    0x000000000055348d      0x64f C:/devkitPro/libounce/lib\libdrako3d.a(tic_generate.o)
- .debug_line    0x0000000000553adc      0x458 C:/devkitPro/libounce/lib\libdrako3d.a(tsc_generate.o)
- .debug_line    0x0000000000553f34      0x3ae C:/devkitPro/libounce/lib\libdrako3d.a(codesegmgr.o)
- .debug_line    0x00000000005542e2      0x7d8 C:/devkitPro/portlibs/switch/lib\libz.a(crc32.o)
- .debug_line    0x0000000000554aba     0x2ccc C:/devkitPro/portlibs/switch/lib\libz.a(deflate.o)
- .debug_line    0x0000000000557786     0x29aa C:/devkitPro/portlibs/switch/lib\libz.a(inflate.o)
- .debug_line    0x000000000055a130      0x4dc C:/devkitPro/portlibs/switch/lib\libz.a(inftrees.o)
- .debug_line    0x000000000055a60c     0x1c83 C:/devkitPro/portlibs/switch/lib\libz.a(trees.o)
- .debug_line    0x000000000055c28f       0xea C:/devkitPro/portlibs/switch/lib\libz.a(zutil.o)
- .debug_line    0x000000000055c379      0x369 C:/devkitPro/portlibs/switch/lib\libz.a(adler32.o)
- .debug_line    0x000000000055c6e2      0x61a C:/devkitPro/portlibs/switch/lib\libz.a(inffast.o)
- .debug_line    0x000000000055ccfc    0x2ba9f C:/devkitPro/libounce/lib\libounce.a(malloc.o)
- .debug_line    0x000000000058879b      0x59c C:/devkitPro/libounce/lib\libounce.a(heap_pages.o)
- .debug_line    0x0000000000588d37       0x4e C:/devkitPro/libounce/lib\libounce.a(svc_switch2.o)
- .debug_line    0x0000000000588d85       0x6a C:/devkitPro/libounce/lib\libounce.a(switch_crt0.o)
- .debug_line    0x0000000000588def       0x4d C:/devkitPro/libounce/lib\libounce.a(readtp.o)
- .debug_line    0x0000000000588e3c       0xd5 C:/devkitPro/libounce/lib\libounce.a(exception.o)
- .debug_line    0x0000000000588f11      0xb3f C:/devkitPro/libounce/lib\libounce.a(svc.o)
- .debug_line    0x0000000000589a50       0xd0 C:/devkitPro/libounce/lib\libounce.a(cache.o)
- .debug_line    0x0000000000589b20     0x2ea4 C:/devkitPro/libounce/lib\libounce.a(vi2.o)
- .debug_line    0x000000000058c9c4      0x1a3 C:/devkitPro/libounce/lib\libounce.a(service_list.o)
- .debug_line    0x000000000058cb67     0x231e C:/devkitPro/libounce/lib\libounce.a(nmouse.o)
- .debug_line    0x000000000058ee85     0x6209 C:/devkitPro/libounce/lib\libounce.a(gsv.o)
- .debug_line    0x000000000059508e      0xb7d C:/devkitPro/libounce/lib\libounce.a(inet_addr.o)
- .debug_line    0x0000000000595c0b     0x264f C:/devkitPro/libounce/lib\libounce.a(socket.o)
- .debug_line    0x000000000059825a     0x18d5 C:/devkitPro/libounce/lib\libounce.a(romfs_dev.o)
- .debug_line    0x0000000000599b2f       0x3f C:/devkitPro/libounce/lib\libounce.a(path_buf.o)
- .debug_line    0x0000000000599b6e     0x239f C:/devkitPro/libounce/lib\libounce.a(fs_dev.o)
- .debug_line    0x000000000059bf0d       0x75 C:/devkitPro/libounce/lib\libounce.a(convert_errno.o)
- .debug_line    0x000000000059bf82     0x149b C:/devkitPro/libounce/lib\libounce.a(resolver.o)
- .debug_line    0x000000000059d41d      0x51b C:/devkitPro/libounce/lib\libounce.a(pad_pointer.o)
- .debug_line    0x000000000059d938      0x4e1 C:/devkitPro/libounce/lib\libounce.a(pad.o)
- .debug_line    0x000000000059de19      0x153 C:/devkitPro/libounce/lib\libounce.a(nro_ounce.o)
- .debug_line    0x000000000059df6c      0x12b C:/devkitPro/libounce/lib\libounce.a(hosversion.o)
- .debug_line    0x000000000059e097      0x559 C:/devkitPro/libounce/lib\libounce.a(env.o)
- .debug_line    0x000000000059e5f0      0x2e9 C:/devkitPro/libounce/lib\libounce.a(dynamic.o)
- .debug_line    0x000000000059e8d9       0x82 C:/devkitPro/libounce/lib\libounce.a(diag.o)
- .debug_line    0x000000000059e95b      0x3fb C:/devkitPro/libounce/lib\libounce.a(argv.o)
- .debug_line    0x000000000059ed56       0xa2 C:/devkitPro/libounce/lib\libounce.a(alloc.o)
- .debug_line    0x000000000059edf8     0x3bac C:/devkitPro/libounce/lib\libounce.a(web.o)
- .debug_line    0x00000000005a29a4     0x29e6 C:/devkitPro/libounce/lib\libounce.a(swkbd.o)
- .debug_line    0x00000000005a538a      0x7d3 C:/devkitPro/libounce/lib\libounce.a(libapplet.o)
- .debug_line    0x00000000005a5b5d      0xa10 C:/devkitPro/libounce/lib\libounce.a(voice.o)
- .debug_line    0x00000000005a656d      0x178 C:/devkitPro/libounce/lib\libounce.a(sink.o)
- .debug_line    0x00000000005a66e5      0x247 C:/devkitPro/libounce/lib\libounce.a(mempool.o)
- .debug_line    0x00000000005a692c      0x678 C:/devkitPro/libounce/lib\libounce.a(driver.o)
- .debug_line    0x00000000005a6fa4      0xa2c C:/devkitPro/libounce/lib\libounce.a(native_window.o)
- .debug_line    0x00000000005a79d0      0xa2c C:/devkitPro/libounce/lib\libounce.a(default_window.o)
- .debug_line    0x00000000005a83fc      0x4fc C:/devkitPro/libounce/lib\libounce.a(buffer_producer.o)
- .debug_line    0x00000000005a88f8      0xf8e C:/devkitPro/libounce/lib\libounce.a(binder.o)
- .debug_line    0x00000000005a9886      0x535 C:/devkitPro/libounce/lib\libounce.a(fence.o)
- .debug_line    0x00000000005a9dbb      0x34b C:/devkitPro/libounce/lib\libounce.a(sha256.o)
- .debug_line    0x00000000005aa106     0x4c0c C:/devkitPro/libounce/lib\libounce.a(vi.o)
- .debug_line    0x00000000005aed12     0x2f9e C:/devkitPro/libounce/lib\libounce.a(time.o)
- .debug_line    0x00000000005b1cb0     0xab2d C:/devkitPro/libounce/lib\libounce.a(ssl.o)
- .debug_line    0x00000000005bc7dd     0x1b80 C:/devkitPro/libounce/lib\libounce.a(sm.o)
- .debug_line    0x00000000005be35d     0x1d80 C:/devkitPro/libounce/lib\libounce.a(sfdnsres.o)
- .debug_line    0x00000000005c00dd    0x176b6 C:/devkitPro/libounce/lib\libounce.a(set.o)
- .debug_line    0x00000000005d7793     0x1afc C:/devkitPro/libounce/lib\libounce.a(psm.o)
- .debug_line    0x00000000005d928f      0xb67 C:/devkitPro/libounce/lib\libounce.a(pl.o)
- .debug_line    0x00000000005d9df6     0x2479 C:/devkitPro/libounce/lib\libounce.a(nv.o)
- .debug_line    0x00000000005dc26f     0x4334 C:/devkitPro/libounce/lib\libounce.a(nifm.o)
- .debug_line    0x00000000005e05a3     0x1564 C:/devkitPro/libounce/lib\libounce.a(lbl.o)
- .debug_line    0x00000000005e1b07     0x8838 C:/devkitPro/libounce/lib\libounce.a(hidsys.o)
- .debug_line    0x00000000005ea33f     0xc24a C:/devkitPro/libounce/lib\libounce.a(hid.o)
- .debug_line    0x00000000005f6589    0x13808 C:/devkitPro/libounce/lib\libounce.a(fs.o)
- .debug_line    0x0000000000609d91      0x526 C:/devkitPro/libounce/lib\libounce.a(csrng.o)
- .debug_line    0x000000000060a2b7     0x6e71 C:/devkitPro/libounce/lib\libounce.a(bsd.o)
- .debug_line    0x0000000000611128     0x1aae C:/devkitPro/libounce/lib\libounce.a(audren.o)
- .debug_line    0x0000000000612bd6    0x1a78a C:/devkitPro/libounce/lib\libounce.a(applet.o)
- .debug_line    0x000000000062d360      0xc78 C:/devkitPro/libounce/lib\libounce.a(apm.o)
- .debug_line    0x000000000062dfd8     0x1d73 C:/devkitPro/libounce/lib\libounce.a(acc.o)
- .debug_line    0x000000000062fd4b      0x4aa C:/devkitPro/libounce/lib\libounce.a(sessionmgr.o)
- .debug_line    0x00000000006301f5      0x7c2 C:/devkitPro/libounce/lib\libounce.a(wait.o)
- .debug_line    0x00000000006309b7      0x299 C:/devkitPro/libounce/lib\libounce.a(uevent.o)
- .debug_line    0x0000000000630c50      0x359 C:/devkitPro/libounce/lib\libounce.a(tmem.o)
- .debug_line    0x0000000000630fa9      0xb2f C:/devkitPro/libounce/lib\libounce.a(thread.o)
- .debug_line    0x0000000000631ad8      0x1e9 C:/devkitPro/libounce/lib\libounce.a(shmem.o)
- .debug_line    0x0000000000631cc1      0x4e1 C:/devkitPro/libounce/lib\libounce.a(mutex.o)
- .debug_line    0x00000000006321a2      0x217 C:/devkitPro/libounce/lib\libounce.a(event.o)
- .debug_line    0x00000000006323b9      0x115 C:/devkitPro/libounce/lib\libounce.a(condvar.o)
- .debug_line    0x00000000006324ce      0x3a5 C:/devkitPro/libounce/lib\libounce.a(init_malloc.o)
- .debug_line    0x0000000000632873      0xc24 C:/devkitPro/libounce/lib\libounce.a(cpu_window.o)
- .debug_line    0x0000000000633497      0x3df C:/devkitPro/libounce/lib\libounce.a(audu.o)
- .debug_line    0x0000000000633876      0x14f C:/devkitPro/libounce/lib\libounce.a(utf8_to_utf16.o)
- .debug_line    0x00000000006339c5      0x171 C:/devkitPro/libounce/lib\libounce.a(utf16_to_utf8.o)
- .debug_line    0x0000000000633b36      0x152 C:/devkitPro/libounce/lib\libounce.a(encode_utf8.o)
- .debug_line    0x0000000000633c88       0xbb C:/devkitPro/libounce/lib\libounce.a(encode_utf16.o)
- .debug_line    0x0000000000633d43      0x1a8 C:/devkitPro/libounce/lib\libounce.a(decode_utf8.o)
- .debug_line    0x0000000000633eeb       0xbe C:/devkitPro/libounce/lib\libounce.a(decode_utf16.o)
- .debug_line    0x0000000000633fa9       0xec C:/devkitPro/libounce/lib\libounce.a(nxlink.o)
- .debug_line    0x0000000000634095      0xc93 C:/devkitPro/libounce/lib\libounce.a(newlib.o)
- .debug_line    0x0000000000634d28      0x4f9 C:/devkitPro/libounce/lib\libounce.a(parcel.o)
- .debug_line    0x0000000000635221      0x256 C:/devkitPro/libounce/lib\libounce.a(nvhost-ctrl.o)
- .debug_line    0x0000000000635477      0x5ee C:/devkitPro/libounce/lib\libounce.a(virtmem.o)
- .debug_line    0x0000000000635a65      0x3be C:/devkitPro/libounce/lib\libounce.a(random.o)
- .debug_line    0x0000000000635e23      0x582 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(_udivdi3.o)
- .debug_line    0x00000000006363a5      0x16a C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(eqtf2.o)
- .debug_line    0x000000000063650f      0x25a C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(getf2.o)
- .debug_line    0x0000000000636769      0x15f C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(unordtf2.o)
- .debug_line    0x00000000006368c8      0x86e C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(trunctfdf2.o)
- .debug_line    0x0000000000637136     0x42aa C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(unwind-dw2.o)
- .debug_line    0x000000000063b3e0     0x2104 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(unwind-dw2-fde.o)
- .debug_line    0x000000000063d4e4       0x58 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(__arm_za_disable.o)
- .debug_line    0x000000000063d53c       0x98 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(sfp-exceptions.o)
- .debug_line    0x000000000063d5d4       0x3a C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(__aarch64_have_sme.o)
- .debug_line    0x000000000063d60e       0x74 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(__arm_tpidr2_save.o)
- .debug_line    0x000000000063d682      0x294 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(extenddftf2.o)
+ .debug_line    0x00000000002ee59c    0x1681c recycler.o
+ .debug_line    0x0000000000304db8     0x9200 scrolling_frame.o
+ .debug_line    0x000000000030dfb8     0x84e4 sidebar.o
+ .debug_line    0x000000000031649c     0x628d slider.o
+ .debug_line    0x000000000031c729     0x74e9 tab_frame.o
+ .debug_line    0x0000000000323c12     0x676e cell_bool.o
+ .debug_line    0x000000000032a380     0x5bd3 cell_detail.o
+ .debug_line    0x000000000032ff53     0xb7cc cell_input.o
+ .debug_line    0x000000000033b71f     0x6c86 cell_radio.o
+ .debug_line    0x00000000003423a5     0x6ee8 cell_selector.o
+ .debug_line    0x000000000034928d     0x427e cell_slider.o
+ .debug_line    0x000000000034d50b     0xe056 account.o
+ .debug_line    0x000000000035b561     0xedc6 battery.o
+ .debug_line    0x000000000036a327     0xfa64 wireless.o
+ .debug_line    0x0000000000379d8b     0xb2ce switch_audio.o
+ .debug_line    0x0000000000385059    0x11c71 switch_font.o
+ .debug_line    0x0000000000396cca     0x1a55 switch_ime.o
+ .debug_line    0x000000000039871f    0x15456 switch_input.o
+ .debug_line    0x00000000003adb75    0x11711 switch_platform.o
+ .debug_line    0x00000000003bf286    0x11e27 switch_video.o
+ .debug_line    0x00000000003d10ad     0x56e8 dk_renderer.o
+ .debug_line    0x00000000003d6795      0xda1 CIntrusiveTree.o
+ .debug_line    0x00000000003d7536     0x1004 CMemPool.o
+ .debug_line    0x00000000003d853a      0x2da CShader.o
+ .debug_line    0x00000000003d8814     0xd877 tinyxml2.o
+ .debug_line    0x00000000003e608b      0x273 log.o
+ .debug_line    0x00000000003e62fe      0x6ba YGConfig.o
+ .debug_line    0x00000000003e69b8      0x55a YGEnums.o
+ .debug_line    0x00000000003e6f12      0x79a YGLayout.o
+ .debug_line    0x00000000003e76ac     0x444e YGNode.o
+ .debug_line    0x00000000003ebafa      0x89d YGStyle.o
+ .debug_line    0x00000000003ec397       0x56 YGValue.o
+ .debug_line    0x00000000003ec3ed     0xf7a3 Yoga.o
+ .debug_line    0x00000000003fbb90      0x442 YogaUtils.o
+ .debug_line    0x00000000003fbfd2      0x3f3 event.o
+ .debug_line    0x00000000003fc3c5    0x1c57c Get.o
+ .debug_line    0x0000000000418941    0x27506 Manifest.o
+ .debug_line    0x000000000043fe47    0x1e52c Package.o
+ .debug_line    0x000000000045e373     0x6954 Utils.o
+ .debug_line    0x0000000000464cc7     0x2ee2 ZipUtil.o
+ .debug_line    0x0000000000467ba9    0x2f3ca GetRepo.o
+ .debug_line    0x0000000000496f73     0xbc89 LocalRepo.o
+ .debug_line    0x00000000004a2bfc    0x2ccba OSCRepo.o
+ .debug_line    0x00000000004cf8b6     0x3b2f Repo.o
+ .debug_line    0x00000000004d33e5     0xb41b UniStoreRepo.o
+ .debug_line    0x00000000004de800      0x728 tinystr.o
+ .debug_line    0x00000000004def28     0x7997 tinyxml.o
+ .debug_line    0x00000000004e68bf     0x3145 tinyxmlparser.o
+ .debug_line    0x00000000004e9a04    0x1ce27 format.o
+ .debug_line    0x000000000050682b      0xe13 os.o
+ .debug_line    0x000000000050763e      0x169 switch_wrapper.o
+ .debug_line    0x00000000005077a7    0x29a32 nanovg.o
+ .debug_line    0x00000000005311d9     0x2a03 glad.o
+ .debug_line    0x0000000000533bdc      0x189 features_cpu.o
+ .debug_line    0x0000000000533d65      0x7be encoding_utf.o
+ .debug_line    0x0000000000534523      0x9b5 archive.o
+ .debug_line    0x0000000000534ed8      0x162 archive_file.o
+ .debug_line    0x000000000053503a      0x341 bfgrp.o
+ .debug_line    0x000000000053537b      0x279 bfgrp_location.o
+ .debug_line    0x00000000005355f4      0x573 bfsar.o
+ .debug_line    0x0000000000535b67      0x358 bfsar_file.o
+ .debug_line    0x0000000000535ebf      0x1f3 bfsar_group.o
+ .debug_line    0x00000000005360b2      0x23d bfsar_sound.o
+ .debug_line    0x00000000005362ef      0x27c bfsar_string.o
+ .debug_line    0x000000000053656b      0x288 bfsar_wave_archive.o
+ .debug_line    0x00000000005367f3      0x341 bfwar.o
+ .debug_line    0x0000000000536b34      0x111 bfwar_file.o
+ .debug_line    0x0000000000536c45      0x324 bfwav.o
+ .debug_line    0x0000000000536f69      0x23e bfwav_info.o
+ .debug_line    0x00000000005371a7      0x3ff bfwsd.o
+ .debug_line    0x00000000005375a6      0x497 bfwsd_sound_data.o
+ .debug_line    0x0000000000537a3d      0x131 bfwsd_wave_id.o
+ .debug_line    0x0000000000537b6e      0x59b player.o
+ .debug_line    0x0000000000538109      0x558 player_load.o
+ .debug_line    0x0000000000538661      0x339 player_load_lookup.o
+ .debug_line    0x000000000053899a      0x3f5 ioapi.o
+ .debug_line    0x0000000000538d8f     0x2b1a unzip.o
+ .debug_line    0x000000000053b8a9     0x41ab zip.o
+ .debug_line    0x000000000053fa54     0x1739 C:/devkitPro/libounce/lib\libdrako3d.a(cmd_bind_common.o)
+ .debug_line    0x000000000054118d      0xcf9 C:/devkitPro/libounce/lib\libdrako3d.a(dk_cmdbuf.o)
+ .debug_line    0x0000000000541e86     0x2018 C:/devkitPro/libounce/lib\libdrako3d.a(dk_device.o)
+ .debug_line    0x0000000000543e9e      0x295 C:/devkitPro/libounce/lib\libdrako3d.a(dk_fence.o)
+ .debug_line    0x0000000000544133     0x19c2 C:/devkitPro/libounce/lib\libdrako3d.a(dk_image.o)
+ .debug_line    0x0000000000545af5      0xcfe C:/devkitPro/libounce/lib\libdrako3d.a(dk_memblock.o)
+ .debug_line    0x00000000005467f3     0x1fda C:/devkitPro/libounce/lib\libdrako3d.a(dk_queue.o)
+ .debug_line    0x00000000005487cd      0x2d6 C:/devkitPro/libounce/lib\libdrako3d.a(dk_shader.o)
+ .debug_line    0x0000000000548aa3      0xce4 C:/devkitPro/libounce/lib\libdrako3d.a(dk_swapchain.o)
+ .debug_line    0x0000000000549787     0x3a73 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_base.o)
+ .debug_line    0x000000000054d1fa     0x29f5 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_state.o)
+ .debug_line    0x000000000054fbef      0xbb4 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_vbo.o)
+ .debug_line    0x00000000005507a3      0x14d C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_zcull.o)
+ .debug_line    0x00000000005508f0      0xbea C:/devkitPro/libounce/lib\libdrako3d.a(gpu_base.o)
+ .debug_line    0x00000000005514da      0x57e C:/devkitPro/libounce/lib\libdrako3d.a(gpu_error.o)
+ .debug_line    0x0000000000551a58     0x1593 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_transfer.o)
+ .debug_line    0x0000000000552feb      0x228 C:/devkitPro/libounce/lib\libdrako3d.a(image_formats.o)
+ .debug_line    0x0000000000553213      0x2a1 C:/devkitPro/libounce/lib\libdrako3d.a(queue_workbuf.o)
+ .debug_line    0x00000000005534b4      0x64f C:/devkitPro/libounce/lib\libdrako3d.a(tic_generate.o)
+ .debug_line    0x0000000000553b03      0x458 C:/devkitPro/libounce/lib\libdrako3d.a(tsc_generate.o)
+ .debug_line    0x0000000000553f5b      0x3ae C:/devkitPro/libounce/lib\libdrako3d.a(codesegmgr.o)
+ .debug_line    0x0000000000554309      0x7d8 C:/devkitPro/portlibs/switch/lib\libz.a(crc32.o)
+ .debug_line    0x0000000000554ae1     0x2ccc C:/devkitPro/portlibs/switch/lib\libz.a(deflate.o)
+ .debug_line    0x00000000005577ad     0x29aa C:/devkitPro/portlibs/switch/lib\libz.a(inflate.o)
+ .debug_line    0x000000000055a157      0x4dc C:/devkitPro/portlibs/switch/lib\libz.a(inftrees.o)
+ .debug_line    0x000000000055a633     0x1c83 C:/devkitPro/portlibs/switch/lib\libz.a(trees.o)
+ .debug_line    0x000000000055c2b6       0xea C:/devkitPro/portlibs/switch/lib\libz.a(zutil.o)
+ .debug_line    0x000000000055c3a0      0x369 C:/devkitPro/portlibs/switch/lib\libz.a(adler32.o)
+ .debug_line    0x000000000055c709      0x61a C:/devkitPro/portlibs/switch/lib\libz.a(inffast.o)
+ .debug_line    0x000000000055cd23    0x2ba9f C:/devkitPro/libounce/lib\libounce.a(malloc.o)
+ .debug_line    0x00000000005887c2      0x59c C:/devkitPro/libounce/lib\libounce.a(heap_pages.o)
+ .debug_line    0x0000000000588d5e       0x4e C:/devkitPro/libounce/lib\libounce.a(svc_switch2.o)
+ .debug_line    0x0000000000588dac       0x6a C:/devkitPro/libounce/lib\libounce.a(switch_crt0.o)
+ .debug_line    0x0000000000588e16       0x4d C:/devkitPro/libounce/lib\libounce.a(readtp.o)
+ .debug_line    0x0000000000588e63       0xd5 C:/devkitPro/libounce/lib\libounce.a(exception.o)
+ .debug_line    0x0000000000588f38      0xb3f C:/devkitPro/libounce/lib\libounce.a(svc.o)
+ .debug_line    0x0000000000589a77       0xd0 C:/devkitPro/libounce/lib\libounce.a(cache.o)
+ .debug_line    0x0000000000589b47     0x2ea4 C:/devkitPro/libounce/lib\libounce.a(vi2.o)
+ .debug_line    0x000000000058c9eb      0x1a3 C:/devkitPro/libounce/lib\libounce.a(service_list.o)
+ .debug_line    0x000000000058cb8e     0x231e C:/devkitPro/libounce/lib\libounce.a(nmouse.o)
+ .debug_line    0x000000000058eeac     0x6209 C:/devkitPro/libounce/lib\libounce.a(gsv.o)
+ .debug_line    0x00000000005950b5      0xb7d C:/devkitPro/libounce/lib\libounce.a(inet_addr.o)
+ .debug_line    0x0000000000595c32     0x264f C:/devkitPro/libounce/lib\libounce.a(socket.o)
+ .debug_line    0x0000000000598281     0x18d5 C:/devkitPro/libounce/lib\libounce.a(romfs_dev.o)
+ .debug_line    0x0000000000599b56       0x3f C:/devkitPro/libounce/lib\libounce.a(path_buf.o)
+ .debug_line    0x0000000000599b95     0x239f C:/devkitPro/libounce/lib\libounce.a(fs_dev.o)
+ .debug_line    0x000000000059bf34       0x75 C:/devkitPro/libounce/lib\libounce.a(convert_errno.o)
+ .debug_line    0x000000000059bfa9     0x149b C:/devkitPro/libounce/lib\libounce.a(resolver.o)
+ .debug_line    0x000000000059d444      0x51b C:/devkitPro/libounce/lib\libounce.a(pad_pointer.o)
+ .debug_line    0x000000000059d95f      0x4e1 C:/devkitPro/libounce/lib\libounce.a(pad.o)
+ .debug_line    0x000000000059de40      0x153 C:/devkitPro/libounce/lib\libounce.a(nro_ounce.o)
+ .debug_line    0x000000000059df93      0x12b C:/devkitPro/libounce/lib\libounce.a(hosversion.o)
+ .debug_line    0x000000000059e0be      0x559 C:/devkitPro/libounce/lib\libounce.a(env.o)
+ .debug_line    0x000000000059e617      0x2e9 C:/devkitPro/libounce/lib\libounce.a(dynamic.o)
+ .debug_line    0x000000000059e900       0x82 C:/devkitPro/libounce/lib\libounce.a(diag.o)
+ .debug_line    0x000000000059e982      0x3fb C:/devkitPro/libounce/lib\libounce.a(argv.o)
+ .debug_line    0x000000000059ed7d       0xa2 C:/devkitPro/libounce/lib\libounce.a(alloc.o)
+ .debug_line    0x000000000059ee1f     0x3bac C:/devkitPro/libounce/lib\libounce.a(web.o)
+ .debug_line    0x00000000005a29cb     0x29e6 C:/devkitPro/libounce/lib\libounce.a(swkbd.o)
+ .debug_line    0x00000000005a53b1      0x7d3 C:/devkitPro/libounce/lib\libounce.a(libapplet.o)
+ .debug_line    0x00000000005a5b84      0xa10 C:/devkitPro/libounce/lib\libounce.a(voice.o)
+ .debug_line    0x00000000005a6594      0x178 C:/devkitPro/libounce/lib\libounce.a(sink.o)
+ .debug_line    0x00000000005a670c      0x247 C:/devkitPro/libounce/lib\libounce.a(mempool.o)
+ .debug_line    0x00000000005a6953      0x678 C:/devkitPro/libounce/lib\libounce.a(driver.o)
+ .debug_line    0x00000000005a6fcb      0xa2c C:/devkitPro/libounce/lib\libounce.a(native_window.o)
+ .debug_line    0x00000000005a79f7      0xa2c C:/devkitPro/libounce/lib\libounce.a(default_window.o)
+ .debug_line    0x00000000005a8423      0x4fc C:/devkitPro/libounce/lib\libounce.a(buffer_producer.o)
+ .debug_line    0x00000000005a891f      0xf8e C:/devkitPro/libounce/lib\libounce.a(binder.o)
+ .debug_line    0x00000000005a98ad      0x535 C:/devkitPro/libounce/lib\libounce.a(fence.o)
+ .debug_line    0x00000000005a9de2      0x34b C:/devkitPro/libounce/lib\libounce.a(sha256.o)
+ .debug_line    0x00000000005aa12d     0x4c0c C:/devkitPro/libounce/lib\libounce.a(vi.o)
+ .debug_line    0x00000000005aed39     0x2f9e C:/devkitPro/libounce/lib\libounce.a(time.o)
+ .debug_line    0x00000000005b1cd7     0xab2d C:/devkitPro/libounce/lib\libounce.a(ssl.o)
+ .debug_line    0x00000000005bc804     0x1b80 C:/devkitPro/libounce/lib\libounce.a(sm.o)
+ .debug_line    0x00000000005be384     0x1d80 C:/devkitPro/libounce/lib\libounce.a(sfdnsres.o)
+ .debug_line    0x00000000005c0104    0x176b6 C:/devkitPro/libounce/lib\libounce.a(set.o)
+ .debug_line    0x00000000005d77ba     0x1afc C:/devkitPro/libounce/lib\libounce.a(psm.o)
+ .debug_line    0x00000000005d92b6      0xb67 C:/devkitPro/libounce/lib\libounce.a(pl.o)
+ .debug_line    0x00000000005d9e1d     0x2479 C:/devkitPro/libounce/lib\libounce.a(nv.o)
+ .debug_line    0x00000000005dc296     0x4334 C:/devkitPro/libounce/lib\libounce.a(nifm.o)
+ .debug_line    0x00000000005e05ca     0x1564 C:/devkitPro/libounce/lib\libounce.a(lbl.o)
+ .debug_line    0x00000000005e1b2e     0x8838 C:/devkitPro/libounce/lib\libounce.a(hidsys.o)
+ .debug_line    0x00000000005ea366     0xc24a C:/devkitPro/libounce/lib\libounce.a(hid.o)
+ .debug_line    0x00000000005f65b0    0x13808 C:/devkitPro/libounce/lib\libounce.a(fs.o)
+ .debug_line    0x0000000000609db8      0x526 C:/devkitPro/libounce/lib\libounce.a(csrng.o)
+ .debug_line    0x000000000060a2de     0x6e71 C:/devkitPro/libounce/lib\libounce.a(bsd.o)
+ .debug_line    0x000000000061114f     0x1aae C:/devkitPro/libounce/lib\libounce.a(audren.o)
+ .debug_line    0x0000000000612bfd    0x1a78a C:/devkitPro/libounce/lib\libounce.a(applet.o)
+ .debug_line    0x000000000062d387      0xc78 C:/devkitPro/libounce/lib\libounce.a(apm.o)
+ .debug_line    0x000000000062dfff     0x1d73 C:/devkitPro/libounce/lib\libounce.a(acc.o)
+ .debug_line    0x000000000062fd72      0x4aa C:/devkitPro/libounce/lib\libounce.a(sessionmgr.o)
+ .debug_line    0x000000000063021c      0x7c2 C:/devkitPro/libounce/lib\libounce.a(wait.o)
+ .debug_line    0x00000000006309de      0x299 C:/devkitPro/libounce/lib\libounce.a(uevent.o)
+ .debug_line    0x0000000000630c77      0x359 C:/devkitPro/libounce/lib\libounce.a(tmem.o)
+ .debug_line    0x0000000000630fd0      0xb2f C:/devkitPro/libounce/lib\libounce.a(thread.o)
+ .debug_line    0x0000000000631aff      0x1e9 C:/devkitPro/libounce/lib\libounce.a(shmem.o)
+ .debug_line    0x0000000000631ce8      0x4e1 C:/devkitPro/libounce/lib\libounce.a(mutex.o)
+ .debug_line    0x00000000006321c9      0x217 C:/devkitPro/libounce/lib\libounce.a(event.o)
+ .debug_line    0x00000000006323e0      0x115 C:/devkitPro/libounce/lib\libounce.a(condvar.o)
+ .debug_line    0x00000000006324f5      0x3a5 C:/devkitPro/libounce/lib\libounce.a(init_malloc.o)
+ .debug_line    0x000000000063289a      0xc24 C:/devkitPro/libounce/lib\libounce.a(cpu_window.o)
+ .debug_line    0x00000000006334be      0x3df C:/devkitPro/libounce/lib\libounce.a(audu.o)
+ .debug_line    0x000000000063389d      0x14f C:/devkitPro/libounce/lib\libounce.a(utf8_to_utf16.o)
+ .debug_line    0x00000000006339ec      0x171 C:/devkitPro/libounce/lib\libounce.a(utf16_to_utf8.o)
+ .debug_line    0x0000000000633b5d      0x152 C:/devkitPro/libounce/lib\libounce.a(encode_utf8.o)
+ .debug_line    0x0000000000633caf       0xbb C:/devkitPro/libounce/lib\libounce.a(encode_utf16.o)
+ .debug_line    0x0000000000633d6a      0x1a8 C:/devkitPro/libounce/lib\libounce.a(decode_utf8.o)
+ .debug_line    0x0000000000633f12       0xbe C:/devkitPro/libounce/lib\libounce.a(decode_utf16.o)
+ .debug_line    0x0000000000633fd0       0xec C:/devkitPro/libounce/lib\libounce.a(nxlink.o)
+ .debug_line    0x00000000006340bc      0xc93 C:/devkitPro/libounce/lib\libounce.a(newlib.o)
+ .debug_line    0x0000000000634d4f      0x4f9 C:/devkitPro/libounce/lib\libounce.a(parcel.o)
+ .debug_line    0x0000000000635248      0x256 C:/devkitPro/libounce/lib\libounce.a(nvhost-ctrl.o)
+ .debug_line    0x000000000063549e      0x5ee C:/devkitPro/libounce/lib\libounce.a(virtmem.o)
+ .debug_line    0x0000000000635a8c      0x3be C:/devkitPro/libounce/lib\libounce.a(random.o)
+ .debug_line    0x0000000000635e4a      0x582 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(_udivdi3.o)
+ .debug_line    0x00000000006363cc      0x16a C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(eqtf2.o)
+ .debug_line    0x0000000000636536      0x25a C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(getf2.o)
+ .debug_line    0x0000000000636790      0x15f C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(unordtf2.o)
+ .debug_line    0x00000000006368ef      0x86e C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(trunctfdf2.o)
+ .debug_line    0x000000000063715d     0x42aa C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(unwind-dw2.o)
+ .debug_line    0x000000000063b407     0x2104 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(unwind-dw2-fde.o)
+ .debug_line    0x000000000063d50b       0x58 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(__arm_za_disable.o)
+ .debug_line    0x000000000063d563       0x98 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(sfp-exceptions.o)
+ .debug_line    0x000000000063d5fb       0x3a C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(__aarch64_have_sme.o)
+ .debug_line    0x000000000063d635       0x74 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(__arm_tpidr2_save.o)
+ .debug_line    0x000000000063d6a9      0x294 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(extenddftf2.o)
 
 .debug_frame
  *(.debug_frame)
@@ -87713,7 +87713,7 @@ Linker script and memory map
  .debug_str     0x00000000007e6132        0x0 rectangle.o
                                       0x369b8 (size before relaxing)
  .debug_str     0x00000000007e6132        0x0 recycler.o
-                                      0xcb0dc (size before relaxing)
+                                      0xcb110 (size before relaxing)
  .debug_str     0x00000000007e6132        0x0 scrolling_frame.o
                                       0xc2af1 (size before relaxing)
  .debug_str     0x00000000007e6132        0x0 sidebar.o
@@ -88282,7 +88282,7 @@ OUTPUT(C:/Users/sould/Documents/GitHub/hpak/app/hpak.elf elf64-littleaarch64)
 LOAD linker stubs
 
 .debug_loclists
-                0x0000000000000000   0xdde17f
+                0x0000000000000000   0xdde191
  .debug_loclists
                 0x0000000000000000    0x26a8f main.o
  .debug_loclists
@@ -88388,392 +88388,392 @@ LOAD linker stubs
  .debug_loclists
                 0x00000000006d09b6     0x40b9 rectangle.o
  .debug_loclists
-                0x00000000006d4a6f    0x33cc5 recycler.o
+                0x00000000006d4a6f    0x33cd7 recycler.o
  .debug_loclists
-                0x0000000000708734    0x16df4 scrolling_frame.o
+                0x0000000000708746    0x16df4 scrolling_frame.o
  .debug_loclists
-                0x000000000071f528    0x151c8 sidebar.o
+                0x000000000071f53a    0x151c8 sidebar.o
  .debug_loclists
-                0x00000000007346f0     0xfc9e slider.o
+                0x0000000000734702     0xfc9e slider.o
  .debug_loclists
-                0x000000000074438e    0x12e17 tab_frame.o
+                0x00000000007443a0    0x12e17 tab_frame.o
  .debug_loclists
-                0x00000000007571a5    0x110a4 cell_bool.o
+                0x00000000007571b7    0x110a4 cell_bool.o
  .debug_loclists
-                0x0000000000768249     0xfbad cell_detail.o
+                0x000000000076825b     0xfbad cell_detail.o
  .debug_loclists
-                0x0000000000777df6    0x1d650 cell_input.o
+                0x0000000000777e08    0x1d650 cell_input.o
  .debug_loclists
-                0x0000000000795446    0x11c8e cell_radio.o
+                0x0000000000795458    0x11c8e cell_radio.o
  .debug_loclists
-                0x00000000007a70d4    0x126ed cell_selector.o
+                0x00000000007a70e6    0x126ed cell_selector.o
  .debug_loclists
-                0x00000000007b97c1     0x9ddd cell_slider.o
+                0x00000000007b97d3     0x9ddd cell_slider.o
  .debug_loclists
-                0x00000000007c359e    0x216fe account.o
+                0x00000000007c35b0    0x216fe account.o
  .debug_loclists
-                0x00000000007e4c9c    0x2351d battery.o
+                0x00000000007e4cae    0x2351d battery.o
  .debug_loclists
-                0x00000000008081b9    0x24f19 wireless.o
+                0x00000000008081cb    0x24f19 wireless.o
  .debug_loclists
-                0x000000000082d0d2    0x1866a switch_audio.o
+                0x000000000082d0e4    0x1866a switch_audio.o
  .debug_loclists
-                0x000000000084573c    0x29872 switch_font.o
+                0x000000000084574e    0x29872 switch_font.o
  .debug_loclists
-                0x000000000086efae     0x3c55 switch_ime.o
+                0x000000000086efc0     0x3c55 switch_ime.o
  .debug_loclists
-                0x0000000000872c03    0x2fed8 switch_input.o
+                0x0000000000872c15    0x2fed8 switch_input.o
  .debug_loclists
-                0x00000000008a2adb    0x27db8 switch_platform.o
+                0x00000000008a2aed    0x27db8 switch_platform.o
  .debug_loclists
-                0x00000000008ca893    0x281c0 switch_video.o
+                0x00000000008ca8a5    0x281c0 switch_video.o
  .debug_loclists
-                0x00000000008f2a53     0x8f09 dk_renderer.o
+                0x00000000008f2a65     0x8f09 dk_renderer.o
  .debug_loclists
-                0x00000000008fb95c      0xc88 CIntrusiveTree.o
+                0x00000000008fb96e      0xc88 CIntrusiveTree.o
  .debug_loclists
-                0x00000000008fc5e4     0x1e5e CMemPool.o
+                0x00000000008fc5f6     0x1e5e CMemPool.o
  .debug_loclists
-                0x00000000008fe442      0x21e CShader.o
+                0x00000000008fe454      0x21e CShader.o
  .debug_loclists
-                0x00000000008fe660    0x12a59 tinyxml2.o
+                0x00000000008fe672    0x12a59 tinyxml2.o
  .debug_loclists
-                0x00000000009110b9      0x344 log.o
+                0x00000000009110cb      0x344 log.o
  .debug_loclists
-                0x00000000009113fd      0x92a YGConfig.o
+                0x000000000091140f      0x92a YGConfig.o
  .debug_loclists
-                0x0000000000911d27      0x5f0 YGEnums.o
+                0x0000000000911d39      0x5f0 YGEnums.o
  .debug_loclists
-                0x0000000000912317      0x4dd YGLayout.o
+                0x0000000000912329      0x4dd YGLayout.o
  .debug_loclists
-                0x00000000009127f4     0x6228 YGNode.o
+                0x0000000000912806     0x6228 YGNode.o
  .debug_loclists
-                0x0000000000918a1c      0x749 YGStyle.o
+                0x0000000000918a2e      0x749 YGStyle.o
  .debug_loclists
-                0x0000000000919165    0x1af92 Yoga.o
+                0x0000000000919177    0x1af92 Yoga.o
  .debug_loclists
-                0x00000000009340f7      0x282 YogaUtils.o
+                0x0000000000934109      0x282 YogaUtils.o
  .debug_loclists
-                0x0000000000934379      0x513 event.o
+                0x000000000093438b      0x513 event.o
  .debug_loclists
-                0x000000000093488c    0x407f9 Get.o
+                0x000000000093489e    0x407f9 Get.o
  .debug_loclists
-                0x0000000000975085    0x5bcd0 Manifest.o
+                0x0000000000975097    0x5bcd0 Manifest.o
  .debug_loclists
-                0x00000000009d0d55    0x4abed Package.o
+                0x00000000009d0d67    0x4abed Package.o
  .debug_loclists
-                0x0000000000a1b942     0xcec6 Utils.o
+                0x0000000000a1b954     0xcec6 Utils.o
  .debug_loclists
-                0x0000000000a28808     0x5e3f ZipUtil.o
+                0x0000000000a2881a     0x5e3f ZipUtil.o
  .debug_loclists
-                0x0000000000a2e647    0x6ed5e GetRepo.o
+                0x0000000000a2e659    0x6ed5e GetRepo.o
  .debug_loclists
-                0x0000000000a9d3a5    0x1afaf LocalRepo.o
+                0x0000000000a9d3b7    0x1afaf LocalRepo.o
  .debug_loclists
-                0x0000000000ab8354    0x69196 OSCRepo.o
+                0x0000000000ab8366    0x69196 OSCRepo.o
  .debug_loclists
-                0x0000000000b214ea     0x7cc1 Repo.o
+                0x0000000000b214fc     0x7cc1 Repo.o
  .debug_loclists
-                0x0000000000b291ab    0x1c269 UniStoreRepo.o
+                0x0000000000b291bd    0x1c269 UniStoreRepo.o
  .debug_loclists
-                0x0000000000b45414      0xa6d tinystr.o
+                0x0000000000b45426      0xa6d tinystr.o
  .debug_loclists
-                0x0000000000b45e81     0x87e4 tinyxml.o
+                0x0000000000b45e93     0x87e4 tinyxml.o
  .debug_loclists
-                0x0000000000b4e665     0x3ad6 tinyxmlparser.o
+                0x0000000000b4e677     0x3ad6 tinyxmlparser.o
  .debug_loclists
-                0x0000000000b5213b    0x43709 format.o
+                0x0000000000b5214d    0x43709 format.o
  .debug_loclists
-                0x0000000000b95844      0xdd0 os.o
+                0x0000000000b95856      0xdd0 os.o
  .debug_loclists
-                0x0000000000b96614       0x24 switch_wrapper.o
+                0x0000000000b96626       0x24 switch_wrapper.o
  .debug_loclists
-                0x0000000000b96638    0x46ed7 nanovg.o
+                0x0000000000b9664a    0x46ed7 nanovg.o
  .debug_loclists
-                0x0000000000bdd50f      0x303 glad.o
+                0x0000000000bdd521      0x303 glad.o
  .debug_loclists
-                0x0000000000bdd812       0x1c features_cpu.o
+                0x0000000000bdd824       0x1c features_cpu.o
  .debug_loclists
-                0x0000000000bdd82e      0x961 encoding_utf.o
+                0x0000000000bdd840      0x961 encoding_utf.o
  .debug_loclists
-                0x0000000000bde18f     0x164c archive.o
+                0x0000000000bde1a1     0x164c archive.o
  .debug_loclists
-                0x0000000000bdf7db       0xf2 archive_file.o
+                0x0000000000bdf7ed       0xf2 archive_file.o
  .debug_loclists
-                0x0000000000bdf8cd      0x2ee bfgrp.o
+                0x0000000000bdf8df      0x2ee bfgrp.o
  .debug_loclists
-                0x0000000000bdfbbb      0x400 bfgrp_location.o
+                0x0000000000bdfbcd      0x400 bfgrp_location.o
  .debug_loclists
-                0x0000000000bdffbb      0x5f3 bfsar.o
+                0x0000000000bdffcd      0x5f3 bfsar.o
  .debug_loclists
-                0x0000000000be05ae      0x35c bfsar_file.o
+                0x0000000000be05c0      0x35c bfsar_file.o
  .debug_loclists
-                0x0000000000be090a      0x210 bfsar_group.o
+                0x0000000000be091c      0x210 bfsar_group.o
  .debug_loclists
-                0x0000000000be0b1a      0x2b4 bfsar_sound.o
+                0x0000000000be0b2c      0x2b4 bfsar_sound.o
  .debug_loclists
-                0x0000000000be0dce      0x372 bfsar_string.o
+                0x0000000000be0de0      0x372 bfsar_string.o
  .debug_loclists
-                0x0000000000be1140      0x371 bfsar_wave_archive.o
+                0x0000000000be1152      0x371 bfsar_wave_archive.o
  .debug_loclists
-                0x0000000000be14b1      0x2ee bfwar.o
+                0x0000000000be14c3      0x2ee bfwar.o
  .debug_loclists
-                0x0000000000be179f       0xa3 bfwar_file.o
+                0x0000000000be17b1       0xa3 bfwar_file.o
  .debug_loclists
-                0x0000000000be1842      0x2e7 bfwav.o
+                0x0000000000be1854      0x2e7 bfwav.o
  .debug_loclists
-                0x0000000000be1b29      0x29e bfwav_info.o
+                0x0000000000be1b3b      0x29e bfwav_info.o
  .debug_loclists
-                0x0000000000be1dc7      0x415 bfwsd.o
+                0x0000000000be1dd9      0x415 bfwsd.o
  .debug_loclists
-                0x0000000000be21dc      0x6a8 bfwsd_sound_data.o
+                0x0000000000be21ee      0x6a8 bfwsd_sound_data.o
  .debug_loclists
-                0x0000000000be2884      0x12c bfwsd_wave_id.o
+                0x0000000000be2896      0x12c bfwsd_wave_id.o
  .debug_loclists
-                0x0000000000be29b0      0x325 player.o
+                0x0000000000be29c2      0x325 player.o
  .debug_loclists
-                0x0000000000be2cd5      0x77b player_load.o
+                0x0000000000be2ce7      0x77b player_load.o
  .debug_loclists
-                0x0000000000be3450      0x398 player_load_lookup.o
+                0x0000000000be3462      0x398 player_load_lookup.o
  .debug_loclists
-                0x0000000000be37e8      0x617 ioapi.o
+                0x0000000000be37fa      0x617 ioapi.o
  .debug_loclists
-                0x0000000000be3dff     0x4922 unzip.o
+                0x0000000000be3e11     0x4922 unzip.o
  .debug_loclists
-                0x0000000000be8721     0x5ece zip.o
+                0x0000000000be8733     0x5ece zip.o
  .debug_loclists
-                0x0000000000bee5ef     0x385b C:/devkitPro/libounce/lib\libdrako3d.a(cmd_bind_common.o)
+                0x0000000000bee601     0x385b C:/devkitPro/libounce/lib\libdrako3d.a(cmd_bind_common.o)
  .debug_loclists
-                0x0000000000bf1e4a      0xf62 C:/devkitPro/libounce/lib\libdrako3d.a(dk_cmdbuf.o)
+                0x0000000000bf1e5c      0xf62 C:/devkitPro/libounce/lib\libdrako3d.a(dk_cmdbuf.o)
  .debug_loclists
-                0x0000000000bf2dac     0x2791 C:/devkitPro/libounce/lib\libdrako3d.a(dk_device.o)
+                0x0000000000bf2dbe     0x2791 C:/devkitPro/libounce/lib\libdrako3d.a(dk_device.o)
  .debug_loclists
-                0x0000000000bf553d      0x1ea C:/devkitPro/libounce/lib\libdrako3d.a(dk_fence.o)
+                0x0000000000bf554f      0x1ea C:/devkitPro/libounce/lib\libdrako3d.a(dk_fence.o)
  .debug_loclists
-                0x0000000000bf5727     0x1d78 C:/devkitPro/libounce/lib\libdrako3d.a(dk_image.o)
+                0x0000000000bf5739     0x1d78 C:/devkitPro/libounce/lib\libdrako3d.a(dk_image.o)
  .debug_loclists
-                0x0000000000bf749f     0x100c C:/devkitPro/libounce/lib\libdrako3d.a(dk_memblock.o)
+                0x0000000000bf74b1     0x100c C:/devkitPro/libounce/lib\libdrako3d.a(dk_memblock.o)
  .debug_loclists
-                0x0000000000bf84ab     0x25d1 C:/devkitPro/libounce/lib\libdrako3d.a(dk_queue.o)
+                0x0000000000bf84bd     0x25d1 C:/devkitPro/libounce/lib\libdrako3d.a(dk_queue.o)
  .debug_loclists
-                0x0000000000bfaa7c      0x1aa C:/devkitPro/libounce/lib\libdrako3d.a(dk_shader.o)
+                0x0000000000bfaa8e      0x1aa C:/devkitPro/libounce/lib\libdrako3d.a(dk_shader.o)
  .debug_loclists
-                0x0000000000bfac26      0xc51 C:/devkitPro/libounce/lib\libdrako3d.a(dk_swapchain.o)
+                0x0000000000bfac38      0xc51 C:/devkitPro/libounce/lib\libdrako3d.a(dk_swapchain.o)
  .debug_loclists
-                0x0000000000bfb877     0x788d C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_base.o)
+                0x0000000000bfb889     0x788d C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_base.o)
  .debug_loclists
-                0x0000000000c03104     0x6c26 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_state.o)
+                0x0000000000c03116     0x6c26 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_state.o)
  .debug_loclists
-                0x0000000000c09d2a     0x1452 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_vbo.o)
+                0x0000000000c09d3c     0x1452 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_vbo.o)
  .debug_loclists
-                0x0000000000c0b17c       0xc6 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_zcull.o)
+                0x0000000000c0b18e       0xc6 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_zcull.o)
  .debug_loclists
-                0x0000000000c0b242     0x1966 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_base.o)
+                0x0000000000c0b254     0x1966 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_base.o)
  .debug_loclists
-                0x0000000000c0cba8      0x871 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_error.o)
+                0x0000000000c0cbba      0x871 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_error.o)
  .debug_loclists
-                0x0000000000c0d419     0x3207 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_transfer.o)
+                0x0000000000c0d42b     0x3207 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_transfer.o)
  .debug_loclists
-                0x0000000000c10620      0x21c C:/devkitPro/libounce/lib\libdrako3d.a(image_formats.o)
+                0x0000000000c10632      0x21c C:/devkitPro/libounce/lib\libdrako3d.a(image_formats.o)
  .debug_loclists
-                0x0000000000c1083c      0x2d3 C:/devkitPro/libounce/lib\libdrako3d.a(queue_workbuf.o)
+                0x0000000000c1084e      0x2d3 C:/devkitPro/libounce/lib\libdrako3d.a(queue_workbuf.o)
  .debug_loclists
-                0x0000000000c10b0f      0x570 C:/devkitPro/libounce/lib\libdrako3d.a(tic_generate.o)
+                0x0000000000c10b21      0x570 C:/devkitPro/libounce/lib\libdrako3d.a(tic_generate.o)
  .debug_loclists
-                0x0000000000c1107f      0x3cc C:/devkitPro/libounce/lib\libdrako3d.a(tsc_generate.o)
+                0x0000000000c11091      0x3cc C:/devkitPro/libounce/lib\libdrako3d.a(tsc_generate.o)
  .debug_loclists
-                0x0000000000c1144b      0x43b C:/devkitPro/libounce/lib\libdrako3d.a(codesegmgr.o)
+                0x0000000000c1145d      0x43b C:/devkitPro/libounce/lib\libdrako3d.a(codesegmgr.o)
  .debug_loclists
-                0x0000000000c11886      0x6d8 C:/devkitPro/portlibs/switch/lib\libz.a(crc32.o)
+                0x0000000000c11898      0x6d8 C:/devkitPro/portlibs/switch/lib\libz.a(crc32.o)
  .debug_loclists
-                0x0000000000c11f5e     0x1c28 C:/devkitPro/portlibs/switch/lib\libz.a(deflate.o)
+                0x0000000000c11f70     0x1c28 C:/devkitPro/portlibs/switch/lib\libz.a(deflate.o)
  .debug_loclists
-                0x0000000000c13b86     0x2139 C:/devkitPro/portlibs/switch/lib\libz.a(inflate.o)
+                0x0000000000c13b98     0x2139 C:/devkitPro/portlibs/switch/lib\libz.a(inflate.o)
  .debug_loclists
-                0x0000000000c15cbf      0x752 C:/devkitPro/portlibs/switch/lib\libz.a(inftrees.o)
+                0x0000000000c15cd1      0x752 C:/devkitPro/portlibs/switch/lib\libz.a(inftrees.o)
  .debug_loclists
-                0x0000000000c16411     0x1dc9 C:/devkitPro/portlibs/switch/lib\libz.a(trees.o)
+                0x0000000000c16423     0x1dc9 C:/devkitPro/portlibs/switch/lib\libz.a(trees.o)
  .debug_loclists
-                0x0000000000c181da       0xb3 C:/devkitPro/portlibs/switch/lib\libz.a(zutil.o)
+                0x0000000000c181ec       0xb3 C:/devkitPro/portlibs/switch/lib\libz.a(zutil.o)
  .debug_loclists
-                0x0000000000c1828d      0x470 C:/devkitPro/portlibs/switch/lib\libz.a(adler32.o)
+                0x0000000000c1829f      0x470 C:/devkitPro/portlibs/switch/lib\libz.a(adler32.o)
  .debug_loclists
-                0x0000000000c186fd      0x871 C:/devkitPro/portlibs/switch/lib\libz.a(inffast.o)
+                0x0000000000c1870f      0x871 C:/devkitPro/portlibs/switch/lib\libz.a(inffast.o)
  .debug_loclists
-                0x0000000000c18f6e    0x53ea7 C:/devkitPro/libounce/lib\libounce.a(malloc.o)
+                0x0000000000c18f80    0x53ea7 C:/devkitPro/libounce/lib\libounce.a(malloc.o)
  .debug_loclists
-                0x0000000000c6ce15      0x64c C:/devkitPro/libounce/lib\libounce.a(heap_pages.o)
+                0x0000000000c6ce27      0x64c C:/devkitPro/libounce/lib\libounce.a(heap_pages.o)
  .debug_loclists
-                0x0000000000c6d461     0x5497 C:/devkitPro/libounce/lib\libounce.a(vi2.o)
+                0x0000000000c6d473     0x5497 C:/devkitPro/libounce/lib\libounce.a(vi2.o)
  .debug_loclists
-                0x0000000000c728f8       0xc6 C:/devkitPro/libounce/lib\libounce.a(service_list.o)
+                0x0000000000c7290a       0xc6 C:/devkitPro/libounce/lib\libounce.a(service_list.o)
  .debug_loclists
-                0x0000000000c729be     0x51c5 C:/devkitPro/libounce/lib\libounce.a(nmouse.o)
+                0x0000000000c729d0     0x51c5 C:/devkitPro/libounce/lib\libounce.a(nmouse.o)
  .debug_loclists
-                0x0000000000c77b83     0xcfd8 C:/devkitPro/libounce/lib\libounce.a(gsv.o)
+                0x0000000000c77b95     0xcfd8 C:/devkitPro/libounce/lib\libounce.a(gsv.o)
  .debug_loclists
-                0x0000000000c84b5b     0x1188 C:/devkitPro/libounce/lib\libounce.a(inet_addr.o)
+                0x0000000000c84b6d     0x1188 C:/devkitPro/libounce/lib\libounce.a(inet_addr.o)
  .debug_loclists
-                0x0000000000c85ce3     0x350f C:/devkitPro/libounce/lib\libounce.a(socket.o)
+                0x0000000000c85cf5     0x350f C:/devkitPro/libounce/lib\libounce.a(socket.o)
  .debug_loclists
-                0x0000000000c891f2     0x1ecc C:/devkitPro/libounce/lib\libounce.a(romfs_dev.o)
+                0x0000000000c89204     0x1ecc C:/devkitPro/libounce/lib\libounce.a(romfs_dev.o)
  .debug_loclists
-                0x0000000000c8b0be     0x2b8b C:/devkitPro/libounce/lib\libounce.a(fs_dev.o)
+                0x0000000000c8b0d0     0x2b8b C:/devkitPro/libounce/lib\libounce.a(fs_dev.o)
  .debug_loclists
-                0x0000000000c8dc49       0x39 C:/devkitPro/libounce/lib\libounce.a(convert_errno.o)
+                0x0000000000c8dc5b       0x39 C:/devkitPro/libounce/lib\libounce.a(convert_errno.o)
  .debug_loclists
-                0x0000000000c8dc82     0x121e C:/devkitPro/libounce/lib\libounce.a(resolver.o)
+                0x0000000000c8dc94     0x121e C:/devkitPro/libounce/lib\libounce.a(resolver.o)
  .debug_loclists
-                0x0000000000c8eea0      0x49b C:/devkitPro/libounce/lib\libounce.a(pad_pointer.o)
+                0x0000000000c8eeb2      0x49b C:/devkitPro/libounce/lib\libounce.a(pad_pointer.o)
  .debug_loclists
-                0x0000000000c8f33b      0x395 C:/devkitPro/libounce/lib\libounce.a(pad.o)
+                0x0000000000c8f34d      0x395 C:/devkitPro/libounce/lib\libounce.a(pad.o)
  .debug_loclists
-                0x0000000000c8f6d0      0x239 C:/devkitPro/libounce/lib\libounce.a(nro_ounce.o)
+                0x0000000000c8f6e2      0x239 C:/devkitPro/libounce/lib\libounce.a(nro_ounce.o)
  .debug_loclists
-                0x0000000000c8f909       0x2c C:/devkitPro/libounce/lib\libounce.a(hosversion.o)
+                0x0000000000c8f91b       0x2c C:/devkitPro/libounce/lib\libounce.a(hosversion.o)
  .debug_loclists
-                0x0000000000c8f935      0x1cf C:/devkitPro/libounce/lib\libounce.a(env.o)
+                0x0000000000c8f947      0x1cf C:/devkitPro/libounce/lib\libounce.a(env.o)
  .debug_loclists
-                0x0000000000c8fb04      0x311 C:/devkitPro/libounce/lib\libounce.a(dynamic.o)
+                0x0000000000c8fb16      0x311 C:/devkitPro/libounce/lib\libounce.a(dynamic.o)
  .debug_loclists
-                0x0000000000c8fe15       0x25 C:/devkitPro/libounce/lib\libounce.a(diag.o)
+                0x0000000000c8fe27       0x25 C:/devkitPro/libounce/lib\libounce.a(diag.o)
  .debug_loclists
-                0x0000000000c8fe3a      0x37c C:/devkitPro/libounce/lib\libounce.a(argv.o)
+                0x0000000000c8fe4c      0x37c C:/devkitPro/libounce/lib\libounce.a(argv.o)
  .debug_loclists
-                0x0000000000c901b6       0x97 C:/devkitPro/libounce/lib\libounce.a(alloc.o)
+                0x0000000000c901c8       0x97 C:/devkitPro/libounce/lib\libounce.a(alloc.o)
  .debug_loclists
-                0x0000000000c9024d     0x7f15 C:/devkitPro/libounce/lib\libounce.a(web.o)
+                0x0000000000c9025f     0x7f15 C:/devkitPro/libounce/lib\libounce.a(web.o)
  .debug_loclists
-                0x0000000000c98162     0x3215 C:/devkitPro/libounce/lib\libounce.a(swkbd.o)
+                0x0000000000c98174     0x3215 C:/devkitPro/libounce/lib\libounce.a(swkbd.o)
  .debug_loclists
-                0x0000000000c9b377      0xa1b C:/devkitPro/libounce/lib\libounce.a(libapplet.o)
+                0x0000000000c9b389      0xa1b C:/devkitPro/libounce/lib\libounce.a(libapplet.o)
  .debug_loclists
-                0x0000000000c9bd92      0x8ee C:/devkitPro/libounce/lib\libounce.a(voice.o)
+                0x0000000000c9bda4      0x8ee C:/devkitPro/libounce/lib\libounce.a(voice.o)
  .debug_loclists
-                0x0000000000c9c680      0x125 C:/devkitPro/libounce/lib\libounce.a(sink.o)
+                0x0000000000c9c692      0x125 C:/devkitPro/libounce/lib\libounce.a(sink.o)
  .debug_loclists
-                0x0000000000c9c7a5       0xeb C:/devkitPro/libounce/lib\libounce.a(mempool.o)
+                0x0000000000c9c7b7       0xeb C:/devkitPro/libounce/lib\libounce.a(mempool.o)
  .debug_loclists
-                0x0000000000c9c890      0x484 C:/devkitPro/libounce/lib\libounce.a(driver.o)
+                0x0000000000c9c8a2      0x484 C:/devkitPro/libounce/lib\libounce.a(driver.o)
  .debug_loclists
-                0x0000000000c9cd14      0xb8a C:/devkitPro/libounce/lib\libounce.a(native_window.o)
+                0x0000000000c9cd26      0xb8a C:/devkitPro/libounce/lib\libounce.a(native_window.o)
  .debug_loclists
-                0x0000000000c9d89e      0x6b5 C:/devkitPro/libounce/lib\libounce.a(default_window.o)
+                0x0000000000c9d8b0      0x6b5 C:/devkitPro/libounce/lib\libounce.a(default_window.o)
  .debug_loclists
-                0x0000000000c9df53      0x830 C:/devkitPro/libounce/lib\libounce.a(buffer_producer.o)
+                0x0000000000c9df65      0x830 C:/devkitPro/libounce/lib\libounce.a(buffer_producer.o)
  .debug_loclists
-                0x0000000000c9e783     0x2228 C:/devkitPro/libounce/lib\libounce.a(binder.o)
+                0x0000000000c9e795     0x2228 C:/devkitPro/libounce/lib\libounce.a(binder.o)
  .debug_loclists
-                0x0000000000ca09ab      0x5fb C:/devkitPro/libounce/lib\libounce.a(fence.o)
+                0x0000000000ca09bd      0x5fb C:/devkitPro/libounce/lib\libounce.a(fence.o)
  .debug_loclists
-                0x0000000000ca0fa6      0x3a4 C:/devkitPro/libounce/lib\libounce.a(sha256.o)
+                0x0000000000ca0fb8      0x3a4 C:/devkitPro/libounce/lib\libounce.a(sha256.o)
  .debug_loclists
-                0x0000000000ca134a     0xbc5e C:/devkitPro/libounce/lib\libounce.a(vi.o)
+                0x0000000000ca135c     0xbc5e C:/devkitPro/libounce/lib\libounce.a(vi.o)
  .debug_loclists
-                0x0000000000cacfa8     0x680d C:/devkitPro/libounce/lib\libounce.a(time.o)
+                0x0000000000cacfba     0x680d C:/devkitPro/libounce/lib\libounce.a(time.o)
  .debug_loclists
-                0x0000000000cb37b5    0x1ad1a C:/devkitPro/libounce/lib\libounce.a(ssl.o)
+                0x0000000000cb37c7    0x1ad1a C:/devkitPro/libounce/lib\libounce.a(ssl.o)
  .debug_loclists
-                0x0000000000cce4cf     0x320c C:/devkitPro/libounce/lib\libounce.a(sm.o)
+                0x0000000000cce4e1     0x320c C:/devkitPro/libounce/lib\libounce.a(sm.o)
  .debug_loclists
-                0x0000000000cd16db     0x4112 C:/devkitPro/libounce/lib\libounce.a(sfdnsres.o)
+                0x0000000000cd16ed     0x4112 C:/devkitPro/libounce/lib\libounce.a(sfdnsres.o)
  .debug_loclists
-                0x0000000000cd57ed    0x36f92 C:/devkitPro/libounce/lib\libounce.a(set.o)
+                0x0000000000cd57ff    0x36f92 C:/devkitPro/libounce/lib\libounce.a(set.o)
  .debug_loclists
-                0x0000000000d0c77f     0x3487 C:/devkitPro/libounce/lib\libounce.a(psm.o)
+                0x0000000000d0c791     0x3487 C:/devkitPro/libounce/lib\libounce.a(psm.o)
  .debug_loclists
-                0x0000000000d0fc06     0x125b C:/devkitPro/libounce/lib\libounce.a(pl.o)
+                0x0000000000d0fc18     0x125b C:/devkitPro/libounce/lib\libounce.a(pl.o)
  .debug_loclists
-                0x0000000000d10e61     0x56c2 C:/devkitPro/libounce/lib\libounce.a(nv.o)
+                0x0000000000d10e73     0x56c2 C:/devkitPro/libounce/lib\libounce.a(nv.o)
  .debug_loclists
-                0x0000000000d16523     0x8b6b C:/devkitPro/libounce/lib\libounce.a(nifm.o)
+                0x0000000000d16535     0x8b6b C:/devkitPro/libounce/lib\libounce.a(nifm.o)
  .debug_loclists
-                0x0000000000d1f08e     0x291f C:/devkitPro/libounce/lib\libounce.a(lbl.o)
+                0x0000000000d1f0a0     0x291f C:/devkitPro/libounce/lib\libounce.a(lbl.o)
  .debug_loclists
-                0x0000000000d219ad    0x12842 C:/devkitPro/libounce/lib\libounce.a(hidsys.o)
+                0x0000000000d219bf    0x12842 C:/devkitPro/libounce/lib\libounce.a(hidsys.o)
  .debug_loclists
-                0x0000000000d341ef    0x1b856 C:/devkitPro/libounce/lib\libounce.a(hid.o)
+                0x0000000000d34201    0x1b856 C:/devkitPro/libounce/lib\libounce.a(hid.o)
  .debug_loclists
-                0x0000000000d4fa45    0x323e5 C:/devkitPro/libounce/lib\libounce.a(fs.o)
+                0x0000000000d4fa57    0x323e5 C:/devkitPro/libounce/lib\libounce.a(fs.o)
  .debug_loclists
-                0x0000000000d81e2a      0x6d1 C:/devkitPro/libounce/lib\libounce.a(csrng.o)
+                0x0000000000d81e3c      0x6d1 C:/devkitPro/libounce/lib\libounce.a(csrng.o)
  .debug_loclists
-                0x0000000000d824fb    0x12257 C:/devkitPro/libounce/lib\libounce.a(bsd.o)
+                0x0000000000d8250d    0x12257 C:/devkitPro/libounce/lib\libounce.a(bsd.o)
  .debug_loclists
-                0x0000000000d94752     0x37ea C:/devkitPro/libounce/lib\libounce.a(audren.o)
+                0x0000000000d94764     0x37ea C:/devkitPro/libounce/lib\libounce.a(audren.o)
  .debug_loclists
-                0x0000000000d97f3c    0x2f68c C:/devkitPro/libounce/lib\libounce.a(applet.o)
+                0x0000000000d97f4e    0x2f68c C:/devkitPro/libounce/lib\libounce.a(applet.o)
  .debug_loclists
-                0x0000000000dc75c8     0x1719 C:/devkitPro/libounce/lib\libounce.a(apm.o)
+                0x0000000000dc75da     0x1719 C:/devkitPro/libounce/lib\libounce.a(apm.o)
  .debug_loclists
-                0x0000000000dc8ce1     0x3e14 C:/devkitPro/libounce/lib\libounce.a(acc.o)
+                0x0000000000dc8cf3     0x3e14 C:/devkitPro/libounce/lib\libounce.a(acc.o)
  .debug_loclists
-                0x0000000000dccaf5      0x72d C:/devkitPro/libounce/lib\libounce.a(sessionmgr.o)
+                0x0000000000dccb07      0x72d C:/devkitPro/libounce/lib\libounce.a(sessionmgr.o)
  .debug_loclists
-                0x0000000000dcd222      0xb4d C:/devkitPro/libounce/lib\libounce.a(wait.o)
+                0x0000000000dcd234      0xb4d C:/devkitPro/libounce/lib\libounce.a(wait.o)
  .debug_loclists
-                0x0000000000dcdd6f      0x315 C:/devkitPro/libounce/lib\libounce.a(uevent.o)
+                0x0000000000dcdd81      0x315 C:/devkitPro/libounce/lib\libounce.a(uevent.o)
  .debug_loclists
-                0x0000000000dce084      0x383 C:/devkitPro/libounce/lib\libounce.a(tmem.o)
+                0x0000000000dce096      0x383 C:/devkitPro/libounce/lib\libounce.a(tmem.o)
  .debug_loclists
-                0x0000000000dce407      0x9b9 C:/devkitPro/libounce/lib\libounce.a(thread.o)
+                0x0000000000dce419      0x9b9 C:/devkitPro/libounce/lib\libounce.a(thread.o)
  .debug_loclists
-                0x0000000000dcedc0      0x189 C:/devkitPro/libounce/lib\libounce.a(shmem.o)
+                0x0000000000dcedd2      0x189 C:/devkitPro/libounce/lib\libounce.a(shmem.o)
  .debug_loclists
-                0x0000000000dcef49      0x2ec C:/devkitPro/libounce/lib\libounce.a(mutex.o)
+                0x0000000000dcef5b      0x2ec C:/devkitPro/libounce/lib\libounce.a(mutex.o)
  .debug_loclists
-                0x0000000000dcf235      0x134 C:/devkitPro/libounce/lib\libounce.a(event.o)
+                0x0000000000dcf247      0x134 C:/devkitPro/libounce/lib\libounce.a(event.o)
  .debug_loclists
-                0x0000000000dcf369       0xb2 C:/devkitPro/libounce/lib\libounce.a(condvar.o)
+                0x0000000000dcf37b       0xb2 C:/devkitPro/libounce/lib\libounce.a(condvar.o)
  .debug_loclists
-                0x0000000000dcf41b      0x16d C:/devkitPro/libounce/lib\libounce.a(init_malloc.o)
+                0x0000000000dcf42d      0x16d C:/devkitPro/libounce/lib\libounce.a(init_malloc.o)
  .debug_loclists
-                0x0000000000dcf588     0x107f C:/devkitPro/libounce/lib\libounce.a(cpu_window.o)
+                0x0000000000dcf59a     0x107f C:/devkitPro/libounce/lib\libounce.a(cpu_window.o)
  .debug_loclists
-                0x0000000000dd0607      0x798 C:/devkitPro/libounce/lib\libounce.a(audu.o)
+                0x0000000000dd0619      0x798 C:/devkitPro/libounce/lib\libounce.a(audu.o)
  .debug_loclists
-                0x0000000000dd0d9f      0x15f C:/devkitPro/libounce/lib\libounce.a(utf8_to_utf16.o)
+                0x0000000000dd0db1      0x15f C:/devkitPro/libounce/lib\libounce.a(utf8_to_utf16.o)
  .debug_loclists
-                0x0000000000dd0efe      0x1a4 C:/devkitPro/libounce/lib\libounce.a(utf16_to_utf8.o)
+                0x0000000000dd0f10      0x1a4 C:/devkitPro/libounce/lib\libounce.a(utf16_to_utf8.o)
  .debug_loclists
-                0x0000000000dd10a2       0xf9 C:/devkitPro/libounce/lib\libounce.a(encode_utf8.o)
+                0x0000000000dd10b4       0xf9 C:/devkitPro/libounce/lib\libounce.a(encode_utf8.o)
  .debug_loclists
-                0x0000000000dd119b       0x72 C:/devkitPro/libounce/lib\libounce.a(encode_utf16.o)
+                0x0000000000dd11ad       0x72 C:/devkitPro/libounce/lib\libounce.a(encode_utf16.o)
  .debug_loclists
-                0x0000000000dd120d      0x1c6 C:/devkitPro/libounce/lib\libounce.a(decode_utf8.o)
+                0x0000000000dd121f      0x1c6 C:/devkitPro/libounce/lib\libounce.a(decode_utf8.o)
  .debug_loclists
-                0x0000000000dd13d3       0xc6 C:/devkitPro/libounce/lib\libounce.a(decode_utf16.o)
+                0x0000000000dd13e5       0xc6 C:/devkitPro/libounce/lib\libounce.a(decode_utf16.o)
  .debug_loclists
-                0x0000000000dd1499      0xae2 C:/devkitPro/libounce/lib\libounce.a(newlib.o)
+                0x0000000000dd14ab      0xae2 C:/devkitPro/libounce/lib\libounce.a(newlib.o)
  .debug_loclists
-                0x0000000000dd1f7b      0x5df C:/devkitPro/libounce/lib\libounce.a(parcel.o)
+                0x0000000000dd1f8d      0x5df C:/devkitPro/libounce/lib\libounce.a(parcel.o)
  .debug_loclists
-                0x0000000000dd255a      0x320 C:/devkitPro/libounce/lib\libounce.a(nvhost-ctrl.o)
+                0x0000000000dd256c      0x320 C:/devkitPro/libounce/lib\libounce.a(nvhost-ctrl.o)
  .debug_loclists
-                0x0000000000dd287a      0x73a C:/devkitPro/libounce/lib\libounce.a(virtmem.o)
+                0x0000000000dd288c      0x73a C:/devkitPro/libounce/lib\libounce.a(virtmem.o)
  .debug_loclists
-                0x0000000000dd2fb4      0x1b9 C:/devkitPro/libounce/lib\libounce.a(random.o)
+                0x0000000000dd2fc6      0x1b9 C:/devkitPro/libounce/lib\libounce.a(random.o)
  .debug_loclists
-                0x0000000000dd316d      0xc8e C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(_udivdi3.o)
+                0x0000000000dd317f      0xc8e C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(_udivdi3.o)
  .debug_loclists
-                0x0000000000dd3dfb      0x218 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(eqtf2.o)
+                0x0000000000dd3e0d      0x218 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(eqtf2.o)
  .debug_loclists
-                0x0000000000dd4013      0x2e9 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(getf2.o)
+                0x0000000000dd4025      0x2e9 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(getf2.o)
  .debug_loclists
-                0x0000000000dd42fc      0x1ae C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(unordtf2.o)
+                0x0000000000dd430e      0x1ae C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(unordtf2.o)
  .debug_loclists
-                0x0000000000dd44aa      0x85d C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(trunctfdf2.o)
+                0x0000000000dd44bc      0x85d C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(trunctfdf2.o)
  .debug_loclists
-                0x0000000000dd4d07     0x63b0 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(unwind-dw2.o)
+                0x0000000000dd4d19     0x63b0 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(unwind-dw2.o)
  .debug_loclists
-                0x0000000000ddb0b7     0x2c2e C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(unwind-dw2-fde.o)
+                0x0000000000ddb0c9     0x2c2e C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(unwind-dw2-fde.o)
  .debug_loclists
-                0x0000000000dddce5       0x27 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(sfp-exceptions.o)
+                0x0000000000dddcf7       0x27 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(sfp-exceptions.o)
  .debug_loclists
-                0x0000000000dddd0c      0x473 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(extenddftf2.o)
+                0x0000000000dddd1e      0x473 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(extenddftf2.o)
 
 .debug_rnglists
-                0x0000000000000000   0x26c247
+                0x0000000000000000   0x26c24a
  .debug_rnglists
                 0x0000000000000000     0x7296 main.o
  .debug_rnglists
@@ -88879,391 +88879,391 @@ LOAD linker stubs
  .debug_rnglists
                 0x0000000000138b2f      0xc86 rectangle.o
  .debug_rnglists
-                0x00000000001397b5     0x9e44 recycler.o
+                0x00000000001397b5     0x9e47 recycler.o
  .debug_rnglists
-                0x00000000001435f9     0x43ec scrolling_frame.o
+                0x00000000001435fc     0x43ec scrolling_frame.o
  .debug_rnglists
-                0x00000000001479e5     0x3bcd sidebar.o
+                0x00000000001479e8     0x3bcd sidebar.o
  .debug_rnglists
-                0x000000000014b5b2     0x2cc7 slider.o
+                0x000000000014b5b5     0x2cc7 slider.o
  .debug_rnglists
-                0x000000000014e279     0x3553 tab_frame.o
+                0x000000000014e27c     0x3553 tab_frame.o
  .debug_rnglists
-                0x00000000001517cc     0x3069 cell_bool.o
+                0x00000000001517cf     0x3069 cell_bool.o
  .debug_rnglists
-                0x0000000000154835     0x2cd0 cell_detail.o
+                0x0000000000154838     0x2cd0 cell_detail.o
  .debug_rnglists
-                0x0000000000157505     0x512b cell_input.o
+                0x0000000000157508     0x512b cell_input.o
  .debug_rnglists
-                0x000000000015c630     0x333f cell_radio.o
+                0x000000000015c633     0x333f cell_radio.o
  .debug_rnglists
-                0x000000000015f96f     0x31cf cell_selector.o
+                0x000000000015f972     0x31cf cell_selector.o
  .debug_rnglists
-                0x0000000000162b3e      0xf51 cell_slider.o
+                0x0000000000162b41      0xf51 cell_slider.o
  .debug_rnglists
-                0x0000000000163a8f     0x6499 account.o
+                0x0000000000163a92     0x6499 account.o
  .debug_rnglists
-                0x0000000000169f28     0x67e4 battery.o
+                0x0000000000169f2b     0x67e4 battery.o
  .debug_rnglists
-                0x000000000017070c     0x6b79 wireless.o
+                0x000000000017070f     0x6b79 wireless.o
  .debug_rnglists
-                0x0000000000177285     0x4b9c switch_audio.o
+                0x0000000000177288     0x4b9c switch_audio.o
  .debug_rnglists
-                0x000000000017be21     0x75c4 switch_font.o
+                0x000000000017be24     0x75c4 switch_font.o
  .debug_rnglists
-                0x00000000001833e5      0x6bb switch_ime.o
+                0x00000000001833e8      0x6bb switch_ime.o
  .debug_rnglists
-                0x0000000000183aa0     0x8c5c switch_input.o
+                0x0000000000183aa3     0x8c5c switch_input.o
  .debug_rnglists
-                0x000000000018c6fc     0x7760 switch_platform.o
+                0x000000000018c6ff     0x7760 switch_platform.o
  .debug_rnglists
-                0x0000000000193e5c     0x76f6 switch_video.o
+                0x0000000000193e5f     0x76f6 switch_video.o
  .debug_rnglists
-                0x000000000019b552     0x1d05 dk_renderer.o
+                0x000000000019b555     0x1d05 dk_renderer.o
  .debug_rnglists
-                0x000000000019d257      0x2d7 CIntrusiveTree.o
+                0x000000000019d25a      0x2d7 CIntrusiveTree.o
  .debug_rnglists
-                0x000000000019d52e      0x5a9 CMemPool.o
+                0x000000000019d531      0x5a9 CMemPool.o
  .debug_rnglists
-                0x000000000019dad7       0x78 CShader.o
+                0x000000000019dada       0x78 CShader.o
  .debug_rnglists
-                0x000000000019db4f     0x43b6 tinyxml2.o
+                0x000000000019db52     0x43b6 tinyxml2.o
  .debug_rnglists
-                0x00000000001a1f05       0x43 log.o
+                0x00000000001a1f08       0x43 log.o
  .debug_rnglists
-                0x00000000001a1f48      0x1cf YGConfig.o
+                0x00000000001a1f4b      0x1cf YGConfig.o
  .debug_rnglists
-                0x00000000001a2117       0xc5 YGEnums.o
+                0x00000000001a211a       0xc5 YGEnums.o
  .debug_rnglists
-                0x00000000001a21dc       0xb2 YGLayout.o
+                0x00000000001a21df       0xb2 YGLayout.o
  .debug_rnglists
-                0x00000000001a228e     0x1213 YGNode.o
+                0x00000000001a2291     0x1213 YGNode.o
  .debug_rnglists
-                0x00000000001a34a1      0x153 YGStyle.o
+                0x00000000001a34a4      0x153 YGStyle.o
  .debug_rnglists
-                0x00000000001a35f4     0x3f45 Yoga.o
+                0x00000000001a35f7     0x3f45 Yoga.o
  .debug_rnglists
-                0x00000000001a7539       0xad YogaUtils.o
+                0x00000000001a753c       0xad YogaUtils.o
  .debug_rnglists
-                0x00000000001a75e6       0xcc event.o
+                0x00000000001a75e9       0xcc event.o
  .debug_rnglists
-                0x00000000001a76b2     0xb79b Get.o
+                0x00000000001a76b5     0xb79b Get.o
  .debug_rnglists
-                0x00000000001b2e4d     0xff38 Manifest.o
+                0x00000000001b2e50     0xff38 Manifest.o
  .debug_rnglists
-                0x00000000001c2d85     0xd46e Package.o
+                0x00000000001c2d88     0xd46e Package.o
  .debug_rnglists
-                0x00000000001d01f3     0x258f Utils.o
+                0x00000000001d01f6     0x258f Utils.o
  .debug_rnglists
-                0x00000000001d2782      0xf91 ZipUtil.o
+                0x00000000001d2785      0xf91 ZipUtil.o
  .debug_rnglists
-                0x00000000001d3713    0x13c1a GetRepo.o
+                0x00000000001d3716    0x13c1a GetRepo.o
  .debug_rnglists
-                0x00000000001e732d     0x5ee3 LocalRepo.o
+                0x00000000001e7330     0x5ee3 LocalRepo.o
  .debug_rnglists
-                0x00000000001ed210    0x12ae2 OSCRepo.o
+                0x00000000001ed213    0x12ae2 OSCRepo.o
  .debug_rnglists
-                0x00000000001ffcf2     0x187e Repo.o
+                0x00000000001ffcf5     0x187e Repo.o
  .debug_rnglists
-                0x0000000000201570     0x5a04 UniStoreRepo.o
+                0x0000000000201573     0x5a04 UniStoreRepo.o
  .debug_rnglists
-                0x0000000000206f74      0x1c4 tinystr.o
+                0x0000000000206f77      0x1c4 tinystr.o
  .debug_rnglists
-                0x0000000000207138     0x1bb8 tinyxml.o
+                0x000000000020713b     0x1bb8 tinyxml.o
  .debug_rnglists
-                0x0000000000208cf0      0x8e2 tinyxmlparser.o
+                0x0000000000208cf3      0x8e2 tinyxmlparser.o
  .debug_rnglists
-                0x00000000002095d2     0xb78d format.o
+                0x00000000002095d5     0xb78d format.o
  .debug_rnglists
-                0x0000000000214d5f      0x2ad os.o
+                0x0000000000214d62      0x2ad os.o
  .debug_rnglists
-                0x000000000021500c       0x22 switch_wrapper.o
+                0x000000000021500f       0x22 switch_wrapper.o
  .debug_rnglists
-                0x000000000021502e     0x92b0 nanovg.o
+                0x0000000000215031     0x92b0 nanovg.o
  .debug_rnglists
-                0x000000000021e2de      0x105 glad.o
+                0x000000000021e2e1      0x105 glad.o
  .debug_rnglists
-                0x000000000021e3e3       0x3f features_cpu.o
+                0x000000000021e3e6       0x3f features_cpu.o
  .debug_rnglists
-                0x000000000021e422       0xea encoding_utf.o
+                0x000000000021e425       0xea encoding_utf.o
  .debug_rnglists
-                0x000000000021e50c      0x23d archive.o
+                0x000000000021e50f      0x23d archive.o
  .debug_rnglists
-                0x000000000021e749       0x2b archive_file.o
+                0x000000000021e74c       0x2b archive_file.o
  .debug_rnglists
-                0x000000000021e774       0xaf bfgrp.o
+                0x000000000021e777       0xaf bfgrp.o
  .debug_rnglists
-                0x000000000021e823       0xbc bfgrp_location.o
+                0x000000000021e826       0xbc bfgrp_location.o
  .debug_rnglists
-                0x000000000021e8df      0x147 bfsar.o
+                0x000000000021e8e2      0x147 bfsar.o
  .debug_rnglists
-                0x000000000021ea26       0xf2 bfsar_file.o
+                0x000000000021ea29       0xf2 bfsar_file.o
  .debug_rnglists
-                0x000000000021eb18       0x5c bfsar_group.o
+                0x000000000021eb1b       0x5c bfsar_group.o
  .debug_rnglists
-                0x000000000021eb74       0x7a bfsar_sound.o
+                0x000000000021eb77       0x7a bfsar_sound.o
  .debug_rnglists
-                0x000000000021ebee       0x92 bfsar_string.o
+                0x000000000021ebf1       0x92 bfsar_string.o
  .debug_rnglists
-                0x000000000021ec80       0x76 bfsar_wave_archive.o
+                0x000000000021ec83       0x76 bfsar_wave_archive.o
  .debug_rnglists
-                0x000000000021ecf6       0xbd bfwar.o
+                0x000000000021ecf9       0xbd bfwar.o
  .debug_rnglists
-                0x000000000021edb3       0x33 bfwar_file.o
+                0x000000000021edb6       0x33 bfwar_file.o
  .debug_rnglists
-                0x000000000021ede6       0x9c bfwav.o
+                0x000000000021ede9       0x9c bfwav.o
  .debug_rnglists
-                0x000000000021ee82       0x80 bfwav_info.o
+                0x000000000021ee85       0x80 bfwav_info.o
  .debug_rnglists
-                0x000000000021ef02       0xd0 bfwsd.o
+                0x000000000021ef05       0xd0 bfwsd.o
  .debug_rnglists
-                0x000000000021efd2       0xeb bfwsd_sound_data.o
+                0x000000000021efd5       0xeb bfwsd_sound_data.o
  .debug_rnglists
-                0x000000000021f0bd       0x4d bfwsd_wave_id.o
+                0x000000000021f0c0       0x4d bfwsd_wave_id.o
  .debug_rnglists
-                0x000000000021f10a       0xdc player.o
+                0x000000000021f10d       0xdc player.o
  .debug_rnglists
-                0x000000000021f1e6       0xf2 player_load.o
+                0x000000000021f1e9       0xf2 player_load.o
  .debug_rnglists
-                0x000000000021f2d8       0x93 player_load_lookup.o
+                0x000000000021f2db       0x93 player_load_lookup.o
  .debug_rnglists
-                0x000000000021f36b       0xc0 ioapi.o
+                0x000000000021f36e       0xc0 ioapi.o
  .debug_rnglists
-                0x000000000021f42b      0x5ff unzip.o
+                0x000000000021f42e      0x5ff unzip.o
  .debug_rnglists
-                0x000000000021fa2a      0x805 zip.o
+                0x000000000021fa2d      0x805 zip.o
  .debug_rnglists
-                0x000000000022022f      0x9e8 C:/devkitPro/libounce/lib\libdrako3d.a(cmd_bind_common.o)
+                0x0000000000220232      0x9e8 C:/devkitPro/libounce/lib\libdrako3d.a(cmd_bind_common.o)
  .debug_rnglists
-                0x0000000000220c17      0x276 C:/devkitPro/libounce/lib\libdrako3d.a(dk_cmdbuf.o)
+                0x0000000000220c1a      0x276 C:/devkitPro/libounce/lib\libdrako3d.a(dk_cmdbuf.o)
  .debug_rnglists
-                0x0000000000220e8d      0x6b6 C:/devkitPro/libounce/lib\libdrako3d.a(dk_device.o)
+                0x0000000000220e90      0x6b6 C:/devkitPro/libounce/lib\libdrako3d.a(dk_device.o)
  .debug_rnglists
-                0x0000000000221543       0x60 C:/devkitPro/libounce/lib\libdrako3d.a(dk_fence.o)
+                0x0000000000221546       0x60 C:/devkitPro/libounce/lib\libdrako3d.a(dk_fence.o)
  .debug_rnglists
-                0x00000000002215a3      0x5b5 C:/devkitPro/libounce/lib\libdrako3d.a(dk_image.o)
+                0x00000000002215a6      0x5b5 C:/devkitPro/libounce/lib\libdrako3d.a(dk_image.o)
  .debug_rnglists
-                0x0000000000221b58      0x26e C:/devkitPro/libounce/lib\libdrako3d.a(dk_memblock.o)
+                0x0000000000221b5b      0x26e C:/devkitPro/libounce/lib\libdrako3d.a(dk_memblock.o)
  .debug_rnglists
-                0x0000000000221dc6      0x941 C:/devkitPro/libounce/lib\libdrako3d.a(dk_queue.o)
+                0x0000000000221dc9      0x941 C:/devkitPro/libounce/lib\libdrako3d.a(dk_queue.o)
  .debug_rnglists
-                0x0000000000222707       0x5c C:/devkitPro/libounce/lib\libdrako3d.a(dk_shader.o)
+                0x000000000022270a       0x5c C:/devkitPro/libounce/lib\libdrako3d.a(dk_shader.o)
  .debug_rnglists
-                0x0000000000222763      0x1bf C:/devkitPro/libounce/lib\libdrako3d.a(dk_swapchain.o)
+                0x0000000000222766      0x1bf C:/devkitPro/libounce/lib\libdrako3d.a(dk_swapchain.o)
  .debug_rnglists
-                0x0000000000222922     0x1c56 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_base.o)
+                0x0000000000222925     0x1c56 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_base.o)
  .debug_rnglists
-                0x0000000000224578     0x12a0 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_state.o)
+                0x000000000022457b     0x12a0 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_state.o)
  .debug_rnglists
-                0x0000000000225818      0x642 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_vbo.o)
+                0x000000000022581b      0x642 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_vbo.o)
  .debug_rnglists
-                0x0000000000225e5a       0x17 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_zcull.o)
+                0x0000000000225e5d       0x17 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_3d_zcull.o)
  .debug_rnglists
-                0x0000000000225e71      0x3e1 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_base.o)
+                0x0000000000225e74      0x3e1 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_base.o)
  .debug_rnglists
-                0x0000000000226252       0xe1 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_error.o)
+                0x0000000000226255       0xe1 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_error.o)
  .debug_rnglists
-                0x0000000000226333      0x8b6 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_transfer.o)
+                0x0000000000226336      0x8b6 C:/devkitPro/libounce/lib\libdrako3d.a(gpu_transfer.o)
  .debug_rnglists
-                0x0000000000226be9       0x23 C:/devkitPro/libounce/lib\libdrako3d.a(image_formats.o)
+                0x0000000000226bec       0x23 C:/devkitPro/libounce/lib\libdrako3d.a(image_formats.o)
  .debug_rnglists
-                0x0000000000226c0c       0x72 C:/devkitPro/libounce/lib\libdrako3d.a(queue_workbuf.o)
+                0x0000000000226c0f       0x72 C:/devkitPro/libounce/lib\libdrako3d.a(queue_workbuf.o)
  .debug_rnglists
-                0x0000000000226c7e      0x149 C:/devkitPro/libounce/lib\libdrako3d.a(tic_generate.o)
+                0x0000000000226c81      0x149 C:/devkitPro/libounce/lib\libdrako3d.a(tic_generate.o)
  .debug_rnglists
-                0x0000000000226dc7      0x162 C:/devkitPro/libounce/lib\libdrako3d.a(tsc_generate.o)
+                0x0000000000226dca      0x162 C:/devkitPro/libounce/lib\libdrako3d.a(tsc_generate.o)
  .debug_rnglists
-                0x0000000000226f29       0x7c C:/devkitPro/libounce/lib\libdrako3d.a(codesegmgr.o)
+                0x0000000000226f2c       0x7c C:/devkitPro/libounce/lib\libdrako3d.a(codesegmgr.o)
  .debug_rnglists
-                0x0000000000226fa5       0xac C:/devkitPro/portlibs/switch/lib\libz.a(crc32.o)
+                0x0000000000226fa8       0xac C:/devkitPro/portlibs/switch/lib\libz.a(crc32.o)
  .debug_rnglists
-                0x0000000000227051      0x24f C:/devkitPro/portlibs/switch/lib\libz.a(deflate.o)
+                0x0000000000227054      0x24f C:/devkitPro/portlibs/switch/lib\libz.a(deflate.o)
  .debug_rnglists
-                0x00000000002272a0      0x149 C:/devkitPro/portlibs/switch/lib\libz.a(inflate.o)
+                0x00000000002272a3      0x149 C:/devkitPro/portlibs/switch/lib\libz.a(inflate.o)
  .debug_rnglists
-                0x00000000002273e9      0x40b C:/devkitPro/portlibs/switch/lib\libz.a(trees.o)
+                0x00000000002273ec      0x40b C:/devkitPro/portlibs/switch/lib\libz.a(trees.o)
  .debug_rnglists
-                0x00000000002277f4       0x17 C:/devkitPro/portlibs/switch/lib\libz.a(adler32.o)
+                0x00000000002277f7       0x17 C:/devkitPro/portlibs/switch/lib\libz.a(adler32.o)
  .debug_rnglists
-                0x000000000022780b     0xafb0 C:/devkitPro/libounce/lib\libounce.a(malloc.o)
+                0x000000000022780e     0xafb0 C:/devkitPro/libounce/lib\libounce.a(malloc.o)
  .debug_rnglists
-                0x00000000002327bb      0x107 C:/devkitPro/libounce/lib\libounce.a(heap_pages.o)
+                0x00000000002327be      0x107 C:/devkitPro/libounce/lib\libounce.a(heap_pages.o)
  .debug_rnglists
-                0x00000000002328c2       0x22 C:/devkitPro/libounce/lib\libounce.a(exception.o)
+                0x00000000002328c5       0x22 C:/devkitPro/libounce/lib\libounce.a(exception.o)
  .debug_rnglists
-                0x00000000002328e4      0x503 C:/devkitPro/libounce/lib\libounce.a(svc.o)
+                0x00000000002328e7      0x503 C:/devkitPro/libounce/lib\libounce.a(svc.o)
  .debug_rnglists
-                0x0000000000232de7       0x35 C:/devkitPro/libounce/lib\libounce.a(cache.o)
+                0x0000000000232dea       0x35 C:/devkitPro/libounce/lib\libounce.a(cache.o)
  .debug_rnglists
-                0x0000000000232e1c      0xe8a C:/devkitPro/libounce/lib\libounce.a(vi2.o)
+                0x0000000000232e1f      0xe8a C:/devkitPro/libounce/lib\libounce.a(vi2.o)
  .debug_rnglists
-                0x0000000000233ca6       0x3f C:/devkitPro/libounce/lib\libounce.a(service_list.o)
+                0x0000000000233ca9       0x3f C:/devkitPro/libounce/lib\libounce.a(service_list.o)
  .debug_rnglists
-                0x0000000000233ce5      0xa38 C:/devkitPro/libounce/lib\libounce.a(nmouse.o)
+                0x0000000000233ce8      0xa38 C:/devkitPro/libounce/lib\libounce.a(nmouse.o)
  .debug_rnglists
-                0x000000000023471d     0x1e96 C:/devkitPro/libounce/lib\libounce.a(gsv.o)
+                0x0000000000234720     0x1e96 C:/devkitPro/libounce/lib\libounce.a(gsv.o)
  .debug_rnglists
-                0x00000000002365b3      0x105 C:/devkitPro/libounce/lib\libounce.a(inet_addr.o)
+                0x00000000002365b6      0x105 C:/devkitPro/libounce/lib\libounce.a(inet_addr.o)
  .debug_rnglists
-                0x00000000002366b8      0x49e C:/devkitPro/libounce/lib\libounce.a(socket.o)
+                0x00000000002366bb      0x49e C:/devkitPro/libounce/lib\libounce.a(socket.o)
  .debug_rnglists
-                0x0000000000236b56      0x3b0 C:/devkitPro/libounce/lib\libounce.a(romfs_dev.o)
+                0x0000000000236b59      0x3b0 C:/devkitPro/libounce/lib\libounce.a(romfs_dev.o)
  .debug_rnglists
-                0x0000000000236f06      0x562 C:/devkitPro/libounce/lib\libounce.a(fs_dev.o)
+                0x0000000000236f09      0x562 C:/devkitPro/libounce/lib\libounce.a(fs_dev.o)
  .debug_rnglists
-                0x0000000000237468       0x17 C:/devkitPro/libounce/lib\libounce.a(convert_errno.o)
+                0x000000000023746b       0x17 C:/devkitPro/libounce/lib\libounce.a(convert_errno.o)
  .debug_rnglists
-                0x000000000023747f      0x300 C:/devkitPro/libounce/lib\libounce.a(resolver.o)
+                0x0000000000237482      0x300 C:/devkitPro/libounce/lib\libounce.a(resolver.o)
  .debug_rnglists
-                0x000000000023777f      0x13e C:/devkitPro/libounce/lib\libounce.a(pad_pointer.o)
+                0x0000000000237782      0x13e C:/devkitPro/libounce/lib\libounce.a(pad_pointer.o)
  .debug_rnglists
-                0x00000000002378bd       0xe2 C:/devkitPro/libounce/lib\libounce.a(pad.o)
+                0x00000000002378c0       0xe2 C:/devkitPro/libounce/lib\libounce.a(pad.o)
  .debug_rnglists
-                0x000000000023799f       0x29 C:/devkitPro/libounce/lib\libounce.a(nro_ounce.o)
+                0x00000000002379a2       0x29 C:/devkitPro/libounce/lib\libounce.a(nro_ounce.o)
  .debug_rnglists
-                0x00000000002379c8       0x3f C:/devkitPro/libounce/lib\libounce.a(hosversion.o)
+                0x00000000002379cb       0x3f C:/devkitPro/libounce/lib\libounce.a(hosversion.o)
  .debug_rnglists
-                0x0000000000237a07       0xfb C:/devkitPro/libounce/lib\libounce.a(env.o)
+                0x0000000000237a0a       0xfb C:/devkitPro/libounce/lib\libounce.a(env.o)
  .debug_rnglists
-                0x0000000000237b02       0x7b C:/devkitPro/libounce/lib\libounce.a(dynamic.o)
+                0x0000000000237b05       0x7b C:/devkitPro/libounce/lib\libounce.a(dynamic.o)
  .debug_rnglists
-                0x0000000000237b7d       0x17 C:/devkitPro/libounce/lib\libounce.a(diag.o)
+                0x0000000000237b80       0x17 C:/devkitPro/libounce/lib\libounce.a(diag.o)
  .debug_rnglists
-                0x0000000000237b94       0x18 C:/devkitPro/libounce/lib\libounce.a(argv.o)
+                0x0000000000237b97       0x18 C:/devkitPro/libounce/lib\libounce.a(argv.o)
  .debug_rnglists
-                0x0000000000237bac       0x2b C:/devkitPro/libounce/lib\libounce.a(alloc.o)
+                0x0000000000237baf       0x2b C:/devkitPro/libounce/lib\libounce.a(alloc.o)
  .debug_rnglists
-                0x0000000000237bd7      0xbc9 C:/devkitPro/libounce/lib\libounce.a(web.o)
+                0x0000000000237bda      0xbc9 C:/devkitPro/libounce/lib\libounce.a(web.o)
  .debug_rnglists
-                0x00000000002387a0      0x6dd C:/devkitPro/libounce/lib\libounce.a(swkbd.o)
+                0x00000000002387a3      0x6dd C:/devkitPro/libounce/lib\libounce.a(swkbd.o)
  .debug_rnglists
-                0x0000000000238e7d      0x147 C:/devkitPro/libounce/lib\libounce.a(libapplet.o)
+                0x0000000000238e80      0x147 C:/devkitPro/libounce/lib\libounce.a(libapplet.o)
  .debug_rnglists
-                0x0000000000238fc4      0x196 C:/devkitPro/libounce/lib\libounce.a(voice.o)
+                0x0000000000238fc7      0x196 C:/devkitPro/libounce/lib\libounce.a(voice.o)
  .debug_rnglists
-                0x000000000023915a       0x22 C:/devkitPro/libounce/lib\libounce.a(sink.o)
+                0x000000000023915d       0x22 C:/devkitPro/libounce/lib\libounce.a(sink.o)
  .debug_rnglists
-                0x000000000023917c       0x35 C:/devkitPro/libounce/lib\libounce.a(mempool.o)
+                0x000000000023917f       0x35 C:/devkitPro/libounce/lib\libounce.a(mempool.o)
  .debug_rnglists
-                0x00000000002391b1       0xc2 C:/devkitPro/libounce/lib\libounce.a(driver.o)
+                0x00000000002391b4       0xc2 C:/devkitPro/libounce/lib\libounce.a(driver.o)
  .debug_rnglists
-                0x0000000000239273      0x162 C:/devkitPro/libounce/lib\libounce.a(native_window.o)
+                0x0000000000239276      0x162 C:/devkitPro/libounce/lib\libounce.a(native_window.o)
  .debug_rnglists
-                0x00000000002393d5      0x180 C:/devkitPro/libounce/lib\libounce.a(default_window.o)
+                0x00000000002393d8      0x180 C:/devkitPro/libounce/lib\libounce.a(default_window.o)
  .debug_rnglists
-                0x0000000000239555       0x80 C:/devkitPro/libounce/lib\libounce.a(buffer_producer.o)
+                0x0000000000239558       0x80 C:/devkitPro/libounce/lib\libounce.a(buffer_producer.o)
  .debug_rnglists
-                0x00000000002395d5      0x5d5 C:/devkitPro/libounce/lib\libounce.a(binder.o)
+                0x00000000002395d8      0x5d5 C:/devkitPro/libounce/lib\libounce.a(binder.o)
  .debug_rnglists
-                0x0000000000239baa      0x140 C:/devkitPro/libounce/lib\libounce.a(fence.o)
+                0x0000000000239bad      0x140 C:/devkitPro/libounce/lib\libounce.a(fence.o)
  .debug_rnglists
-                0x0000000000239cea       0xab C:/devkitPro/libounce/lib\libounce.a(sha256.o)
+                0x0000000000239ced       0xab C:/devkitPro/libounce/lib\libounce.a(sha256.o)
  .debug_rnglists
-                0x0000000000239d95     0x1a4a C:/devkitPro/libounce/lib\libounce.a(vi.o)
+                0x0000000000239d98     0x1a4a C:/devkitPro/libounce/lib\libounce.a(vi.o)
  .debug_rnglists
-                0x000000000023b7df     0x1080 C:/devkitPro/libounce/lib\libounce.a(time.o)
+                0x000000000023b7e2     0x1080 C:/devkitPro/libounce/lib\libounce.a(time.o)
  .debug_rnglists
-                0x000000000023c85f     0x3b67 C:/devkitPro/libounce/lib\libounce.a(ssl.o)
+                0x000000000023c862     0x3b67 C:/devkitPro/libounce/lib\libounce.a(ssl.o)
  .debug_rnglists
-                0x00000000002403c6      0x973 C:/devkitPro/libounce/lib\libounce.a(sm.o)
+                0x00000000002403c9      0x973 C:/devkitPro/libounce/lib\libounce.a(sm.o)
  .debug_rnglists
-                0x0000000000240d39      0xb89 C:/devkitPro/libounce/lib\libounce.a(sfdnsres.o)
+                0x0000000000240d3c      0xb89 C:/devkitPro/libounce/lib\libounce.a(sfdnsres.o)
  .debug_rnglists
-                0x00000000002418c2     0x87ae C:/devkitPro/libounce/lib\libounce.a(set.o)
+                0x00000000002418c5     0x87ae C:/devkitPro/libounce/lib\libounce.a(set.o)
  .debug_rnglists
-                0x000000000024a070      0x8f1 C:/devkitPro/libounce/lib\libounce.a(psm.o)
+                0x000000000024a073      0x8f1 C:/devkitPro/libounce/lib\libounce.a(psm.o)
  .debug_rnglists
-                0x000000000024a961      0x387 C:/devkitPro/libounce/lib\libounce.a(pl.o)
+                0x000000000024a964      0x387 C:/devkitPro/libounce/lib\libounce.a(pl.o)
  .debug_rnglists
-                0x000000000024ace8     0x12ce C:/devkitPro/libounce/lib\libounce.a(nv.o)
+                0x000000000024aceb     0x12ce C:/devkitPro/libounce/lib\libounce.a(nv.o)
  .debug_rnglists
-                0x000000000024bfb6     0x17bc C:/devkitPro/libounce/lib\libounce.a(nifm.o)
+                0x000000000024bfb9     0x17bc C:/devkitPro/libounce/lib\libounce.a(nifm.o)
  .debug_rnglists
-                0x000000000024d772      0x773 C:/devkitPro/libounce/lib\libounce.a(lbl.o)
+                0x000000000024d775      0x773 C:/devkitPro/libounce/lib\libounce.a(lbl.o)
  .debug_rnglists
-                0x000000000024dee5     0x2fe4 C:/devkitPro/libounce/lib\libounce.a(hidsys.o)
+                0x000000000024dee8     0x2fe4 C:/devkitPro/libounce/lib\libounce.a(hidsys.o)
  .debug_rnglists
-                0x0000000000250ec9     0x3ff9 C:/devkitPro/libounce/lib\libounce.a(hid.o)
+                0x0000000000250ecc     0x3ff9 C:/devkitPro/libounce/lib\libounce.a(hid.o)
  .debug_rnglists
-                0x0000000000254ec2     0x765f C:/devkitPro/libounce/lib\libounce.a(fs.o)
+                0x0000000000254ec5     0x765f C:/devkitPro/libounce/lib\libounce.a(fs.o)
  .debug_rnglists
-                0x000000000025c521      0x1ba C:/devkitPro/libounce/lib\libounce.a(csrng.o)
+                0x000000000025c524      0x1ba C:/devkitPro/libounce/lib\libounce.a(csrng.o)
  .debug_rnglists
-                0x000000000025c6db     0x3b58 C:/devkitPro/libounce/lib\libounce.a(bsd.o)
+                0x000000000025c6de     0x3b58 C:/devkitPro/libounce/lib\libounce.a(bsd.o)
  .debug_rnglists
-                0x0000000000260233      0xb10 C:/devkitPro/libounce/lib\libounce.a(audren.o)
+                0x0000000000260236      0xb10 C:/devkitPro/libounce/lib\libounce.a(audren.o)
  .debug_rnglists
-                0x0000000000260d43     0x81f8 C:/devkitPro/libounce/lib\libounce.a(applet.o)
+                0x0000000000260d46     0x81f8 C:/devkitPro/libounce/lib\libounce.a(applet.o)
  .debug_rnglists
-                0x0000000000268f3b      0x424 C:/devkitPro/libounce/lib\libounce.a(apm.o)
+                0x0000000000268f3e      0x424 C:/devkitPro/libounce/lib\libounce.a(apm.o)
  .debug_rnglists
-                0x000000000026935f      0xa11 C:/devkitPro/libounce/lib\libounce.a(acc.o)
+                0x0000000000269362      0xa11 C:/devkitPro/libounce/lib\libounce.a(acc.o)
  .debug_rnglists
-                0x0000000000269d70      0x11c C:/devkitPro/libounce/lib\libounce.a(sessionmgr.o)
+                0x0000000000269d73      0x11c C:/devkitPro/libounce/lib\libounce.a(sessionmgr.o)
  .debug_rnglists
-                0x0000000000269e8c      0x1bd C:/devkitPro/libounce/lib\libounce.a(wait.o)
+                0x0000000000269e8f      0x1bd C:/devkitPro/libounce/lib\libounce.a(wait.o)
  .debug_rnglists
-                0x000000000026a049       0x6b C:/devkitPro/libounce/lib\libounce.a(uevent.o)
+                0x000000000026a04c       0x6b C:/devkitPro/libounce/lib\libounce.a(uevent.o)
  .debug_rnglists
-                0x000000000026a0b4       0x5f C:/devkitPro/libounce/lib\libounce.a(tmem.o)
+                0x000000000026a0b7       0x5f C:/devkitPro/libounce/lib\libounce.a(tmem.o)
  .debug_rnglists
-                0x000000000026a113      0x1b3 C:/devkitPro/libounce/lib\libounce.a(thread.o)
+                0x000000000026a116      0x1b3 C:/devkitPro/libounce/lib\libounce.a(thread.o)
  .debug_rnglists
-                0x000000000026a2c6       0x3f C:/devkitPro/libounce/lib\libounce.a(shmem.o)
+                0x000000000026a2c9       0x3f C:/devkitPro/libounce/lib\libounce.a(shmem.o)
  .debug_rnglists
-                0x000000000026a305       0xed C:/devkitPro/libounce/lib\libounce.a(mutex.o)
+                0x000000000026a308       0xed C:/devkitPro/libounce/lib\libounce.a(mutex.o)
  .debug_rnglists
-                0x000000000026a3f2       0x6f C:/devkitPro/libounce/lib\libounce.a(event.o)
+                0x000000000026a3f5       0x6f C:/devkitPro/libounce/lib\libounce.a(event.o)
  .debug_rnglists
-                0x000000000026a461       0x27 C:/devkitPro/libounce/lib\libounce.a(condvar.o)
+                0x000000000026a464       0x27 C:/devkitPro/libounce/lib\libounce.a(condvar.o)
  .debug_rnglists
-                0x000000000026a488       0x57 C:/devkitPro/libounce/lib\libounce.a(init_malloc.o)
+                0x000000000026a48b       0x57 C:/devkitPro/libounce/lib\libounce.a(init_malloc.o)
  .debug_rnglists
-                0x000000000026a4df      0x2a2 C:/devkitPro/libounce/lib\libounce.a(cpu_window.o)
+                0x000000000026a4e2      0x2a2 C:/devkitPro/libounce/lib\libounce.a(cpu_window.o)
  .debug_rnglists
-                0x000000000026a781      0x12e C:/devkitPro/libounce/lib\libounce.a(audu.o)
+                0x000000000026a784      0x12e C:/devkitPro/libounce/lib\libounce.a(audu.o)
  .debug_rnglists
-                0x000000000026a8af       0x18 C:/devkitPro/libounce/lib\libounce.a(utf8_to_utf16.o)
+                0x000000000026a8b2       0x18 C:/devkitPro/libounce/lib\libounce.a(utf8_to_utf16.o)
  .debug_rnglists
-                0x000000000026a8c7       0x18 C:/devkitPro/libounce/lib\libounce.a(utf16_to_utf8.o)
+                0x000000000026a8ca       0x18 C:/devkitPro/libounce/lib\libounce.a(utf16_to_utf8.o)
  .debug_rnglists
-                0x000000000026a8df       0x18 C:/devkitPro/libounce/lib\libounce.a(encode_utf8.o)
+                0x000000000026a8e2       0x18 C:/devkitPro/libounce/lib\libounce.a(encode_utf8.o)
  .debug_rnglists
-                0x000000000026a8f7       0x17 C:/devkitPro/libounce/lib\libounce.a(encode_utf16.o)
+                0x000000000026a8fa       0x17 C:/devkitPro/libounce/lib\libounce.a(encode_utf16.o)
  .debug_rnglists
-                0x000000000026a90e       0x18 C:/devkitPro/libounce/lib\libounce.a(decode_utf8.o)
+                0x000000000026a911       0x18 C:/devkitPro/libounce/lib\libounce.a(decode_utf8.o)
  .debug_rnglists
-                0x000000000026a926       0x17 C:/devkitPro/libounce/lib\libounce.a(decode_utf16.o)
+                0x000000000026a929       0x17 C:/devkitPro/libounce/lib\libounce.a(decode_utf16.o)
  .debug_rnglists
-                0x000000000026a93d       0x18 C:/devkitPro/libounce/lib\libounce.a(nxlink.o)
+                0x000000000026a940       0x18 C:/devkitPro/libounce/lib\libounce.a(nxlink.o)
  .debug_rnglists
-                0x000000000026a955      0x1cf C:/devkitPro/libounce/lib\libounce.a(newlib.o)
+                0x000000000026a958      0x1cf C:/devkitPro/libounce/lib\libounce.a(newlib.o)
  .debug_rnglists
-                0x000000000026ab24       0x89 C:/devkitPro/libounce/lib\libounce.a(parcel.o)
+                0x000000000026ab27       0x89 C:/devkitPro/libounce/lib\libounce.a(parcel.o)
  .debug_rnglists
-                0x000000000026abad       0x5d C:/devkitPro/libounce/lib\libounce.a(nvhost-ctrl.o)
+                0x000000000026abb0       0x5d C:/devkitPro/libounce/lib\libounce.a(nvhost-ctrl.o)
  .debug_rnglists
-                0x000000000026ac0a      0x141 C:/devkitPro/libounce/lib\libounce.a(virtmem.o)
+                0x000000000026ac0d      0x141 C:/devkitPro/libounce/lib\libounce.a(virtmem.o)
  .debug_rnglists
-                0x000000000026ad4b       0x48 C:/devkitPro/libounce/lib\libounce.a(random.o)
+                0x000000000026ad4e       0x48 C:/devkitPro/libounce/lib\libounce.a(random.o)
  .debug_rnglists
-                0x000000000026ad93       0xd1 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(_udivdi3.o)
+                0x000000000026ad96       0xd1 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(_udivdi3.o)
  .debug_rnglists
-                0x000000000026ae64       0x28 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(eqtf2.o)
+                0x000000000026ae67       0x28 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(eqtf2.o)
  .debug_rnglists
-                0x000000000026ae8c       0x54 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(getf2.o)
+                0x000000000026ae8f       0x54 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(getf2.o)
  .debug_rnglists
-                0x000000000026aee0       0x48 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(unordtf2.o)
+                0x000000000026aee3       0x48 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(unordtf2.o)
  .debug_rnglists
-                0x000000000026af28       0xf9 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(trunctfdf2.o)
+                0x000000000026af2b       0xf9 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(trunctfdf2.o)
  .debug_rnglists
-                0x000000000026b021      0x9a4 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(unwind-dw2.o)
+                0x000000000026b024      0x9a4 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(unwind-dw2.o)
  .debug_rnglists
-                0x000000000026b9c5      0x7f7 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(unwind-dw2-fde.o)
+                0x000000000026b9c8      0x7f7 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(unwind-dw2-fde.o)
  .debug_rnglists
-                0x000000000026c1bc       0x17 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(sfp-exceptions.o)
+                0x000000000026c1bf       0x17 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(sfp-exceptions.o)
  .debug_rnglists
-                0x000000000026c1d3       0x74 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(extenddftf2.o)
+                0x000000000026c1d6       0x74 C:/devkitPro/devkitA64/bin/../lib/gcc/aarch64-none-elf/16.1.0/pic\libgcc.a(extenddftf2.o)
 
 .debug_line_str
                 0x0000000000000000     0xa3b7
@@ -89425,7 +89425,7 @@ LOAD linker stubs
                                         0xa42 (size before relaxing)
  .debug_line_str
                 0x000000000000a3b7        0x0 recycler.o
-                                        0xd72 (size before relaxing)
+                                        0xd80 (size before relaxing)
  .debug_line_str
                 0x000000000000a3b7        0x0 scrolling_frame.o
                                         0xcf7 (size before relaxing)
