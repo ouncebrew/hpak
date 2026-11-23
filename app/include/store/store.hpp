@@ -27,6 +27,8 @@ struct PackageSnapshot
     std::string repo_url;
     std::string icon_url;
     std::string url;
+    std::string file; // direct download file (e.g. dusklight.nro)
+    std::string directUrl; // direct download base URL
     int status = 0;
     int downloads = 0;
     int download_size = 0;

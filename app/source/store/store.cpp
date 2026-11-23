@@ -5,6 +5,9 @@
 #include <cctype>
 #include <chrono>
 #include <cstdio>
+#include <fstream>
+#include <sstream>
+#include <sys/stat.h>
 #include <thread>
 #include <unordered_map>
 #include <unordered_set>
@@ -17,6 +20,30 @@ static std::string toLowerStr(const std::string& in)
     std::string out = in;
     std::transform(out.begin(), out.end(), out.begin(), [](unsigned char c) { return (char)std::tolower(c); });
     return out;
+}
+
+static bool fileExistsLocal(const std::string& path)
+{
+    struct stat st{};
+    return stat(path.c_str(), &st) == 0;
+}
+
+static std::string readFileToString(const std::string& path)
+{
+    std::ifstream ifs(path, std::ios::binary);
+    if (!ifs)
+        return {};
+    std::ostringstream ss;
+    ss << ifs.rdbuf();
+    return ss.str();
+}
+
+static std::string trimWhitespace(std::string s)
+{
+    size_t start = s.find_first_not_of(" \t\r\n");
+    if (start == std::string::npos) return "";
+    size_t end = s.find_last_not_of(" \t\r\n");
+    return s.substr(start, end - start + 1);
 }
 
 StoreManager& StoreManager::instance()
@@ -77,12 +104,46 @@ PackageSnapshot StoreManager::snapshotFrom(const Package& pkg)
     s.updated      = pkg.getUpdatedAt();
     s.license      = pkg.getLicense();
     s.url          = pkg.url;
+    s.file         = pkg.file;
+    s.directUrl    = pkg.directUrl;
     s.status       = pkg.getStatus();
     s.downloads    = pkg.getDownloadCount();
     s.download_size = pkg.getDownloadSize();
     s.extracted_size = pkg.getExtractedSize();
     s.screens      = pkg.getScreenshotCount();
     s.icon_url     = pkg.getIconUrl();
+
+    // Direct download package: override status based on local file + hpak.txt version
+    if (!s.file.empty())
+    {
+        std::string installedPath = "sdmc:/switch/" + s.file;
+        std::string localVerPath = configPath + "direct/" + s.name + ".version";
+        std::string remoteVerPath = configPath + "direct/" + s.name + ".remote";
+        std::string localVer = trimWhitespace(readFileToString(localVerPath));
+        std::string remoteVer = trimWhitespace(readFileToString(remoteVerPath));
+        if (remoteVer.empty()) remoteVer = s.version;
+
+        if (fileExistsLocal(installedPath))
+        {
+            s.status = INSTALLED;
+            if (!localVer.empty()) s.version = localVer;
+            if (!remoteVer.empty() && !localVer.empty() && remoteVer != localVer)
+            {
+                s.status = UPDATE;
+                s.version = remoteVer;
+            }
+            else if (!remoteVer.empty())
+            {
+                s.version = remoteVer;
+            }
+        }
+        else
+        {
+            s.status = GET;
+            if (!remoteVer.empty()) s.version = remoteVer;
+        }
+    }
+
     return s;
 }
 
@@ -129,6 +190,92 @@ void StoreManager::refresh(std::function<void(bool success, const std::string& e
         {
             ok = false;
             err = "Unknown error while refreshing";
+        }
+
+        // Fix up generic "Default Repo" names from remote repo.json
+        std::vector<std::pair<std::string, std::string>> reposToName; // url, name
+        {
+            std::lock_guard<std::mutex> lock(mutex);
+            if (get)
+            {
+                for (auto& r : get->getRepos())
+                {
+                    if (r && r->getName() == "Default Repo")
+                        reposToName.push_back({r->getUrl(), ""});
+                }
+            }
+        }
+        for (auto& rn : reposToName)
+        {
+            if (shuttingDown.load()) break;
+            std::string base = rn.first;
+            while (!base.empty() && base.back() == '/') base.pop_back();
+            std::string repoJson;
+            if (downloadFileToMemory(base + "/repo.json", &repoJson))
+            {
+                rapidjson::Document doc;
+                doc.Parse(repoJson.c_str());
+                if (!doc.HasParseError() && doc.IsObject() && doc.HasMember("name") && doc["name"].IsString())
+                    rn.second = doc["name"].GetString();
+            }
+            if (rn.second.empty())
+            {
+                size_t hostStart = rn.first.find("://");
+                std::string display = (hostStart != std::string::npos) ? rn.first.substr(hostStart + 3) : rn.first;
+                while (!display.empty() && display.back() == '/') display.pop_back();
+                rn.second = display;
+            }
+        }
+        if (!reposToName.empty())
+        {
+            std::lock_guard<std::mutex> lock(mutex);
+            if (get)
+            {
+                for (auto& rn : reposToName)
+                {
+                    if (rn.second.empty()) continue;
+                    for (auto& r : get->getRepos())
+                    {
+                        if (r && r->getUrl() == rn.first && r->getName() == "Default Repo")
+                        {
+                            r->setName(rn.second);
+                            break;
+                        }
+                    }
+                }
+                get->saveRepos();
+            }
+        }
+
+        // Fetch remote hpak.txt versions for direct-download packages
+        std::vector<std::pair<std::string, std::string>> directPkgs; // name, baseUrl
+        {
+            std::lock_guard<std::mutex> lock(mutex);
+            if (get)
+            {
+                for (auto& p : get->getPackages())
+                {
+                    if (p && !p->file.empty())
+                    {
+                        std::string base = !p->directUrl.empty() ? p->directUrl : p->url;
+                        while (!base.empty() && base.back() == '/') base.pop_back();
+                        directPkgs.push_back({p->getPackageName(), base});
+                    }
+                }
+            }
+        }
+        for (auto& dp : directPkgs)
+        {
+            if (shuttingDown.load()) break;
+            std::string ver;
+            if (downloadFileToMemory(dp.second + "/hpak.txt", &ver))
+            {
+                ver = trimWhitespace(ver);
+                std::string dir = configPath + "direct";
+                mkpath(dir);
+                std::ofstream ofs(dir + "/" + dp.first + ".remote", std::ios::binary);
+                if (ofs) ofs << ver;
+            }
         }
 
         loading = false;
@@ -222,90 +369,188 @@ void StoreManager::installPackage(const std::string& name, std::function<void(bo
         {
             brls::Logger::info("hpak/install: requested '{}'", name);
             init();
-            std::lock_guard<std::mutex> lock(mutex);
-            auto pkg = findPackageLocked(name);
-            if (!pkg)
+
+            // Check if this is a direct-download package
+            std::string directFile, directBase, pkgName;
+            bool isDirect = false;
             {
-                err = "Package not found";
-                brls::Logger::error("hpak/install: package '{}' not found", name);
+                std::lock_guard<std::mutex> lock(mutex);
+                auto pkg = findPackageLocked(name);
+                if (pkg && !pkg->file.empty())
+                {
+                    isDirect = true;
+                    directFile = pkg->file;
+                    directBase = !pkg->directUrl.empty() ? pkg->directUrl : pkg->url;
+                    pkgName = pkg->getPackageName();
+                }
             }
-            else
+
+            if (isDirect)
             {
-                brls::Logger::info("hpak/install: found '{}' status={} version='{}' url='{}'", 
-                    pkg->getPackageName(), pkg->getStatus(), pkg->getVersion(), pkg->url);
+                while (!directBase.empty() && directBase.back() == '/') directBase.pop_back();
+                std::string fileUrl = directBase + "/" + directFile;
+                std::string destPath = "sdmc:/switch/" + directFile;
+                mkpath("sdmc:/switch");
 
-                // Wire libget global progress callbacks for this install
-                struct ProgressState { std::atomic<float> progress{0.0f}; std::atomic<int> phase{0}; };
-                auto state = std::make_shared<ProgressState>();
-                auto progressCb = onProgress;
-
-                networking_callback_data = state.get();
-                libget_status_callback = [](int status, int, int) -> int {
-                    auto* st = static_cast<ProgressState*>(networking_callback_data);
-                    if (!st) return 0;
-                    st->phase.store(status);
-                    if (status == STATUS_DOWNLOADING) st->progress.store(std::max(st->progress.load(), 0.0f));
-                    else if (status == STATUS_ANALYZING) st->progress.store(std::max(st->progress.load(), 0.70f));
-                    else if (status == STATUS_INSTALLING) st->progress.store(std::max(st->progress.load(), 0.70f));
-                    return 0;
-                };
+                struct DirectProgress { std::atomic<float> progress{0.0f}; };
+                auto dstate = std::make_shared<DirectProgress>();
+                networking_callback_data = dstate.get();
+                libget_status_callback = nullptr;
                 networking_callback = [](void* clientp, double p) -> int {
-                    auto* st = static_cast<ProgressState*>(clientp);
+                    auto* st = static_cast<DirectProgress*>(clientp);
                     if (!st) return 0;
-                    int phase = st->phase.load();
                     float mapped = (float)p;
-                    if (phase == STATUS_DOWNLOADING) mapped = (float)(p * 0.70);
-                    else if (phase == STATUS_INSTALLING || phase == STATUS_ANALYZING) mapped = 0.70f + (float)(p * 0.30f);
-                    else mapped = (float)(p * 0.70);
                     float prev = st->progress.load();
                     while (mapped > prev && !st->progress.compare_exchange_weak(prev, mapped)) {}
                     return 0;
                 };
 
-                // Periodic UI progress updates while install runs
-                std::atomic<bool> installDone{false};
+                std::atomic<bool> dlDone{false};
                 std::thread progressThread;
-                if (progressCb)
+                if (onProgress)
                 {
-                    progressThread = std::thread([state, progressCb, &installDone]() {
+                    auto progressCb = onProgress;
+                    progressThread = std::thread([dstate, progressCb, &dlDone]() {
                         int lastPct = -1;
-                        int lastPhase = -1;
-                        while (!installDone.load())
+                        while (!dlDone.load())
                         {
-                            float prog = state->progress.load();
-                            int phase = state->phase.load();
-                            int pct = (int)(prog * 100);
-                            if (pct != lastPct || phase != lastPhase)
+                            int pct = (int)(dstate->progress.load() * 100);
+                            if (pct != lastPct)
                             {
-                                lastPct = pct; lastPhase = phase;
-                                std::string phaseStr = "Working...";
-                                if (phase == STATUS_DOWNLOADING) phaseStr = "Downloading...";
-                                else if (phase == STATUS_ANALYZING) phaseStr = "Analyzing...";
-                                else if (phase == STATUS_INSTALLING) phaseStr = "Extracting...";
-                                float pval = prog;
-                                brls::sync([progressCb, pval, phaseStr]() { progressCb(pval, phaseStr); });
+                                lastPct = pct;
+                                float pval = dstate->progress.load();
+                                brls::sync([progressCb, pval]() { progressCb(pval, "Downloading..."); });
                             }
                             std::this_thread::sleep_for(std::chrono::milliseconds(100));
                         }
-                        float prog = state->progress.load();
-                        int phase = state->phase.load();
-                        std::string phaseStr = (phase == STATUS_INSTALLING) ? "Extracting..." : "Finishing...";
-                        brls::sync([progressCb, prog, phaseStr]() { progressCb(prog, phaseStr); });
+                        brls::sync([progressCb]() { progressCb(1.0f, "Downloading..."); });
                     });
                 }
 
-                int ret = get->install(*pkg);
-                installDone.store(true);
-                if (progressThread.joinable()) progressThread.join();
+                ok = downloadFileToDisk(fileUrl, destPath);
 
+                dlDone.store(true);
+                if (progressThread.joinable()) progressThread.join();
                 networking_callback = nullptr;
-                libget_status_callback = nullptr;
                 networking_callback_data = nullptr;
 
-                ok = (ret == 1);
-                brls::Logger::info("hpak/install: get->install('{}') returned {} (ok={})", name, ret, ok);
-                if (!ok)
-                    err = "Install failed";
+                if (ok)
+                {
+                    std::string ver;
+                    std::string versionUrl = directBase + "/hpak.txt";
+                    if (downloadFileToMemory(versionUrl, &ver))
+                        ver = trimWhitespace(ver);
+                    if (ver.empty())
+                    {
+                        std::lock_guard<std::mutex> lock(mutex);
+                        auto pkg = findPackageLocked(name);
+                        if (pkg) ver = pkg->getVersion();
+                    }
+
+                    std::string verDir = configPath + "direct";
+                    mkpath(verDir);
+                    std::string localVerPath = verDir + "/" + pkgName + ".version";
+                    std::string remoteVerPath = verDir + "/" + pkgName + ".remote";
+                    std::ofstream ofs(localVerPath, std::ios::binary);
+                    if (ofs) ofs << ver;
+                    std::ofstream ofs2(remoteVerPath, std::ios::binary);
+                    if (ofs2) ofs2 << ver;
+
+                    if (onProgress)
+                        brls::sync([onProgress]() { onProgress(1.0f, "Done"); });
+                }
+                else
+                {
+                    err = "Download failed";
+                }
+            }
+            else
+            {
+                std::lock_guard<std::mutex> lock(mutex);
+                auto pkg = findPackageLocked(name);
+                if (!pkg)
+                {
+                    err = "Package not found";
+                    brls::Logger::error("hpak/install: package '{}' not found", name);
+                }
+                else
+                {
+                    brls::Logger::info("hpak/install: found '{}' status={} version='{}' url='{}'",
+                        pkg->getPackageName(), pkg->getStatus(), pkg->getVersion(), pkg->url);
+
+                    // Wire libget global progress callbacks for this install
+                    struct ProgressState { std::atomic<float> progress{0.0f}; std::atomic<int> phase{0}; };
+                    auto state = std::make_shared<ProgressState>();
+                    auto progressCb = onProgress;
+
+                    networking_callback_data = state.get();
+                    libget_status_callback = [](int status, int, int) -> int {
+                        auto* st = static_cast<ProgressState*>(networking_callback_data);
+                        if (!st) return 0;
+                        st->phase.store(status);
+                        if (status == STATUS_DOWNLOADING) st->progress.store(std::max(st->progress.load(), 0.0f));
+                        else if (status == STATUS_ANALYZING) st->progress.store(std::max(st->progress.load(), 0.70f));
+                        else if (status == STATUS_INSTALLING) st->progress.store(std::max(st->progress.load(), 0.70f));
+                        return 0;
+                    };
+                    networking_callback = [](void* clientp, double p) -> int {
+                        auto* st = static_cast<ProgressState*>(clientp);
+                        if (!st) return 0;
+                        int phase = st->phase.load();
+                        float mapped = (float)p;
+                        if (phase == STATUS_DOWNLOADING) mapped = (float)(p * 0.70);
+                        else if (phase == STATUS_INSTALLING || phase == STATUS_ANALYZING) mapped = 0.70f + (float)(p * 0.30f);
+                        else mapped = (float)(p * 0.70);
+                        float prev = st->progress.load();
+                        while (mapped > prev && !st->progress.compare_exchange_weak(prev, mapped)) {}
+                        return 0;
+                    };
+
+                    // Periodic UI progress updates while install runs
+                    std::atomic<bool> installDone{false};
+                    std::thread progressThread;
+                    if (progressCb)
+                    {
+                        progressThread = std::thread([state, progressCb, &installDone]() {
+                            int lastPct = -1;
+                            int lastPhase = -1;
+                            while (!installDone.load())
+                            {
+                                float prog = state->progress.load();
+                                int phase = state->phase.load();
+                                int pct = (int)(prog * 100);
+                                if (pct != lastPct || phase != lastPhase)
+                                {
+                                    lastPct = pct; lastPhase = phase;
+                                    std::string phaseStr = "Working...";
+                                    if (phase == STATUS_DOWNLOADING) phaseStr = "Downloading...";
+                                    else if (phase == STATUS_ANALYZING) phaseStr = "Analyzing...";
+                                    else if (phase == STATUS_INSTALLING) phaseStr = "Extracting...";
+                                    float pval = prog;
+                                    brls::sync([progressCb, pval, phaseStr]() { progressCb(pval, phaseStr); });
+                                }
+                                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                            }
+                            float prog = state->progress.load();
+                            int phase = state->phase.load();
+                            std::string phaseStr = (phase == STATUS_INSTALLING) ? "Extracting..." : "Finishing...";
+                            brls::sync([progressCb, prog, phaseStr]() { progressCb(prog, phaseStr); });
+                        });
+                    }
+
+                    int ret = get->install(*pkg);
+                    installDone.store(true);
+                    if (progressThread.joinable()) progressThread.join();
+
+                    networking_callback = nullptr;
+                    libget_status_callback = nullptr;
+                    networking_callback_data = nullptr;
+
+                    ok = (ret == 1);
+                    brls::Logger::info("hpak/install: get->install('{}') returned {} (ok={})", name, ret, ok);
+                    if (!ok)
+                        err = "Install failed";
+                }
             }
         }
         catch (const std::exception& e)
@@ -325,7 +570,6 @@ void StoreManager::installPackage(const std::string& name, std::function<void(bo
             brls::sync([onDone, ok, err]() { onDone(ok, err); });
     });
 }
-
 std::vector<RepoSnapshot> StoreManager::getRepos()
 {
     std::lock_guard<std::mutex> lock(mutex);
@@ -442,18 +686,42 @@ void StoreManager::removePackage(const std::string& name, std::function<void(boo
         try
         {
             init();
-            std::lock_guard<std::mutex> lock(mutex);
-            auto pkg = findPackageLocked(name);
-            if (!pkg)
+
+            std::string directFile, pkgName;
+            bool isDirect = false;
             {
-                err = "Package not found";
+                std::lock_guard<std::mutex> lock(mutex);
+                auto pkg = findPackageLocked(name);
+                if (pkg && !pkg->file.empty())
+                {
+                    isDirect = true;
+                    directFile = pkg->file;
+                    pkgName = pkg->getPackageName();
+                }
+            }
+
+            if (isDirect)
+            {
+                std::remove(("sdmc:/switch/" + directFile).c_str());
+                std::remove((configPath + "direct/" + pkgName + ".version").c_str());
+                std::remove((configPath + "direct/" + pkgName + ".remote").c_str());
+                ok = true;
             }
             else
             {
-                int ret = get->remove(*pkg);
-                ok = (ret == 1);
-                if (!ok)
-                    err = "Remove failed";
+                std::lock_guard<std::mutex> lock(mutex);
+                auto pkg = findPackageLocked(name);
+                if (!pkg)
+                {
+                    err = "Package not found";
+                }
+                else
+                {
+                    int ret = get->remove(*pkg);
+                    ok = (ret == 1);
+                    if (!ok)
+                        err = "Remove failed";
+                }
             }
         }
         catch (const std::exception& e)

@@ -4,7 +4,7 @@
     headerHidden="false">
     <brls:TabFrame
         title="hpak"
-        icon="@res/icon/icon.png">
+        icon="@res/icon/topIcon.png">
 
         <brls:Tab label="Home">
             <HomeTab />
