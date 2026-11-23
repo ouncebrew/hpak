@@ -50,7 +50,7 @@ void SourceCell::setRepo(const RepoSnapshot& r)
         return;
     }
 
-    std::string cacheDir = "sdmc:/switch/hpak/.get/cache/repo_icons";
+    std::string cacheDir = "sdmc:/packages/.get/cache/repo_icons";
     std::string cachePath = cacheDir + "/" + sanitizeForPath(r.url) + ".png";
     if (fileExists(cachePath))
     {

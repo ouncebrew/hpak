@@ -50,7 +50,7 @@ void AppCell::setPackage(const PackageSnapshot& pkg)
     this->icon->clear();
     this->icon->setVisibility(brls::Visibility::VISIBLE);
 
-    std::string cacheDir = "sdmc:/switch/hpak/.get/packages/" + pkg.name;
+    std::string cacheDir = "sdmc:/packages/.get/packages/" + pkg.name;
     std::string cachePath = cacheDir + "/icon.png";
 
     if (fileExists(cachePath))

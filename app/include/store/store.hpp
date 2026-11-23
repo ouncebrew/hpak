@@ -94,7 +94,7 @@ class StoreManager
 
     std::unique_ptr<Get> get;
     std::mutex mutex;
-    std::string configPath = "sdmc:/switch/hpak/.get/";
+    std::string configPath = "sdmc:/packages/.get/";
     bool initialized = false;
     bool loading = false;
     std::string lastError;

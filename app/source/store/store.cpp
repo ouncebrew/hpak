@@ -122,6 +122,11 @@ PackageSnapshot StoreManager::snapshotFrom(const Package& pkg)
         std::string localVer = trimWhitespace(readFileToString(localVerPath));
         std::string remoteVer = trimWhitespace(readFileToString(remoteVerPath));
         if (remoteVer.empty()) remoteVer = s.version;
+        {
+            std::string rv = toLowerStr(remoteVer);
+            if (remoteVer.empty() || rv == "not found" || rv == "n/a" || rv == "unknown")
+                remoteVer = "1.0.0";
+        }
 
         if (fileExistsLocal(installedPath))
         {
@@ -445,6 +450,11 @@ void StoreManager::installPackage(const std::string& name, std::function<void(bo
                         std::lock_guard<std::mutex> lock(mutex);
                         auto pkg = findPackageLocked(name);
                         if (pkg) ver = pkg->getVersion();
+                    }
+                    {
+                        std::string vl = toLowerStr(ver);
+                        if (ver.empty() || vl == "not found" || vl == "n/a" || vl == "unknown")
+                            ver = "1.0.0";
                     }
 
                     std::string verDir = configPath + "direct";

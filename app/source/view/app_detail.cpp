@@ -48,7 +48,7 @@ AppDetailView::AppDetailView(const PackageSnapshot& pkg) : package(pkg)
     this->icon->clear();
     this->icon->setVisibility(brls::Visibility::VISIBLE);
 
-    std::string cacheDir = "sdmc:/switch/hpak/.get/packages/" + package.name;
+    std::string cacheDir = "sdmc:/packages/.get/packages/" + package.name;
     std::string cachePath = cacheDir + "/icon.png";
 
     if (fileExists(cachePath))
