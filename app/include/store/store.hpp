@@ -30,6 +30,7 @@ struct PackageSnapshot
     std::string url;
     std::string file; // direct download file (e.g. dusklight.nro)
     std::string directUrl; // direct download base URL
+    std::string path; // install path for non-zip direct downloads
     int status = 0;
     int downloads = 0;
     int download_size = 0;

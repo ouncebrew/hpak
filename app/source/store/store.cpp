@@ -186,6 +186,7 @@ PackageSnapshot StoreManager::snapshotFrom(const Package& pkg)
     s.url          = pkg.url;
     s.file         = pkg.file;
     s.directUrl    = pkg.directUrl;
+    s.path         = pkg.path;
     s.status       = pkg.getStatus();
     s.downloads    = pkg.getDownloadCount();
     s.download_size = pkg.getDownloadSize();
@@ -201,7 +202,12 @@ PackageSnapshot StoreManager::snapshotFrom(const Package& pkg)
         if (!directBase.empty())
             s.icon_url = directBase + "/icon.png";
 
-        std::string installedPath = "sdmc:/switch/" + s.file;
+        std::string lowerFile = toLowerStr(s.file);
+        bool isZip = lowerFile.size() > 4 && lowerFile.rfind(".zip") == lowerFile.size() - 4;
+        std::string installDir = s.path.empty() ? "sdmc:/switch/" : s.path;
+        while (!installDir.empty() && installDir.back() != '/') installDir.push_back('/');
+        std::string installedPath = isZip ? "" : (installDir + s.file);
+
         std::string localPath = configPath + "direct/" + s.name + ".version";
         std::string remotePath = configPath + "direct/" + s.name + ".remote";
         auto localMeta = parseDirectPackageJson(readFileToString(localPath));
@@ -237,7 +243,8 @@ PackageSnapshot StoreManager::snapshotFrom(const Package& pkg)
                 applyMeta(remoteMeta);
         }
 
-        if (fileExistsLocal(installedPath))
+        bool isInstalled = isZip ? fileExistsLocal(localPath) : (!installedPath.empty() && fileExistsLocal(installedPath));
+        if (isInstalled)
         {
             s.status = INSTALLED;
             s.version = localVer;
@@ -564,7 +571,7 @@ void StoreManager::installPackage(const std::string& name, std::function<void(bo
             init();
 
             // Check if this is a direct-download package
-            std::string directFile, directBase, pkgName;
+            std::string directFile, directBase, pkgName, directPath;
             bool isDirect = false;
             {
                 std::lock_guard<std::mutex> lock(mutex);
@@ -575,15 +582,23 @@ void StoreManager::installPackage(const std::string& name, std::function<void(bo
                     directFile = pkg->file;
                     directBase = !pkg->directUrl.empty() ? pkg->directUrl : pkg->url;
                     pkgName = pkg->getPackageName();
+                    directPath = pkg->path;
                 }
             }
 
             if (isDirect)
             {
                 while (!directBase.empty() && directBase.back() == '/') directBase.pop_back();
+                std::string lowerFile = toLowerStr(directFile);
+                bool isZip = lowerFile.size() > 4 && lowerFile.rfind(".zip") == lowerFile.size() - 4;
+                std::string installDir = directPath.empty() ? "sdmc:/switch/" : directPath;
+                while (!installDir.empty() && installDir.back() != '/') installDir.push_back('/');
+
                 std::string fileUrl = directBase + "/" + directFile;
-                std::string destPath = "sdmc:/switch/" + directFile;
-                mkpath("sdmc:/switch");
+                std::string tmpDir = configPath + "tmp";
+                mkpath(tmpDir);
+                std::string destPath = isZip ? (tmpDir + "/" + directFile) : (installDir + directFile);
+                if (!isZip) mkpath(installDir);
 
                 struct DirectProgress { std::atomic<float> progress{0.0f}; };
                 auto dstate = std::make_shared<DirectProgress>();
@@ -626,6 +641,35 @@ void StoreManager::installPackage(const std::string& name, std::function<void(bo
                 if (progressThread.joinable()) progressThread.join();
                 networking_callback = nullptr;
                 networking_callback_data = nullptr;
+
+                if (ok && isZip)
+                {
+                    if (onProgress)
+                        brls::sync([onProgress]() { onProgress(1.0f, "Extracting..."); });
+                    UnZip zip(destPath);
+                    if (zip.IsValid())
+                    {
+                        auto paths = zip.PathDump();
+                        std::string verDir = configPath + "direct";
+                        mkpath(verDir);
+                        std::ofstream mf(verDir + "/" + pkgName + ".files", std::ios::binary);
+                        for (auto& p : paths)
+                        {
+                            std::string clean = p;
+                            while (!clean.empty() && (clean.front() == '/' || clean.front() == '\\')) clean.erase(clean.begin());
+                            if (clean.empty()) continue;
+                            if (mf) mf << clean << "\n";
+                        }
+                        zip.ExtractAll("sdmc:/");
+                        zip.Close();
+                    }
+                    else
+                    {
+                        ok = false;
+                        err = "Failed to extract zip";
+                    }
+                    std::remove(destPath.c_str());
+                }
 
                 if (ok)
                 {
@@ -688,7 +732,7 @@ void StoreManager::installPackage(const std::string& name, std::function<void(bo
                 }
                 else
                 {
-                    err = "Download failed";
+                    if (err.empty()) err = "Download failed";
                 }
             }
             else
@@ -914,7 +958,7 @@ void StoreManager::removePackage(const std::string& name, std::function<void(boo
         {
             init();
 
-            std::string directFile, pkgName;
+            std::string directFile, pkgName, directPath;
             bool isDirect = false;
             {
                 std::lock_guard<std::mutex> lock(mutex);
@@ -924,12 +968,34 @@ void StoreManager::removePackage(const std::string& name, std::function<void(boo
                     isDirect = true;
                     directFile = pkg->file;
                     pkgName = pkg->getPackageName();
+                    directPath = pkg->path;
                 }
             }
 
             if (isDirect)
             {
-                std::remove(("sdmc:/switch/" + directFile).c_str());
+                std::string lowerFile = toLowerStr(directFile);
+                bool isZip = lowerFile.size() > 4 && lowerFile.rfind(".zip") == lowerFile.size() - 4;
+                if (isZip)
+                {
+                    std::string manifestPath = configPath + "direct/" + pkgName + ".files";
+                    std::ifstream mf(manifestPath);
+                    std::string line;
+                    while (std::getline(mf, line))
+                    {
+                        if (!line.empty() && line.back() == '\r') line.pop_back();
+                        while (!line.empty() && (line.front() == '/' || line.front() == '\\')) line.erase(line.begin());
+                        if (line.empty()) continue;
+                        std::remove(("sdmc:/" + line).c_str());
+                    }
+                    std::remove(manifestPath.c_str());
+                }
+                else
+                {
+                    std::string installDir = directPath.empty() ? "sdmc:/switch/" : directPath;
+                    while (!installDir.empty() && installDir.back() != '/') installDir.push_back('/');
+                    std::remove((installDir + directFile).c_str());
+                }
                 std::remove((configPath + "direct/" + pkgName + ".version").c_str());
                 std::remove((configPath + "direct/" + pkgName + ".remote").c_str());
                 ok = true;
