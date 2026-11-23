@@ -20,4 +20,5 @@ class HomeTab : public brls::Box
 
     AppListDataSource* dataSource = nullptr;
     std::shared_ptr<bool> alive = std::make_shared<bool>(true);
+    bool refreshSucceeded = false;
 };

@@ -31,7 +31,8 @@ void HomeTab::willAppear(bool resetState)
     brls::Box::willAppear(resetState);
     if (!dataSource)
         return;
-    auto items = StoreManager::instance().getAllPackages();
+    auto& store = StoreManager::instance();
+    auto items = store.getAllPackages();
     std::sort(items.begin(), items.end(), [](const PackageSnapshot& a, const PackageSnapshot& b) {
         if (a.updated_timestamp != b.updated_timestamp)
             return a.updated_timestamp > b.updated_timestamp;
@@ -39,6 +40,14 @@ void HomeTab::willAppear(bool resetState)
     });
     if (items.size() > 5)
         items.resize(5);
+
+    if (items.empty() && !refreshSucceeded && !store.isLoading())
+    {
+        // First load produced nothing (e.g. refresh ran before network was up)
+        // and no refresh is currently in flight — retry the load.
+        loadData();
+        return;
+    }
 
     if (!dataSource->sameItems(items))
     {
@@ -93,6 +102,8 @@ void HomeTab::loadData()
         if (!token || !*token)
             return;
 
+        if (success)
+            refreshSucceeded = true;
         refreshView();
         if (!success)
             header->setSubtitle(error.empty() ? "Failed to load packages" : error);
