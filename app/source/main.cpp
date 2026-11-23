@@ -45,6 +45,7 @@ int main(int argc, char* argv[])
 
     brls::Application::createWindow("hpak");
     brls::Application::getPlatform()->setThemeVariant(brls::ThemeVariant::DARK);
+    brls::Application::getPlatform()->getInputManager()->setPadMouseEnabled(true);
     brls::Application::setGlobalQuit(false);
 
     brls::Application::getExitEvent()->subscribe([]() {

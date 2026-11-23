@@ -6,8 +6,8 @@
 
     <brls:Header
         id="header"
-        title="All Apps"
-        subtitle="Browse available packages"
+        title="Apps"
+        subtitle="Choose a category"
         marginLeft="24"
         marginRight="24" />
 
