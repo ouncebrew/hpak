@@ -34,5 +34,9 @@
             <OptionsTab />
         </brls:Tab>
 
+        <brls:Tab label="Storage">
+            <StorageTab />
+        </brls:Tab>
+
     </brls:TabFrame>
 </brls:AppletFrame>

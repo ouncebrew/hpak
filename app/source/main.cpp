@@ -11,6 +11,7 @@
 #include "tab/installed_tab.hpp"
 #include "tab/options_tab.hpp"
 #include "tab/sources_tab.hpp"
+#include "tab/storage_tab.hpp"
 #include "tab/updates_tab.hpp"
 #include "util/icon_loader.hpp"
 #include "util/settings.hpp"
@@ -66,6 +67,7 @@ int main(int argc, char* argv[])
     brls::Application::registerXMLView("InstalledTab", InstalledTab::create);
     brls::Application::registerXMLView("OptionsTab", OptionsTab::create);
     brls::Application::registerXMLView("SourcesTab", SourcesTab::create);
+    brls::Application::registerXMLView("StorageTab", StorageTab::create);
     brls::Application::registerXMLView("UpdatesTab", UpdatesTab::create);
 
     brls::Application::pushActivity(new MainActivity());
