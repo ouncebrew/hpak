@@ -19,6 +19,7 @@
 #include "util/net_gate.hpp"
 #include "util/settings.hpp"
 #include <borealis/extern/nlohmann/json.hpp>
+#include <mbedtls/sha256.h>
 
 static std::string toLowerStr(const std::string& in)
 {
@@ -35,6 +36,42 @@ static bool fileExistsLocal(const std::string& path)
 
 // Delete a file or directory tree. Only acts inside sdmc:/ and never on the
 // root itself, so malformed deletion entries can't wipe the card.
+// The SHA-256 of a file as 64 lowercase hex digits, or an empty string when
+// the file cannot be read. The file is read in parts: a package can be larger
+// than the memory a download should take.
+static std::string fileSha256(const std::string& path)
+{
+    std::ifstream file(path, std::ios::binary);
+    if (!file)
+        return "";
+
+    mbedtls_sha256_context context;
+    mbedtls_sha256_init(&context);
+    bool ok = mbedtls_sha256_starts_ret(&context, 0) == 0;
+    std::vector<char> buffer(64 * 1024);
+    while (ok && file)
+    {
+        file.read(buffer.data(), (std::streamsize)buffer.size());
+        std::streamsize got = file.gcount();
+        if (got > 0)
+            ok = mbedtls_sha256_update_ret(&context, (const unsigned char*)buffer.data(), (size_t)got) == 0;
+    }
+    unsigned char digest[32];
+    ok = ok && !file.bad() && mbedtls_sha256_finish_ret(&context, digest) == 0;
+    mbedtls_sha256_free(&context);
+    if (!ok)
+        return "";
+
+    static const char hex[] = "0123456789abcdef";
+    std::string out;
+    for (unsigned char byte : digest)
+    {
+        out.push_back(hex[byte >> 4]);
+        out.push_back(hex[byte & 15]);
+    }
+    return out;
+}
+
 static void removePathRecursive(std::string path)
 {
     while (!path.empty() && path.back() == '/')
@@ -766,7 +803,7 @@ PackageSnapshot StoreManager::getPackage(const std::string& name)
 
 bool StoreManager::installDirectOne(const std::string& name, float p0, float p1, ProgressCallback onProgress, std::string& err)
 {
-    std::string directFile, directBase, pkgName, directPath;
+    std::string directFile, directBase, pkgName, directPath, expectedSha256;
     {
         std::lock_guard<std::mutex> lock(mutex);
         auto pkg = findPackageLocked(name);
@@ -780,6 +817,7 @@ bool StoreManager::installDirectOne(const std::string& name, float p0, float p1,
         directBase = !pkg->directUrl.empty() ? pkg->directUrl : pkg->url;
         pkgName = pkg->getPackageName();
         directPath = pkg->path;
+        expectedSha256 = toLowerStr(pkg->sha256);
     }
 
     auto scale = [p0, p1](float p) { return p0 + p * (p1 - p0); };
@@ -794,7 +832,11 @@ bool StoreManager::installDirectOne(const std::string& name, float p0, float p1,
     std::string fileUrl = directBase + "/" + directFile;
     std::string tmpDir = configPath + "tmp";
     mkpath(tmpDir);
-    std::string destPath = isZip ? (tmpDir + "/" + directFile) : (installDir + directFile);
+    // The download goes to the temporary folder first. It is moved or extracted
+    // only after its SHA-256 matches the repository's, when the repository
+    // gives one.
+    std::string destPath = tmpDir + "/" + directFile;
+    std::string installedPath = installDir + directFile;
     if (!isZip) mkpath(installDir);
 
     struct DirectProgress { std::atomic<float> progress{0.0f}; };
@@ -838,6 +880,30 @@ bool StoreManager::installDirectOne(const std::string& name, float p0, float p1,
     if (progressThread.joinable()) progressThread.join();
     networking_callback = nullptr;
     networking_callback_data = nullptr;
+
+    if (ok && !expectedSha256.empty())
+    {
+        std::string actual = fileSha256(destPath);
+        if (actual != expectedSha256)
+        {
+            brls::Logger::error("hpak/install: '{}' has SHA-256 {}, the repository says {}",
+                                name, actual.empty() ? "(unreadable)" : actual, expectedSha256);
+            std::remove(destPath.c_str());
+            err = "The download does not match the repository";
+            return false;
+        }
+    }
+
+    if (ok && !isZip)
+    {
+        std::remove(installedPath.c_str());
+        if (std::rename(destPath.c_str(), installedPath.c_str()) != 0)
+        {
+            std::remove(destPath.c_str());
+            ok = false;
+            err = "Failed to install the file";
+        }
+    }
 
     if (ok && isZip)
     {

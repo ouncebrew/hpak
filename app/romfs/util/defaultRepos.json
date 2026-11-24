@@ -1,12 +1,12 @@
 {
     "repos": [
         {
-            "name": "Ouncebrew",
-            "url": "https://ouncebrew.github.io"
+            "name": "Ouncebrew Core",
+            "url": "https://hpak.ouncebrew.org/core"
         },
         {
             "name": "Ouncebrew Community",
-            "url": "https://ouncebrew.github.io/community"
+            "url": "https://hpak.ouncebrew.org/community"
         }
     ]
 }
