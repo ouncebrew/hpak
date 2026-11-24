@@ -44,17 +44,47 @@ static void removePathRecursive(std::string path)
     if (path.find("..") != std::string::npos)
         return;
 
+    // Explicitly protected files (never deleted under any depth rule).
+    {
+        static const char* kProtected[] = {
+            "sdmc:/hbmenu.nro",
+        };
+        std::string lowered = toLowerStr(path);
+        for (auto p : kProtected)
+        {
+            if (lowered == p)
+                return;
+        }
+    }
+
+    // Never delete root-level directories (sdmc:/switch, sdmc:/Nintendo,
+    // sdmc:/kaihen, ...). Deeper paths (sdmc:/switch/<dir>/) are fine.
+    // Depth = number of components under sdmc:/.
+    int depth = 1;
+    for (size_t i = 7; i < path.size(); i++)
+        if (path[i] == '/')
+            depth++;
+
     struct stat st{};
-    if (stat(path.c_str(), &st) != 0)
+    if (lstat(path.c_str(), &st) != 0)
+    {
+        std::remove(path.c_str());
+        return;
+    }
+    // Never traverse symlinks: just unlink the link itself.
+    if (S_ISLNK(st.st_mode))
     {
         std::remove(path.c_str());
         return;
     }
     if (!S_ISDIR(st.st_mode))
     {
+        // Single files may live at any depth (e.g. sdmc:/bar.txt).
         std::remove(path.c_str());
         return;
     }
+    if (depth < 2)
+        return; // refuse root-level directory deletion
     DIR* dir = opendir(path.c_str());
     if (!dir)
     {
@@ -354,7 +384,9 @@ PackageSnapshot StoreManager::snapshotFrom(const Package& pkg)
     s.screens      = pkg.getScreenshotCount();
     s.icon_url     = pkg.getIconUrl();
 
-    // Direct download package: override status/metadata from local file + package.json
+    // Direct download package: installed state lives in the libget registry
+    // (packages/<name>/manifest.install + info.json). Metadata comes from
+    // the repo entry, overlaid with the release package.json at load time.
     if (!s.file.empty())
     {
         std::string directBase = !s.directUrl.empty() ? s.directUrl : s.url;
@@ -362,58 +394,40 @@ PackageSnapshot StoreManager::snapshotFrom(const Package& pkg)
         if (!directBase.empty())
             s.icon_url = directBase + "/icon.png";
 
-        std::string lowerFile = toLowerStr(s.file);
-        bool isZip = lowerFile.size() > 4 && lowerFile.rfind(".zip") == lowerFile.size() - 4;
-        std::string installDir = s.path.empty() ? "sdmc:/switch/" : s.path;
-        while (!installDir.empty() && installDir.back() != '/') installDir.push_back('/');
-        std::string installedPath = isZip ? "" : (installDir + s.file);
+        std::string manPath = configPath + "packages/" + s.name + "/manifest.install";
+        std::string infoPath = configPath + "packages/" + s.name + "/info.json";
+        bool manifestExists = fileExistsLocal(manPath);
 
-        std::string localPath = configPath + "direct/" + s.name + ".version";
-        std::string remotePath = configPath + "direct/" + s.name + ".remote";
-        auto localMeta = parseDirectPackageJson(readFileToString(localPath));
-        auto remoteMeta = parseDirectPackageJson(readFileToString(remotePath));
+        // Installed state and metadata come from the registry only: if the
+        // manifest isn't there, the package counts as not installed even
+        // when payload files happen to exist (and vice versa).
+        DirectPackageMeta localMeta = parseDirectPackageJson(readFileToString(infoPath));
 
-        bool repoHasFullMeta = !s.title.empty() && !s.author.empty() && !s.version.empty() &&
-                               !s.short_desc.empty() && !s.long_desc.empty() && !s.license.empty() &&
-                               !s.changelog.empty();
+        // Fill gaps the repo entry doesn't cover (offline-friendly metadata).
+        auto applyMeta = [&](const DirectPackageMeta& m) {
+            if (s.title.empty() && !m.title.empty()) s.title = m.title;
+            if (s.author.empty() && !m.author.empty()) s.author = m.author;
+            if (s.short_desc.empty() && !m.description.empty()) s.short_desc = m.description;
+            if (s.long_desc.empty() && !m.details.empty()) s.long_desc = m.details;
+            if (s.license.empty() && !m.license.empty()) s.license = m.license;
+            if (s.changelog.empty() && !m.changelog.empty()) s.changelog = m.changelog;
+            for (auto& p : m.requiredDeletion)
+            {
+                if (std::find(s.requiredDeletion.begin(), s.requiredDeletion.end(), p) == s.requiredDeletion.end())
+                    s.requiredDeletion.push_back(p);
+            }
+            for (auto& p : m.userDeletion)
+            {
+                if (std::find(s.userDeletion.begin(), s.userDeletion.end(), p) == s.userDeletion.end())
+                    s.userDeletion.push_back(p);
+            }
+        };
+        applyMeta(localMeta);
 
         std::string localVer = sanitizeDirectVersion(localMeta.version.empty() ? s.version : localMeta.version);
-        std::string remoteVer = sanitizeDirectVersion(repoHasFullMeta ? s.version : (remoteMeta.version.empty() ? s.version : remoteMeta.version));
+        std::string remoteVer = sanitizeDirectVersion(s.version);
 
-        if (!repoHasFullMeta)
-        {
-            auto applyMeta = [&](const DirectPackageMeta& m) {
-                if (!m.title.empty()) s.title = m.title;
-                if (!m.author.empty()) s.author = m.author;
-                if (!m.description.empty()) s.short_desc = m.description;
-                if (!m.details.empty()) s.long_desc = m.details;
-                if (!m.license.empty()) s.license = m.license;
-                if (!m.changelog.empty()) s.changelog = m.changelog;
-                for (auto& p : m.requiredDeletion)
-                {
-                    if (std::find(s.requiredDeletion.begin(), s.requiredDeletion.end(), p) == s.requiredDeletion.end())
-                        s.requiredDeletion.push_back(p);
-                }
-                for (auto& p : m.userDeletion)
-                {
-                    if (std::find(s.userDeletion.begin(), s.userDeletion.end(), p) == s.userDeletion.end())
-                        s.userDeletion.push_back(p);
-                }
-            };
-
-            auto hasMeta = [](const DirectPackageMeta& m) {
-                return !m.title.empty() || !m.author.empty() || !m.version.empty() ||
-                       !m.description.empty() || !m.details.empty() || !m.license.empty() || !m.changelog.empty();
-            };
-
-            // Prefer remote metadata (latest release), fall back to local
-            if (hasMeta(localMeta))
-                applyMeta(localMeta);
-            if (hasMeta(remoteMeta))
-                applyMeta(remoteMeta);
-        }
-
-        bool isInstalled = isZip ? fileExistsLocal(localPath) : (!installedPath.empty() && fileExistsLocal(installedPath));
+        bool isInstalled = manifestExists;
         if (isInstalled)
         {
             s.status = INSTALLED;
@@ -547,42 +561,8 @@ void StoreManager::refresh(std::function<void(bool success, const std::string& e
             }
         }
 
-        // Fetch remote package.json metadata for direct-download packages
-        // Skip if repo.json already provides all details (avoids rate limits)
-        std::vector<std::pair<std::string, std::string>> directPkgs; // name, baseUrl
-        {
-            std::lock_guard<std::mutex> lock(mutex);
-            if (get)
-            {
-                for (auto& p : get->getPackages())
-                {
-                    if (p && !p->file.empty())
-                    {
-                        bool hasFullRepoMeta = !p->getTitle().empty() && !p->getAuthor().empty() &&
-                                               !p->getVersion().empty() && !p->getShortDescription().empty() &&
-                                               !p->getLongDescription().empty() && !p->getLicense().empty() &&
-                                               !p->getChangelog().empty();
-                        if (hasFullRepoMeta)
-                            continue;
-                        std::string base = !p->directUrl.empty() ? p->directUrl : p->url;
-                        while (!base.empty() && base.back() == '/') base.pop_back();
-                        directPkgs.push_back({p->getPackageName(), base});
-                    }
-                }
-            }
-        }
-        for (auto& dp : directPkgs)
-        {
-            if (shuttingDown.load()) break;
-            std::string content;
-            if (downloadFileToMemory(dp.second + "/package.json", &content))
-            {
-                std::string dir = configPath + "direct";
-                mkpath(dir);
-                std::ofstream ofs(dir + "/" + dp.first + ".remote", std::ios::binary);
-                if (ofs) ofs << content;
-            }
-        }
+        // Direct-download metadata is overlaid onto packages at load time
+        // (GetRepo::loadPackages), so no separate remote fetch is needed here.
 
         // Download repo icons.zip bundles (compatible cache prefill)
         std::vector<std::pair<std::string, std::string>> repoIconZips; // slug, baseUrl
@@ -839,6 +819,11 @@ bool StoreManager::installDirectOne(const std::string& name, float p0, float p1,
     networking_callback = nullptr;
     networking_callback_data = nullptr;
 
+    // Entries for the registry manifest (sdmc:/-relative paths).
+    std::vector<std::string> manifestEntries;
+    if (!isZip && destPath.rfind("sdmc:/", 0) == 0 && destPath.size() > 6)
+        manifestEntries.push_back(destPath.substr(6));
+
     if (ok && isZip)
     {
         if (onProgress)
@@ -850,15 +835,12 @@ bool StoreManager::installDirectOne(const std::string& name, float p0, float p1,
         if (zip.IsValid())
         {
             auto paths = zip.PathDump();
-            std::string verDir = configPath + "direct";
-            mkpath(verDir);
-            std::ofstream mf(verDir + "/" + pkgName + ".files", std::ios::binary);
             for (auto& p : paths)
             {
                 std::string clean = p;
                 while (!clean.empty() && (clean.front() == '/' || clean.front() == '\\')) clean.erase(clean.begin());
                 if (clean.empty()) continue;
-                if (mf) mf << clean << "\n";
+                manifestEntries.push_back(clean);
             }
             zip.ExtractAll("sdmc:/");
             zip.Close();
@@ -920,14 +902,27 @@ bool StoreManager::installDirectOne(const std::string& name, float p0, float p1,
         j["version"] = meta.version;
 
         std::string stored = j.dump(4);
-        std::string verDir = configPath + "direct";
-        mkpath(verDir);
-        std::string localVerPath = verDir + "/" + pkgName + ".version";
-        std::string remoteVerPath = verDir + "/" + pkgName + ".remote";
-        std::ofstream ofs(localVerPath, std::ios::binary);
-        if (ofs) ofs << stored;
-        std::ofstream ofs2(remoteVerPath, std::ios::binary);
-        if (ofs2) ofs2 << stored;
+
+        // Registry entries so direct installs integrate with the standard
+        // libget layout (packages/<name>/manifest.install + info.json).
+        // info.json carries the full metadata (libget only reads version).
+        // Legacy sidecar markers are purged on (re)install.
+        std::remove((configPath + "direct/" + pkgName + ".version").c_str());
+        std::remove((configPath + "direct/" + pkgName + ".remote").c_str());
+        std::remove((configPath + "direct/" + pkgName + ".files").c_str());
+        std::string manDir = configPath + "packages/" + pkgName + "/";
+        mkpath(manDir);
+        if (!manifestEntries.empty())
+        {
+            std::ofstream man(manDir + "manifest.install", std::ios::binary);
+            if (man)
+            {
+                for (auto& e : manifestEntries)
+                    man << "U: " << e << "\n";
+            }
+        }
+        std::ofstream info(manDir + "info.json", std::ios::binary);
+        if (info) info << stored;
     }
     else
     {
@@ -1337,16 +1332,16 @@ void StoreManager::removePackage(const std::string& name, std::function<void(boo
             }
             else
             {
-            // Gather deletion lists: install-time marker first, live repo fields as fallback.
+            // Gather deletion lists: registry info.json first, live repo fields last.
             std::vector<std::string> requiredDel, userDel;
             {
                 std::lock_guard<std::mutex> lock(mutex);
                 auto pkg = findPackageLocked(name);
                 if (pkg && !pkg->file.empty())
                 {
-                    auto lm = parseDirectPackageJson(readFileToString(configPath + "direct/" + pkg->getPackageName() + ".version"));
-                    requiredDel = lm.requiredDeletion;
-                    userDel = lm.userDeletion;
+                    auto im = parseDirectPackageJson(readFileToString(configPath + "packages/" + pkg->getPackageName() + "/info.json"));
+                    requiredDel = im.requiredDeletion;
+                    userDel = im.userDeletion;
                 }
                 if (pkg)
                 {
@@ -1386,17 +1381,22 @@ void StoreManager::removePackage(const std::string& name, std::function<void(boo
                 bool isZip = lowerFile.size() > 4 && lowerFile.rfind(".zip") == lowerFile.size() - 4;
                 if (isZip)
                 {
-                    std::string manifestPath = configPath + "direct/" + pkgName + ".files";
-                    std::ifstream mf(manifestPath);
-                    std::string line;
-                    while (std::getline(mf, line))
+                    // Registry manifest lists every extracted file.
+                    std::vector<std::string> zipFiles;
                     {
-                        if (!line.empty() && line.back() == '\r') line.pop_back();
-                        while (!line.empty() && (line.front() == '/' || line.front() == '\\')) line.erase(line.begin());
-                        if (line.empty()) continue;
-                        std::remove(("sdmc:/" + line).c_str());
+                        std::ifstream man(configPath + "packages/" + pkgName + "/manifest.install");
+                        std::string line;
+                        while (std::getline(man, line))
+                        {
+                            if (!line.empty() && line.back() == '\r') line.pop_back();
+                            if (line.size() > 3 && line[1] == ':' && line[2] == ' ') line = line.substr(3);
+                            while (!line.empty() && (line.front() == '/' || line.front() == '\\')) line.erase(line.begin());
+                            if (line.empty()) continue;
+                            zipFiles.push_back(line);
+                        }
                     }
-                    std::remove(manifestPath.c_str());
+                    for (auto& rel : zipFiles)
+                        std::remove(("sdmc:/" + rel).c_str());
                 }
                 else
                 {
@@ -1404,6 +1404,12 @@ void StoreManager::removePackage(const std::string& name, std::function<void(boo
                     while (!installDir.empty() && installDir.back() != '/') installDir.push_back('/');
                     std::remove((installDir + directFile).c_str());
                 }
+                // Registry entries written at install time.
+                std::string manDir = configPath + "packages/" + pkgName + "/";
+                std::remove((manDir + "manifest.install").c_str());
+                std::remove((manDir + "info.json").c_str());
+                rmdir(manDir.c_str());
+                // Legacy pre-registry markers (one-generation bridge).
                 std::remove((configPath + "direct/" + pkgName + ".version").c_str());
                 std::remove((configPath + "direct/" + pkgName + ".remote").c_str());
                 ok = true;

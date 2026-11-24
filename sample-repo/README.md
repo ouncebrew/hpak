@@ -94,6 +94,7 @@ Direct-download packages (installed straight from a release, no zip):
 
 - `file`: release asset name. A `.zip` asset is extracted to `sdmc:/` (replacing files); otherwise the file is placed in `path` (default `sdmc:/switch/`, created if needed).
 - `path`: install directory for single-file downloads.
+- Direct installs write a standard registry entry (`packages/<name>/manifest.install` with `U: <sd-relative-path>` lines plus `info.json` carrying the full metadata) — the same layout as regular packages, so install state, versions and update checks all go through libget's registry. Installed state is resolved from the manifest alone: no manifest means not installed, even if payload files exist.
 - `UpdateDateTime`: `"DD/MM/YYYY HH:MM"` (24hr, UTC) — powers Featured “recently updated” sorting. The repo updater script stamps this automatically on version changes.
 - If `repo.json` already carries `title`, `author`, `version`, `description`, `details`, `license` and `changelog`, no per-release `package.json` fetch is needed; otherwise hpak reads `<direct_url>/package.json` (same fields, multiline `details` supported) and `<direct_url>/icon.png` (`.jpg`/`.jpeg` also tried).
 
@@ -124,5 +125,6 @@ Deletion lists (both optional arrays of `sdmc:/...` paths, in `repo.json` and/or
 ```
 
 - `requiredDeletion`: always deleted on uninstall. Provide it for anything the normal payload removal misses — for single-file apps this is optional, for ZIP apps list the directories to clean (extracted files are covered by the manifest, but empty/runtime-created dirs are not).
-- `userDeletion`: user data (saves, configs). If non-empty, uninstalling prompts first: “Would you like to remove this package's data completely? This may include saves, configurations, etc.” with Remove all / Keep data. Only `sdmc:/` paths are honored, and `sdmc:/` itself is never deleted.
+- `userDeletion`: user data (saves, configs). If non-empty, uninstalling prompts first: “Would you like to remove this package's data completely? This may include saves, configurations, etc.” with Remove all / Keep data.
+- Deletion safety: only `sdmc:/` paths without `..` are honored, symlinks are never traversed, `sdmc:/hbmenu.nro` is explicitly protected, and root-level directories (`sdmc:/switch`, `sdmc:/Nintendo`, `sdmc:/kaihen`, …) can never be deleted — only paths at least two levels deep (`sdmc:/switch/<dir>/`). Single files may live at any depth.
 - Both fields also sync from `package.json` via the repo updater scripts.
