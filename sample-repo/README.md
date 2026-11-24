@@ -111,3 +111,18 @@ Dependencies (regular and direct packages alike):
 - `dependencies`: object mapping package name → version constraint. Constraints are 1–4 numeric segments with optional `x`/`*` wildcards (`"1.2.x"`, `"2"`); missing segments act as a prefix (`"1.0"` accepts `1.0.x`). `"*"` (or empty) accepts anything.
 - Dependencies install automatically before the package (transitively, with cycle detection); already-installed ones are skipped. Missing or version-mismatched dependencies abort the install with an error naming the package.
 - Dependents are shown in the app details (“Requires: …”).
+- Removing a package is blocked while an installed package depends on it (`Cannot remove 'x': required by 'y'`). Afterwards, hpak offers to remove dependencies left unused by anything installed (“Would you like to remove unused dependencies?”).
+
+Deletion lists (both optional arrays of `sdmc:/...` paths, in `repo.json` and/or `package.json`):
+
+```json
+{
+  "name": "my-app",
+  "requiredDeletion": ["sdmc:/switch/my-app/"],
+  "userDeletion": ["sdmc:/switch/my-app/saves/"]
+}
+```
+
+- `requiredDeletion`: always deleted on uninstall. Provide it for anything the normal payload removal misses — for single-file apps this is optional, for ZIP apps list the directories to clean (extracted files are covered by the manifest, but empty/runtime-created dirs are not).
+- `userDeletion`: user data (saves, configs). If non-empty, uninstalling prompts first: “Would you like to remove this package's data completely? This may include saves, configurations, etc.” with Remove all / Keep data. Only `sdmc:/` paths are honored, and `sdmc:/` itself is never deleted.
+- Both fields also sync from `package.json` via the repo updater scripts.

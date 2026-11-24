@@ -26,6 +26,8 @@ struct PackageSnapshot
     std::string license;
     std::string changelog;
     std::vector<PackageDependency> dependencies;
+    std::vector<std::string> requiredDeletion;
+    std::vector<std::string> userDeletion;
     std::string repo_name;
     std::string repo_url;
     std::string icon_url;
@@ -71,7 +73,7 @@ class StoreManager
 
     void init();
     bool isInitialized() const { return initialized; }
-    bool isLoading() const { return loading; }
+    bool isLoading() const { return loading.load(); }
     std::string getLastError() const;
 
     void refresh(std::function<void(bool success, const std::string& error)> onDone = nullptr);
@@ -89,7 +91,12 @@ class StoreManager
     using ProgressCallback = std::function<void(float progress, const std::string& phase)>;
 
     void installPackage(const std::string& name, std::function<void(bool success, const std::string& error)> onDone = nullptr, ProgressCallback onProgress = nullptr);
-    void removePackage(const std::string& name, std::function<void(bool success, const std::string& error)> onDone = nullptr, ProgressCallback onProgress = nullptr);
+    void removePackage(const std::string& name, std::function<void(bool success, const std::string& error)> onDone = nullptr, ProgressCallback onProgress = nullptr, bool removeUserData = true);
+
+    // Installed packages from the removed package's dependency closure that no
+    // other installed package depends on (dependents-first order). Empty if the
+    // closure can't be resolved (e.g. circular dependencies).
+    std::vector<std::string> getUnusedDependencies(const std::string& removedName);
 
     std::string getConfigPath() const { return configPath; }
     void shutdown();
@@ -104,6 +111,8 @@ class StoreManager
 
     PackageSnapshot snapshotFrom(const Package& pkg);
     std::shared_ptr<Package> findPackageLocked(const std::string& name);
+    std::vector<PackageSnapshot> getAllPackagesLocked();
+    std::vector<RepoSnapshot> getReposLocked();
 
     // Install a single direct-download package; progress is reported scaled
     // into [p0, p1]. Returns true on success (err set otherwise).
@@ -115,7 +124,10 @@ class StoreManager
     std::mutex mutex;
     std::string configPath = "sdmc:/packages/.get/";
     bool initialized = false;
-    bool loading = false;
+    std::atomic<bool> loading{false};
     std::string lastError;
     std::atomic<bool> shuttingDown{false};
+    // Last-known-good snapshots so UI threads never block on a refresh.
+    std::vector<PackageSnapshot> cachedPackages;
+    std::vector<RepoSnapshot> cachedRepos;
 };

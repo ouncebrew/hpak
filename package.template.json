@@ -5,5 +5,8 @@
     "description": "Short description of the app.",
     "details": "Longer details can go here.\n\nMultiple lines are supported.",
     "license": "GPLv3",
-    "changelog": "Initial release."
+    "changelog": "Initial release.",
+    "date": "23/11/2026 19:00",
+    "requiredDeletion": [],
+    "userDeletion": []
 }

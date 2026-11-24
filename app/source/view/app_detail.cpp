@@ -1,7 +1,11 @@
 #include "view/app_detail.hpp"
 
 #include <fmt/format.h>
+#include <functional>
+#include <memory>
+#include <string>
 #include <sys/stat.h>
+#include <vector>
 #include "util/icon_loader.hpp"
 
 static bool fileExists(const std::string& path)
@@ -186,43 +190,133 @@ void AppDetailView::onAction()
 
     if (doRemove)
     {
-        // Simple working dialog for remove
-        auto* content = new brls::Box();
-        content->setAxis(brls::Axis::COLUMN);
-        content->setPadding(24, 24, 24, 24);
-        content->setWidth(500);
-        auto* label = new brls::Label();
-        label->setText("Removing package...");
-        label->setFontSize(22);
-        label->setMarginBottom(12);
-        content->addView(label);
-        auto* spinner = new brls::ProgressSpinner();
-        spinner->setWidth(48);
-        spinner->setHeight(48);
-        content->addView(spinner);
-        content->setFocusable(true);
-        content->setHideHighlight(true);
-        content->registerAction("", brls::ControllerButton::BUTTON_B, [](brls::View*) { return true; }, true, false, brls::SOUND_NONE);
+        auto doRemoveWith = [this, alive, name, showResult](bool removeUserData) {
+            // Simple working dialog for remove
+            auto* content = new brls::Box();
+            content->setAxis(brls::Axis::COLUMN);
+            content->setPadding(24, 24, 24, 24);
+            content->setWidth(500);
+            auto* label = new brls::Label();
+            label->setText("Removing package...");
+            label->setFontSize(22);
+            label->setMarginBottom(12);
+            content->addView(label);
+            auto* spinner = new brls::ProgressSpinner();
+            spinner->setWidth(48);
+            spinner->setHeight(48);
+            content->addView(spinner);
+            content->setFocusable(true);
+            content->setHideHighlight(true);
+            content->registerAction("", brls::ControllerButton::BUTTON_B, [](brls::View*) { return true; }, true, false, brls::SOUND_NONE);
 
-        auto* progressDialog = new brls::Dialog(content);
-        progressDialog->setCancelable(false);
-        progressDialog->setBackgroundColor(nvgRGBA(0, 0, 0, 140));
-        progressDialog->open();
-        brls::Application::giveFocus(content);
+            auto* progressDialog = new brls::Dialog(content);
+            progressDialog->setCancelable(false);
+            progressDialog->setBackgroundColor(nvgRGBA(0, 0, 0, 140));
+            progressDialog->open();
+            brls::Application::giveFocus(content);
 
-        StoreManager::instance().removePackage(name, [this, alive, progressDialog, showResult](bool success, const std::string& error) {
-            if (!*alive)
-            {
-                progressDialog->close();
-                return;
-            }
-            progressDialog->close([showResult, success, error]() {
-                if (success)
-                    showResult(true, "Package removed.");
-                else
-                    showResult(false, fmt::format("Remove failed: {}", error.empty() ? "unknown error" : error));
-            });
-        });
+            StoreManager::instance().removePackage(name, [this, alive, name, progressDialog, showResult](bool success, const std::string& error) {
+                if (!*alive)
+                {
+                    progressDialog->close();
+                    return;
+                }
+                if (!success)
+                {
+                    progressDialog->close([showResult, error]() {
+                        showResult(false, fmt::format("Remove failed: {}", error.empty() ? "unknown error" : error));
+                    });
+                    return;
+                }
+                auto orphans = StoreManager::instance().getUnusedDependencies(name);
+                if (orphans.empty())
+                {
+                    progressDialog->close([showResult]() {
+                        showResult(true, "Package removed.");
+                    });
+                    return;
+                }
+                std::string names;
+                for (size_t i = 0; i < orphans.size(); i++)
+                {
+                    if (i > 0) names += ", ";
+                    names += orphans[i];
+                }
+                progressDialog->close([this, alive, orphans, names, showResult]() {
+                    auto* prompt = new brls::Dialog("Would you like to remove unused dependencies?\n" + names);
+                    prompt->addButton("No", [showResult]() {
+                        showResult(true, "Package removed.");
+                    });
+                    prompt->addButton("Yes", [this, alive, orphans, showResult]() {
+                        auto* content = new brls::Box();
+                        content->setAxis(brls::Axis::COLUMN);
+                        content->setPadding(24, 24, 24, 24);
+                        content->setWidth(500);
+                        auto* label = new brls::Label();
+                        label->setText("Removing unused dependencies...");
+                        label->setFontSize(22);
+                        label->setMarginBottom(12);
+                        content->addView(label);
+                        auto* spinner = new brls::ProgressSpinner();
+                        spinner->setWidth(48);
+                        spinner->setHeight(48);
+                        content->addView(spinner);
+                        content->setFocusable(true);
+                        content->setHideHighlight(true);
+                        content->registerAction("", brls::ControllerButton::BUTTON_B, [](brls::View*) { return true; }, true, false, brls::SOUND_NONE);
+
+                        auto* workingDialog = new brls::Dialog(content);
+                        workingDialog->setCancelable(false);
+                        workingDialog->setBackgroundColor(nvgRGBA(0, 0, 0, 140));
+                        workingDialog->open();
+                        brls::Application::giveFocus(content);
+
+                        auto rest = std::make_shared<std::vector<std::string>>(orphans);
+                        auto step = std::make_shared<std::function<void()>>();
+                        *step = [this, alive, rest, workingDialog, showResult, step]() {
+                            if (rest->empty())
+                            {
+                                workingDialog->close([showResult]() {
+                                    showResult(true, "Package and unused dependencies removed.");
+                                });
+                                return;
+                            }
+                            std::string dep = rest->front();
+                            rest->erase(rest->begin());
+                            StoreManager::instance().removePackage(dep, [this, alive, rest, workingDialog, showResult, step, dep](bool ok, const std::string& err) {
+                                if (!*alive)
+                                {
+                                    workingDialog->close();
+                                    return;
+                                }
+                                if (!ok)
+                                {
+                                    workingDialog->close([showResult, dep, err]() {
+                                        showResult(false, fmt::format("Failed to remove '{}': {}", dep, err.empty() ? "unknown error" : err));
+                                    });
+                                    return;
+                                }
+                                (*step)();
+                            }, nullptr, true);
+                        };
+                        (*step)();
+                    });
+                    prompt->open();
+                });
+            }, nullptr, removeUserData);
+        };
+
+        if (!package.userDeletion.empty())
+        {
+            busy = false;
+            refreshState();
+            auto* prompt = new brls::Dialog("Would you like to remove this package's data completely?\nThis may include saves, configurations, etc.");
+            prompt->addButton("Keep data", [doRemoveWith]() { doRemoveWith(false); });
+            prompt->addButton("Remove all", [doRemoveWith]() { doRemoveWith(true); });
+            prompt->open();
+            return;
+        }
+        doRemoveWith(true);
     }
     else
     {

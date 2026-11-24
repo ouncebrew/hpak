@@ -31,8 +31,13 @@ python -m http.server 8000
 3. **Install foo** — progress runs through the dependency first, then foo.
    Afterwards both `sdmc:/bar.txt` and `sdmc:/foo.txt` exist.
 4. Try to **remove bar** — blocked with `Cannot remove 'bar': required by 'foo'`.
-5. **Remove foo** — `sdmc:/foo.txt` is deleted, `sdmc:/bar.txt` stays
-   (removal does not cascade). Now `bar` can be removed.
+5. **Remove foo** — since foo lists `userDeletion`, you get the
+   “remove data completely?” prompt first (Keep data is pre-selected).
+   Afterwards you’re asked about unused dependencies: answering Yes
+   removes the now-orphaned `bar` too; answering No leaves it.
+   Either way `sdmc:/foo.txt` is gone, `requiredDeletion` paths like
+   `sdmc:/bar_data/` are always cleaned, and removal never cascades
+   implicitly. With No, `bar` stays installed and can be removed on its own.
 
 To test a constraint failure, bump foo's constraint to something bar can't
 satisfy (e.g. `"bar": "2.x"`) and reinstall — the install aborts naming `bar`.

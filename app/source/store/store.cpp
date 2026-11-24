@@ -5,6 +5,7 @@
 #include <cctype>
 #include <chrono>
 #include <cstdio>
+#include <dirent.h>
 #include <fstream>
 #include <sstream>
 #include <sys/stat.h>
@@ -32,6 +33,46 @@ static bool fileExistsLocal(const std::string& path)
     return stat(path.c_str(), &st) == 0;
 }
 
+// Delete a file or directory tree. Only acts inside sdmc:/ and never on the
+// root itself, so malformed deletion entries can't wipe the card.
+static void removePathRecursive(std::string path)
+{
+    while (!path.empty() && path.back() == '/')
+        path.pop_back();
+    if (path.rfind("sdmc:/", 0) != 0 || path.size() <= 6)
+        return;
+    if (path.find("..") != std::string::npos)
+        return;
+
+    struct stat st{};
+    if (stat(path.c_str(), &st) != 0)
+    {
+        std::remove(path.c_str());
+        return;
+    }
+    if (!S_ISDIR(st.st_mode))
+    {
+        std::remove(path.c_str());
+        return;
+    }
+    DIR* dir = opendir(path.c_str());
+    if (!dir)
+    {
+        std::remove(path.c_str());
+        return;
+    }
+    struct dirent* ent;
+    while ((ent = readdir(dir)) != nullptr)
+    {
+        std::string n = ent->d_name;
+        if (n == "." || n == "..")
+            continue;
+        removePathRecursive(path + "/" + n);
+    }
+    closedir(dir);
+    rmdir(path.c_str());
+}
+
 static std::string readFileToString(const std::string& path)
 {
     std::ifstream ifs(path, std::ios::binary);
@@ -51,7 +92,26 @@ struct DirectPackageMeta
     std::string details;
     std::string license;
     std::string changelog;
+    std::vector<std::string> requiredDeletion;
+    std::vector<std::string> userDeletion;
 };
+
+static std::vector<std::string> parseStringList(const nlohmann::json& j, const char* key)
+{
+    std::vector<std::string> out;
+    auto it = j.find(key);
+    if (it == j.end())
+        return out;
+    if (it->is_string())
+        out.push_back(it->get<std::string>());
+    else if (it->is_array())
+    {
+        for (auto& e : *it)
+            if (e.is_string())
+                out.push_back(e.get<std::string>());
+    }
+    return out;
+}
 
 static DirectPackageMeta parseDirectPackageJson(const std::string& content)
 {
@@ -76,6 +136,8 @@ static DirectPackageMeta parseDirectPackageJson(const std::string& content)
     if (meta.details.empty()) meta.details = getStr("long_desc");
     meta.license = getStr("license");
     meta.changelog = getStr("changelog");
+    meta.requiredDeletion = parseStringList(j, "requiredDeletion");
+    meta.userDeletion = parseStringList(j, "userDeletion");
     return meta;
 }
 
@@ -278,6 +340,8 @@ PackageSnapshot StoreManager::snapshotFrom(const Package& pkg)
     s.license      = pkg.getLicense();
     s.changelog    = pkg.getChangelog();
     s.dependencies = pkg.getDependencies();
+    s.requiredDeletion = pkg.getRequiredDeletion();
+    s.userDeletion = pkg.getUserDeletion();
     if (auto repo = pkg.getRepo()) { s.repo_name = repo->getName(); s.repo_url = repo->getUrl(); }
     s.url          = pkg.url;
     s.file         = pkg.file;
@@ -325,6 +389,16 @@ PackageSnapshot StoreManager::snapshotFrom(const Package& pkg)
                 if (!m.details.empty()) s.long_desc = m.details;
                 if (!m.license.empty()) s.license = m.license;
                 if (!m.changelog.empty()) s.changelog = m.changelog;
+                for (auto& p : m.requiredDeletion)
+                {
+                    if (std::find(s.requiredDeletion.begin(), s.requiredDeletion.end(), p) == s.requiredDeletion.end())
+                        s.requiredDeletion.push_back(p);
+                }
+                for (auto& p : m.userDeletion)
+                {
+                    if (std::find(s.userDeletion.begin(), s.userDeletion.end(), p) == s.userDeletion.end())
+                        s.userDeletion.push_back(p);
+                }
             };
 
             auto hasMeta = [](const DirectPackageMeta& m) {
@@ -587,6 +661,16 @@ void StoreManager::refresh(std::function<void(bool success, const std::string& e
             std::remove(tmpZip.c_str());
         }
 
+        // Refresh the last-known-good cache while holding the lock briefly.
+        {
+            std::lock_guard<std::mutex> lock(mutex);
+            if (get)
+            {
+                cachedPackages = getAllPackagesLocked();
+                cachedRepos = getReposLocked();
+            }
+        }
+
         loading = false;
         lastError = err;
 
@@ -597,9 +681,8 @@ void StoreManager::refresh(std::function<void(bool success, const std::string& e
     });
 }
 
-std::vector<PackageSnapshot> StoreManager::getAllPackages()
+std::vector<PackageSnapshot> StoreManager::getAllPackagesLocked()
 {
-    std::lock_guard<std::mutex> lock(mutex);
     std::vector<PackageSnapshot> out;
     if (!get)
         return out;
@@ -616,6 +699,15 @@ std::vector<PackageSnapshot> StoreManager::getAllPackages()
         return toLowerStr(ta) < toLowerStr(tb);
     });
     return out;
+}
+
+std::vector<PackageSnapshot> StoreManager::getAllPackages()
+{
+    // Never block the UI thread on an in-flight refresh: fall back to cache.
+    std::unique_lock<std::mutex> lock(mutex, std::try_to_lock);
+    if (lock.owns_lock() && get)
+        cachedPackages = getAllPackagesLocked();
+    return cachedPackages;
 }
 
 std::vector<PackageSnapshot> StoreManager::getInstalledPackages()
@@ -657,16 +749,19 @@ std::vector<PackageSnapshot> StoreManager::searchPackages(const std::string& que
 
 PackageSnapshot StoreManager::getPackage(const std::string& name)
 {
-    std::lock_guard<std::mutex> lock(mutex);
-    if (!get)
-        return {};
-    auto p = findPackageLocked(name);
-    if (!p)
-        return {};
-    auto snap = snapshotFrom(*p);
-    brls::Logger::debug("hpak/pkg: '{}' status={} ver='{}' installed={} update={}", 
-        snap.name, snap.status, snap.version, snap.installed(), snap.hasUpdate());
-    return snap;
+    std::unique_lock<std::mutex> lock(mutex, std::try_to_lock);
+    if (lock.owns_lock() && get)
+        cachedPackages = getAllPackagesLocked();
+    for (auto& s : cachedPackages)
+    {
+        if (s.name == name)
+        {
+            brls::Logger::debug("hpak/pkg: '{}' status={} ver='{}' installed={} update={}",
+                s.name, s.status, s.version, s.installed(), s.hasUpdate());
+            return s;
+        }
+    }
+    return {};
 }
 
 bool StoreManager::installDirectOne(const std::string& name, float p0, float p1, ProgressCallback onProgress, std::string& err)
@@ -798,6 +893,8 @@ bool StoreManager::installDirectOne(const std::string& name, float p0, float p1,
                     j["details"] = pkg->getLongDescription();
                     j["license"] = pkg->getLicense();
                     j["changelog"] = pkg->getChangelog();
+                    j["requiredDeletion"] = pkg->getRequiredDeletion();
+                    j["userDeletion"] = pkg->getUserDeletion();
                 }
             }
         }
@@ -918,7 +1015,14 @@ bool StoreManager::installRegularOne(const std::string& name, float p0, float p1
         });
     }
 
-    int ret = get->installSingle(*pkg);
+    int ret;
+    {
+        // Serialize against concurrent refresh/update: libget's package list
+        // must not be read (UI) or rewritten (refresh) mid-install. UI readers
+        // use try_lock and fall back to cache, so this never freezes the UI.
+        std::lock_guard<std::mutex> lock(mutex);
+        ret = get->installSingle(*pkg);
+    }
     installDone.store(true);
     if (progressThread.joinable()) progressThread.join();
 
@@ -1028,6 +1132,13 @@ void StoreManager::installPackage(const std::string& name, std::function<void(bo
 
             if (ok && onProgress)
                 brls::sync([onProgress]() { onProgress(1.0f, "Done"); });
+
+            // Refresh the last-known-good cache (statuses changed).
+            {
+                std::lock_guard<std::mutex> lock(mutex);
+                if (get)
+                    cachedPackages = getAllPackagesLocked();
+            }
         }
         catch (const std::exception& e)
         {
@@ -1046,9 +1157,8 @@ void StoreManager::installPackage(const std::string& name, std::function<void(bo
             brls::sync([onDone, ok, err]() { onDone(ok, err); });
     });
 }
-std::vector<RepoSnapshot> StoreManager::getRepos()
+std::vector<RepoSnapshot> StoreManager::getReposLocked()
 {
-    std::lock_guard<std::mutex> lock(mutex);
     std::vector<RepoSnapshot> out;
     if (!get)
         return out;
@@ -1063,6 +1173,15 @@ std::vector<RepoSnapshot> StoreManager::getRepos()
         out.push_back(std::move(s));
     }
     return out;
+}
+
+std::vector<RepoSnapshot> StoreManager::getRepos()
+{
+    // Never block the UI thread on an in-flight refresh: fall back to cache.
+    std::unique_lock<std::mutex> lock(mutex, std::try_to_lock);
+    if (lock.owns_lock() && get)
+        cachedRepos = getReposLocked();
+    return cachedRepos;
 }
 
 void StoreManager::addRepo(const std::string& url, std::function<void(bool success, const std::string& error)> onDone)
@@ -1154,9 +1273,9 @@ void StoreManager::addRepo(const std::string& url, std::function<void(bool succe
     });
 }
 
-void StoreManager::removePackage(const std::string& name, std::function<void(bool success, const std::string& error)> onDone, ProgressCallback /*onProgress*/)
+void StoreManager::removePackage(const std::string& name, std::function<void(bool success, const std::string& error)> onDone, ProgressCallback /*onProgress*/, bool removeUserData)
 {
-    brls::async([this, name, onDone]() {
+    brls::async([this, name, onDone, removeUserData]() {
         bool ok = false;
         std::string err;
         try
@@ -1218,6 +1337,35 @@ void StoreManager::removePackage(const std::string& name, std::function<void(boo
             }
             else
             {
+            // Gather deletion lists: install-time marker first, live repo fields as fallback.
+            std::vector<std::string> requiredDel, userDel;
+            {
+                std::lock_guard<std::mutex> lock(mutex);
+                auto pkg = findPackageLocked(name);
+                if (pkg && !pkg->file.empty())
+                {
+                    auto lm = parseDirectPackageJson(readFileToString(configPath + "direct/" + pkg->getPackageName() + ".version"));
+                    requiredDel = lm.requiredDeletion;
+                    userDel = lm.userDeletion;
+                }
+                if (pkg)
+                {
+                    for (auto& p : pkg->getRequiredDeletion())
+                        if (std::find(requiredDel.begin(), requiredDel.end(), p) == requiredDel.end())
+                            requiredDel.push_back(p);
+                    for (auto& p : pkg->getUserDeletion())
+                        if (std::find(userDel.begin(), userDel.end(), p) == userDel.end())
+                            userDel.push_back(p);
+                }
+            }
+            for (auto& p : requiredDel)
+                removePathRecursive(p);
+            if (removeUserData)
+            {
+                for (auto& p : userDel)
+                    removePathRecursive(p);
+            }
+
             std::string directFile, pkgName, directPath;
             bool isDirect = false;
             {
@@ -1277,6 +1425,13 @@ void StoreManager::removePackage(const std::string& name, std::function<void(boo
                 }
             }
             } // end else: no installed dependents blocking removal
+
+            // Refresh the last-known-good cache (statuses changed).
+            {
+                std::lock_guard<std::mutex> lock(mutex);
+                if (get)
+                    cachedPackages = getAllPackagesLocked();
+            }
         }
         catch (const std::exception& e)
         {
@@ -1292,6 +1447,56 @@ void StoreManager::removePackage(const std::string& name, std::function<void(boo
         if (onDone)
             brls::sync([onDone, ok, err]() { onDone(ok, err); });
     });
+}
+
+std::vector<std::string> StoreManager::getUnusedDependencies(const std::string& removedName)
+{
+    std::vector<std::string> orphans;
+    std::lock_guard<std::mutex> lock(mutex);
+    if (!get)
+        return orphans;
+
+    // Transitive closure of the removed package (dependencies first, root last).
+    // Fails on circular dependencies or missing packages -> no orphans reported.
+    std::vector<std::string> order;
+    std::unordered_set<std::string> visiting, visited;
+    std::string err;
+    if (!get->resolveDependencies(removedName, order, visiting, visited, err))
+        return orphans;
+
+    auto isInstalled = [this](const std::shared_ptr<Package>& p) {
+        if (!p)
+            return false;
+        if (!p->file.empty())
+            return snapshotFrom(*p).installed();
+        int st = p->getStatus();
+        return st == INSTALLED || st == LOCAL || st == UPDATE;
+    };
+
+    // Packages still required: every direct dependency of an installed package
+    // other than the removed one.
+    std::unordered_set<std::string> used;
+    for (auto& p : get->getPackages())
+    {
+        if (!p || p->getPackageName() == removedName || !isInstalled(p))
+            continue;
+        for (auto& dep : p->getDependencies())
+            used.insert(dep.name);
+    }
+
+    // Installed closure members that nothing installed still uses.
+    // Reverse into dependents-first order for safe sequential removal.
+    for (auto it = order.rbegin(); it != order.rend(); ++it)
+    {
+        if (*it == removedName)
+            continue;
+        if (used.find(*it) != used.end())
+            continue;
+        auto pkg = findPackageLocked(*it);
+        if (pkg && isInstalled(pkg))
+            orphans.push_back(*it);
+    }
+    return orphans;
 }
 
 void StoreManager::removeRepo(const std::string& url, std::function<void(bool success, const std::string& error)> onDone)
