@@ -45,11 +45,7 @@ static bool downloadIconToDisk(const std::string& url, const std::string& localP
         return false;
     }
 
-#ifndef __SWITCH__
-    curl_easy_setopt(c, CURLOPT_CAINFO, RAMFS "res/cacert.pem");
-#else
-    curl_easy_setopt(c, CURLOPT_CAINFO, "romfs:/util/cacert.pem");
-#endif
+    curl_easy_setopt(c, CURLOPT_CAINFO, tlsCaBundlePath().c_str());
     curl_easy_setopt(c, CURLOPT_URL, url.c_str());
     curl_easy_setopt(c, CURLOPT_WRITEFUNCTION, iconWriteCallback);
     curl_easy_setopt(c, CURLOPT_WRITEDATA, fp);
