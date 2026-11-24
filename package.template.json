@@ -7,6 +7,7 @@
     "license": "GPLv3",
     "changelog": "Initial release.",
     "date": "23/11/2026 19:00",
+    "dependencies": { "other-tool": "1.2.x" },
     "requiredDeletion": [],
     "userDeletion": []
 }
