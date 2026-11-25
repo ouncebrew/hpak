@@ -36,6 +36,9 @@ struct PackageSnapshot
     std::string directUrl; // direct download base URL
     std::string path; // install path for non-zip direct downloads
     int status = 0;
+    // A direct package whose installed files changed or went missing since
+    // hpak installed them. Its status is UPDATE, so that it can be reinstalled.
+    bool modified = false;
     int downloads = 0;
     int download_size = 0;
     int extracted_size = 0;

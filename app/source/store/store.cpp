@@ -72,6 +72,120 @@ static std::string fileSha256(const std::string& path)
     return out;
 }
 
+// One file that hpak installed, as recorded in direct/<package>.files: its
+// path below sdmc:/, and its SHA-256, size and modification time when it was
+// installed. A record written before hpak kept hashes has the path only.
+struct InstalledFile
+{
+    std::string path;
+    std::string sha256;
+    long long size = -1;
+    long long mtime = 0;
+};
+
+static std::string sdPath(const std::string& relative)
+{
+    return "sdmc:/" + relative;
+}
+
+// The part of an sdmc:/ path below the root, or false for another path.
+static bool relativeToSd(const std::string& path, std::string* out)
+{
+    if (path.rfind("sdmc:/", 0) != 0)
+        return false;
+    *out = path.substr(6);
+    while (!out->empty() && out->front() == '/')
+        out->erase(out->begin());
+    return !out->empty();
+}
+
+// Describes a file as it is now. Hashes it only when withHash is set: status
+// checks compare size and time, which costs no read of the file.
+static bool describeInstalledFile(const std::string& relative, bool withHash, InstalledFile* out)
+{
+    struct stat st{};
+    if (stat(sdPath(relative).c_str(), &st) != 0 || S_ISDIR(st.st_mode))
+        return false;
+    out->path = relative;
+    out->size = (long long)st.st_size;
+    out->mtime = (long long)st.st_mtime;
+    out->sha256 = withHash ? fileSha256(sdPath(relative)) : "";
+    return !withHash || !out->sha256.empty();
+}
+
+static std::vector<InstalledFile> readInstalledFiles(const std::string& recordPath)
+{
+    std::vector<InstalledFile> files;
+    std::ifstream record(recordPath);
+    std::string line;
+    while (std::getline(record, line))
+    {
+        if (!line.empty() && line.back() == '\r') line.pop_back();
+        if (line.empty()) continue;
+        InstalledFile file;
+        std::istringstream fields(line);
+        std::string first;
+        fields >> first;
+        if (first.size() == 64 && (fields >> file.size >> file.mtime))
+        {
+            file.sha256 = first;
+            std::getline(fields >> std::ws, file.path);
+        }
+        else
+        {
+            // A record from before hashes: the whole line is the path.
+            file.path = line;
+        }
+        while (!file.path.empty() && (file.path.front() == '/' || file.path.front() == '\\'))
+            file.path.erase(file.path.begin());
+        if (!file.path.empty())
+            files.push_back(file);
+    }
+    return files;
+}
+
+static bool writeInstalledFiles(const std::string& recordPath, const std::vector<InstalledFile>& files)
+{
+    std::ofstream record(recordPath, std::ios::binary | std::ios::trunc);
+    for (const auto& file : files)
+        record << file.sha256 << ' ' << file.size << ' ' << file.mtime << ' ' << file.path << '\n';
+    return (bool)record;
+}
+
+// Whether a file looks as hpak left it, without reading it.
+static bool installedFileLooksUnchanged(const InstalledFile& file)
+{
+    InstalledFile now;
+    if (!describeInstalledFile(file.path, false, &now))
+        return false;
+    if (file.size >= 0 && now.size != file.size)
+        return false;
+    return file.mtime == 0 || now.mtime == 0 || now.mtime == file.mtime;
+}
+
+// Whether a file is still the one hpak installed, by its SHA-256. A file
+// from a record without hashes counts as unchanged, as before.
+static bool installedFileMatches(const InstalledFile& file)
+{
+    if (file.sha256.empty())
+        return true;
+    InstalledFile now;
+    return describeInstalledFile(file.path, true, &now) && now.sha256 == file.sha256;
+}
+
+// Removes the files of a record that are still as hpak installed them, and
+// leaves the others: they were changed or replaced by something else.
+static void removeInstalledFiles(const std::vector<InstalledFile>& files, const std::string& package)
+{
+    for (const auto& file : files)
+    {
+        if (installedFileMatches(file))
+            std::remove(sdPath(file.path).c_str());
+        else
+            brls::Logger::warning("hpak/remove: '{}' kept {}: it changed since it was installed", package, file.path);
+    }
+}
+
 static void removePathRecursive(std::string path)
 {
     while (!path.empty() && path.back() == '/')
@@ -461,6 +575,19 @@ PackageSnapshot StoreManager::snapshotFrom(const Package& pkg)
             {
                 s.status = UPDATE;
                 s.version = remoteVer;
+            }
+            // A file that changed or went missing since hpak installed it: the
+            // package is offered again, as an update, to put it back.
+            auto files = readInstalledFiles(configPath + "direct/" + s.name + ".files");
+            for (const auto& file : files)
+            {
+                if (!installedFileLooksUnchanged(file))
+                {
+                    s.modified = true;
+                    s.status = UPDATE;
+                    s.version = remoteVer;
+                    break;
+                }
             }
         }
         else
@@ -894,6 +1021,12 @@ bool StoreManager::installDirectOne(const std::string& name, float p0, float p1,
         }
     }
 
+    // What the package installed before, to remove what this version no
+    // longer has.
+    std::string recordPath = configPath + "direct/" + pkgName + ".files";
+    std::vector<InstalledFile> previousFiles = readInstalledFiles(recordPath);
+    std::vector<InstalledFile> installedFiles;
+
     if (ok && !isZip)
     {
         std::remove(installedPath.c_str());
@@ -903,6 +1036,10 @@ bool StoreManager::installDirectOne(const std::string& name, float p0, float p1,
             ok = false;
             err = "Failed to install the file";
         }
+        std::string relative;
+        InstalledFile file;
+        if (ok && relativeToSd(installedPath, &relative) && describeInstalledFile(relative, true, &file))
+            installedFiles.push_back(file);
     }
 
     if (ok && isZip)
@@ -916,18 +1053,17 @@ bool StoreManager::installDirectOne(const std::string& name, float p0, float p1,
         if (zip.IsValid())
         {
             auto paths = zip.PathDump();
-            std::string verDir = configPath + "direct";
-            mkpath(verDir);
-            std::ofstream mf(verDir + "/" + pkgName + ".files", std::ios::binary);
+            zip.ExtractAll("sdmc:/");
+            zip.Close();
             for (auto& p : paths)
             {
                 std::string clean = p;
                 while (!clean.empty() && (clean.front() == '/' || clean.front() == '\\')) clean.erase(clean.begin());
-                if (clean.empty()) continue;
-                if (mf) mf << clean << "\n";
+                if (clean.empty() || clean.back() == '/') continue;
+                InstalledFile file;
+                if (describeInstalledFile(clean, true, &file))
+                    installedFiles.push_back(file);
             }
-            zip.ExtractAll("sdmc:/");
-            zip.Close();
         }
         else
         {
@@ -935,6 +1071,24 @@ bool StoreManager::installDirectOne(const std::string& name, float p0, float p1,
             err = "Failed to extract zip";
         }
         std::remove(destPath.c_str());
+    }
+
+    if (ok)
+    {
+        mkpath(configPath + "direct");
+        if (!installedFiles.empty() && !writeInstalledFiles(recordPath, installedFiles))
+            brls::Logger::warning("hpak/install: could not write the file record of '{}'", name);
+
+        // Files of the previous version that this one does not have.
+        std::vector<InstalledFile> leftovers;
+        for (const auto& old : previousFiles)
+        {
+            bool kept = std::any_of(installedFiles.begin(), installedFiles.end(),
+                                    [&old](const InstalledFile& f) { return f.path == old.path; });
+            if (!kept)
+                leftovers.push_back(old);
+        }
+        removeInstalledFiles(leftovers, name);
     }
 
     if (ok)
@@ -1450,26 +1604,21 @@ void StoreManager::removePackage(const std::string& name, std::function<void(boo
             {
                 std::string lowerFile = toLowerStr(directFile);
                 bool isZip = lowerFile.size() > 4 && lowerFile.rfind(".zip") == lowerFile.size() - 4;
-                if (isZip)
+                std::string recordPath = configPath + "direct/" + pkgName + ".files";
+                auto files = readInstalledFiles(recordPath);
+                if (!files.empty())
                 {
-                    std::string manifestPath = configPath + "direct/" + pkgName + ".files";
-                    std::ifstream mf(manifestPath);
-                    std::string line;
-                    while (std::getline(mf, line))
-                    {
-                        if (!line.empty() && line.back() == '\r') line.pop_back();
-                        while (!line.empty() && (line.front() == '/' || line.front() == '\\')) line.erase(line.begin());
-                        if (line.empty()) continue;
-                        std::remove(("sdmc:/" + line).c_str());
-                    }
-                    std::remove(manifestPath.c_str());
+                    // Only files that are still as hpak installed them.
+                    removeInstalledFiles(files, name);
                 }
-                else
+                else if (!isZip)
                 {
+                    // Installed before hpak kept a record: the one file.
                     std::string installDir = directPath.empty() ? "sdmc:/switch/" : directPath;
                     while (!installDir.empty() && installDir.back() != '/') installDir.push_back('/');
                     std::remove((installDir + directFile).c_str());
                 }
+                std::remove(recordPath.c_str());
                 std::remove((configPath + "direct/" + pkgName + ".version").c_str());
                 std::remove((configPath + "direct/" + pkgName + ".remote").c_str());
                 ok = true;
