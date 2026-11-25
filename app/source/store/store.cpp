@@ -248,11 +248,6 @@ std::vector<DefaultRepo> StoreManager::getDefaultRepos()
             }
         }
     }
-    if (out.empty())
-    {
-        // Fallback if romfs file is missing/unreadable (e.g. desktop builds).
-        out.push_back({"Ouncebrew", "https://ouncebrew.github.io"});
-    }
     return out;
 }
 
@@ -273,7 +268,8 @@ void StoreManager::init()
 
     // Default to the first bundled repo; users can manage repos later.
     // performInitialLoad=false so we can control loading and surface errors.
-    std::string firstDefault = "https://ouncebrew.github.io";
+    // The URL always comes from romfs:/util/defaultRepos.json.
+    std::string firstDefault;
     {
         auto defaults = StoreManager::getDefaultRepos();
         if (!defaults.empty() && !defaults[0].url.empty())
@@ -294,26 +290,68 @@ void StoreManager::init()
 
         if (wantDefaults)
         {
-            // Ensure all bundled sources exist; re-add any that are missing.
+            // Bundled sources track romfs: re-add missing ones, and re-point
+            // entries that carry a default's name but a stale URL.
+            auto defaults = StoreManager::getDefaultRepos();
+            std::unordered_set<std::string> wantUrls;
+            std::unordered_map<std::string, DefaultRepo> byName;
+            for (auto& d : defaults)
+            {
+                if (d.url.empty())
+                    continue;
+                wantUrls.insert(d.url);
+                if (!d.name.empty())
+                    byName[d.name] = d;
+            }
+
             std::unordered_map<std::string, std::string> toAdd;
-            for (auto& d : StoreManager::getDefaultRepos())
+            std::unordered_set<std::string> toRemove;
+            std::unordered_map<std::string, bool> addEnabled; // url -> enabled
+            for (auto& r : get->getRepos())
             {
-                if (!d.url.empty() && !findRepo(d.url))
-                    toAdd[d.url] = "get";
-            }
-            if (!toAdd.empty())
-            {
-                std::unordered_set<std::string> toRemove;
-                get->addAndRemoveReposByURL(toAdd, toRemove);
-                for (auto& d : StoreManager::getDefaultRepos())
+                if (!r || wantUrls.count(r->getUrl()))
+                    continue;
+                auto it = byName.find(r->getName());
+                if (it != byName.end())
                 {
-                    auto r = findRepo(d.url);
-                    if (r && !d.name.empty() &&
-                        (r->getName() == "Default Repo" || r->getName().find('/') != std::string::npos))
-                        r->setName(d.name);
+                    // Same default name, old URL: swap in the romfs URL.
+                    toRemove.insert(r->getUrl());
+                    addEnabled[it->second.url] = r->isEnabled();
                 }
-                get->saveRepos();
             }
+            for (auto& d : defaults)
+            {
+                if (d.url.empty() || findRepo(d.url))
+                    continue;
+                if (!addEnabled.count(d.url))
+                    addEnabled[d.url] = true;
+                toAdd[d.url] = "get";
+            }
+            if (!toAdd.empty() || !toRemove.empty())
+                get->addAndRemoveReposByURL(toAdd, toRemove);
+            bool touched = false;
+            for (auto& d : defaults)
+            {
+                if (d.url.empty())
+                    continue;
+                auto r = findRepo(d.url);
+                if (!r)
+                    continue;
+                if (!d.name.empty() &&
+                    (r->getName() == "Default Repo" || r->getName().find('/') != std::string::npos))
+                {
+                    r->setName(d.name);
+                    touched = true;
+                }
+                auto ae = addEnabled.find(d.url);
+                if (ae != addEnabled.end() && r->isEnabled() != ae->second)
+                {
+                    r->setEnabled(ae->second);
+                    touched = true;
+                }
+            }
+            if (touched)
+                get->saveRepos();
         }
         else
         {
