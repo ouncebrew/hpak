@@ -166,7 +166,7 @@ void AppDetailView::refreshState()
     }
 }
 
-void AppDetailView::onAction()
+void AppDetailView::onAction(bool skipDepCheck)
 {
     if (busy)
         return;
@@ -320,6 +320,27 @@ void AppDetailView::onAction()
     }
     else
     {
+        // Warn if updating would violate an installed dependent's constraint.
+        if (package.hasUpdate() && !skipDepCheck)
+        {
+            auto viol = StoreManager::instance().getDependencyViolations(name, package.version);
+            if (!viol.empty())
+            {
+                busy = false;
+                refreshState();
+                std::string names;
+                for (size_t i = 0; i < viol.size(); i++)
+                {
+                    if (i > 0) names += ", ";
+                    names += viol[i].first + " (requires " + viol[i].second + ")";
+                }
+                auto* prompt = new brls::Dialog("Updating to v" + package.version + " will break dependencies required by:\n" + names);
+                prompt->addButton("Cancel", []() {});
+                prompt->addButton("Update anyway", [this]() { this->onAction(true); });
+                prompt->open();
+                return;
+            }
+        }
         // Install/update with combined progress bar
         const float trackWidth = 560.0f;
         auto* content = new brls::Box();

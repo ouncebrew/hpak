@@ -744,6 +744,40 @@ PackageSnapshot StoreManager::getPackage(const std::string& name)
     return {};
 }
 
+std::vector<std::pair<std::string, std::string>> StoreManager::getDependencyViolations(const std::string& name, const std::string& newVersion)
+{
+    std::vector<std::pair<std::string, std::string>> out;
+    std::lock_guard<std::mutex> lock(mutex);
+    if (!get)
+        return out;
+    for (auto& p : get->getPackages())
+    {
+        if (!p || p->getPackageName() == name)
+            continue;
+        for (auto& dep : p->getDependencies())
+        {
+            if (dep.name != name)
+                continue;
+            if (dep.version.empty() || dep.version == "*")
+                continue; // unconstrained: can never break
+            if (versionSatisfies(newVersion, dep.version))
+                continue;
+            bool installed = false;
+            if (!p->file.empty())
+                installed = snapshotFrom(*p).installed();
+            else
+            {
+                int st = p->getStatus();
+                installed = (st == INSTALLED || st == LOCAL || st == UPDATE);
+            }
+            if (installed)
+                out.push_back({p->getPackageName(), dep.version});
+            break;
+        }
+    }
+    return out;
+}
+
 bool StoreManager::installDirectOne(const std::string& name, float p0, float p1, ProgressCallback onProgress, std::string& err)
 {
     std::string directFile, directBase, pkgName, directPath;

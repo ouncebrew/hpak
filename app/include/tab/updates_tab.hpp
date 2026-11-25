@@ -14,10 +14,13 @@ class UpdatesTab : public brls::Box
 
   private:
     void loadData();
+    void updateAll();
 
     BRLS_BIND(brls::RecyclerFrame, recycler, "recycler");
     BRLS_BIND(brls::Header, header, "header");
 
     AppListDataSource* dataSource = nullptr;
     std::shared_ptr<bool> alive = std::make_shared<bool>(true);
+    bool busy = false;
+    std::shared_ptr<std::function<void()>> updateChain;
 };

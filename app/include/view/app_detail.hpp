@@ -12,7 +12,7 @@ class AppDetailView : public brls::Box
 
   private:
     void refreshState();
-    void onAction();
+    void onAction(bool skipDepCheck = false);
 
     BRLS_BIND(brls::ScrollingFrame, scroll, "detail_scroll");
     BRLS_BIND(brls::Image, icon, "detail_icon");

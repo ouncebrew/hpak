@@ -83,6 +83,9 @@ class StoreManager
     std::vector<PackageSnapshot> getUpdatablePackages();
     std::vector<PackageSnapshot> searchPackages(const std::string& query);
     PackageSnapshot getPackage(const std::string& name);
+    // Installed packages depending on `name` whose version constraint the
+    // given new version would violate. Returns {dependent, constraint} pairs.
+    std::vector<std::pair<std::string, std::string>> getDependencyViolations(const std::string& name, const std::string& newVersion);
 
     std::vector<RepoSnapshot> getRepos();
     void addRepo(const std::string& url, std::function<void(bool success, const std::string& error)> onDone = nullptr);
