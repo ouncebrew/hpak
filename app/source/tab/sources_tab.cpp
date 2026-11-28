@@ -52,6 +52,9 @@ SourcesTab::SourcesTab()
         return true;
     });
 
+    loadingBadge = new LoadingBadge();
+    insertBadge();
+
     loadData();
 }
 
@@ -63,11 +66,93 @@ SourcesTab::~SourcesTab()
 void SourcesTab::loadData()
 {
     auto& store = StoreManager::instance();
-    store.init();
+
+    // Paint cache instantly (non-blocking).
+    auto repos = store.getRepos();
+    if (!repos.empty())
+        refreshView();
+    else
+        showLoading();
+
+    // Single-hop async load: refreshIfNeeded() only hits the network when no
+    // usable data exists yet; otherwise it reports success / attaches to the
+    // running load. Manual actions below still use forced refresh().
+    std::weak_ptr<bool> aliveWeak = alive;
+    store.refreshIfNeeded(
+        [this, aliveWeak](bool success, const std::string& error) {
+            auto t = aliveWeak.lock();
+            if (!t || !*t)
+                return;
+            hideLoading();
+            refreshView();
+            if (!success && StoreManager::instance().getRepos().empty())
+                header->setSubtitle(error.empty() ? "Failed to load sources" : error);
+        },
+        [this, aliveWeak](float progress, const std::string& phase) {
+            auto t = aliveWeak.lock();
+            if (!t || !*t)
+                return;
+            if (loadingBadge)
+                loadingBadge->setProgress(progress, phase);
+        });
+}
+
+void SourcesTab::refreshView()
+{
+    auto& store = StoreManager::instance();
     auto repos = store.getRepos();
     dataSource->items = repos;
     recycler->reloadData();
+    if (store.isLoading())
+    {
+        if (repos.empty())
+        {
+            header->setSubtitle("Loading...");
+            if (loadingBadge)
+                loadingBadge->setProgress(store.getLoadProgress(), store.getLoadPhase());
+        }
+        else
+            header->setSubtitle(std::to_string(repos.size()) + (repos.size() == 1 ? " source" : " sources"));
+        return;
+    }
     header->setSubtitle(std::to_string(repos.size()) + (repos.size() == 1 ? " source" : " sources"));
+}
+
+void SourcesTab::willAppear(bool resetState)
+{
+    brls::Box::willAppear(resetState);
+    refreshView();
+}
+
+void SourcesTab::insertBadge()
+{
+    if (!loadingBadge)
+        return;
+    auto& kids = this->getChildren();
+    size_t pos = kids.size();
+    for (size_t i = 0; i < kids.size(); i++)
+    {
+        if (kids[i] == header)
+        {
+            pos = i + 1;
+            break;
+        }
+    }
+    this->addView(loadingBadge, pos);
+}
+
+void SourcesTab::showLoading()
+{
+    auto& store = StoreManager::instance();
+    header->setSubtitle("Loading...");
+    if (loadingBadge)
+        loadingBadge->showBadge(store.getLoadPhase());
+}
+
+void SourcesTab::hideLoading()
+{
+    if (loadingBadge)
+        loadingBadge->hideBadge();
 }
 
 void SourcesTab::addSource()

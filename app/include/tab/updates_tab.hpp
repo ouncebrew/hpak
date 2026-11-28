@@ -3,6 +3,7 @@
 #include <borealis.hpp>
 #include <memory>
 #include "view/app_list.hpp"
+#include "view/loading_badge.hpp"
 
 class UpdatesTab : public brls::Box
 {
@@ -14,12 +15,17 @@ class UpdatesTab : public brls::Box
 
   private:
     void loadData();
+    void refreshView();
+    void insertBadge();
+    void showLoading();
+    void hideLoading();
     void updateAll();
 
     BRLS_BIND(brls::RecyclerFrame, recycler, "recycler");
     BRLS_BIND(brls::Header, header, "header");
 
     AppListDataSource* dataSource = nullptr;
+    LoadingBadge* loadingBadge = nullptr;
     std::shared_ptr<bool> alive = std::make_shared<bool>(true);
     bool busy = false;
     std::shared_ptr<std::function<void()>> updateChain;

@@ -259,8 +259,10 @@ StoreManager& StoreManager::instance()
 
 void StoreManager::init()
 {
-    std::lock_guard<std::mutex> lock(mutex);
-    if (initialized)
+    if (initialized.load(std::memory_order_acquire))
+        return;
+    std::lock_guard<std::mutex> ilock(initMutex);
+    if (initialized.load(std::memory_order_acquire))
         return;
 
     // Initialize networking (curl/sockets) as needed by libget
@@ -368,7 +370,96 @@ void StoreManager::init()
         }
     }
 
-    initialized = true;
+    // NOTE: initMutex is still held here, so no other thread can observe a
+    // half-built `get`. Publish completion with release semantics.
+    initialized.store(true, std::memory_order_release);
+
+    // Prime the last-known-good cache from disk so first UI paints have data
+    // without touching libget state (UI threads only ever read the cache).
+    {
+        std::lock_guard<std::mutex> lock(mutex);
+        std::lock_guard<std::mutex> clock(cacheMutex);
+        if (get)
+        {
+            cachedPackages = getAllPackagesLocked();
+            cachedRepos = getReposLocked();
+        }
+    }
+}
+
+void StoreManager::ensureInitializedAsync(std::function<void()> onDone)
+{
+    if (initialized.load(std::memory_order_acquire))
+    {
+        if (onDone)
+            brls::sync([onDone]() { onDone(); });
+        return;
+    }
+    brls::async([this, onDone]() {
+        init();
+        if (onDone)
+            brls::sync([onDone]() { onDone(); });
+    });
+}
+
+std::string StoreManager::getLoadPhase() const
+{
+    std::lock_guard<std::mutex> lock(cacheMutex);
+    return loadPhase;
+}
+
+void StoreManager::setLoadProgress(float p, const std::string& phase)
+{
+    if (p < 0.0f) p = 0.0f;
+    if (p > 1.0f) p = 1.0f;
+    loadProgress.store(p, std::memory_order_release);
+    {
+        std::lock_guard<std::mutex> lock(cacheMutex);
+        loadPhase = phase;
+    }
+}
+
+void StoreManager::notifyProgress(float p, const std::string& phase)
+{
+    setLoadProgress(p, phase);
+    std::vector<PendingRefresh> pending;
+    {
+        std::lock_guard<std::mutex> lock(callbackMutex);
+        pending = pendingRefresh;
+    }
+    for (auto& pr : pending)
+    {
+        if (pr.onProgress)
+        {
+            auto cb = pr.onProgress;
+            brls::sync([cb, p, phase]() { cb(p, phase); });
+        }
+    }
+}
+
+void StoreManager::finishRefresh(bool ok, const std::string& err)
+{
+    setLoadProgress(ok ? 1.0f : loadProgress.load(), ok ? "Done" : err);
+    loading.store(false, std::memory_order_release);
+    if (ok)
+        loadedOnce.store(true, std::memory_order_release);
+    std::vector<PendingRefresh> pending;
+    {
+        std::lock_guard<std::mutex> lock(callbackMutex);
+        pending.swap(pendingRefresh);
+    }
+    {
+        std::lock_guard<std::mutex> lock(cacheMutex);
+        lastError = err;
+    }
+    for (auto& pr : pending)
+    {
+        if (pr.onDone)
+        {
+            auto cb = pr.onDone;
+            brls::sync([cb, ok, err]() { cb(ok, err); });
+        }
+    }
 }
 
 void StoreManager::shutdown()
@@ -384,13 +475,26 @@ void StoreManager::teardown()
 {
     std::lock_guard<std::mutex> lock(mutex);
     get.reset();
-    initialized = false;
-    loading = false;
+    initialized.store(false, std::memory_order_release);
+    loading.store(false, std::memory_order_release);
+    loadProgress.store(0.0f, std::memory_order_release);
+    {
+        std::lock_guard<std::mutex> clock(cacheMutex);
+        cachedPackages.clear();
+        cachedRepos.clear();
+        lastError.clear();
+        loadPhase.clear();
+    }
+    {
+        std::lock_guard<std::mutex> clock(callbackMutex);
+        pendingRefresh.clear();
+    }
     deinit_networking();
 }
 
 std::string StoreManager::getLastError() const
 {
+    std::lock_guard<std::mutex> lock(cacheMutex);
     return lastError;
 }
 
@@ -495,22 +599,25 @@ std::shared_ptr<Package> StoreManager::findPackageLocked(const std::string& name
     return get->findPackage(name);
 }
 
-void StoreManager::refresh(std::function<void(bool success, const std::string& error)> onDone)
+void StoreManager::refresh(std::function<void(bool success, const std::string& error)> onDone, ProgressCallback onProgress)
 {
-    if (loading)
     {
-        if (onDone)
-            brls::sync([onDone]() { onDone(false, "Already loading"); });
-        return;
+        std::lock_guard<std::mutex> lock(callbackMutex);
+        if (loading.load(std::memory_order_acquire))
+        {
+            pendingRefresh.push_back({std::move(onDone), std::move(onProgress)});
+            return;
+        }
+        loading.store(true, std::memory_order_release);
+        pendingRefresh.push_back({std::move(onDone), std::move(onProgress)});
     }
+    setLoadProgress(0.0f, "Starting...");
 
-    loading = true;
-    brls::async([this, onDone]() {
+    brls::async([this]() {
         std::string err;
         bool ok = true;
 
-        // Gate: wait for connectivity with a persistent popup instead of
-        // hanging in network calls with no Wi-Fi/Ethernet.
+        notifyProgress(0.02f, "Connecting...");
         if (!util::waitForConnection([this]() { return shuttingDown.load(); }))
         {
             ok = false;
@@ -520,16 +627,81 @@ void StoreManager::refresh(std::function<void(bool success, const std::string& e
         {
         try
         {
+            notifyProgress(0.05f, "Preparing...");
             init();
-            std::lock_guard<std::mutex> lock(mutex);
-            if (get)
+            if (shuttingDown.load())
             {
-                get->update();
+                ok = false;
+                err = "Shutting down";
             }
             else
             {
-                ok = false;
-                err = "Store not initialized";
+                struct RefreshProgress { std::atomic<float> frac{0.0f}; };
+                auto rprog = std::make_shared<RefreshProgress>();
+                networking_callback_data = rprog.get();
+                libget_status_callback = [](int status, int cur, int total) -> int {
+                    auto* st = static_cast<RefreshProgress*>(networking_callback_data);
+                    if (!st || total <= 0) return 0;
+                    if (status == STATUS_UPDATING_STATUS) st->frac.store(1.0f);
+                    else if (status == STATUS_RELOADING) st->frac.store((float)cur / (float)total);
+                    return 0;
+                };
+                networking_callback = [](void* clientp, double p) -> int {
+                    auto* st = static_cast<RefreshProgress*>(clientp);
+                    if (!st) return 0;
+                    float mapped = (float)p * 0.1f; // intra-repo smoothing
+                    float prev = st->frac.load();
+                    float base = (float)((int)(prev * 10)) / 10.0f;
+                    float next = base + mapped;
+                    if (next > prev) st->frac.store(next);
+                    return 0;
+                };
+
+                std::atomic<bool> updateDone{false};
+                std::thread progressThread([this, rprog, &updateDone]() {
+                    float last = -1.0f;
+                    while (!updateDone.load())
+                    {
+                        float f = rprog->frac.load();
+                        if (f != last)
+                        {
+                            last = f;
+                            notifyProgress(0.05f + f * 0.70f, "Loading repo...");
+                        }
+                        std::this_thread::sleep_for(std::chrono::milliseconds(120));
+                    }
+                });
+
+                {
+                    try
+                    {
+                        std::lock_guard<std::mutex> lock(mutex);
+                        if (get)
+                        {
+                            get->update();
+                        }
+                        else
+                        {
+                            ok = false;
+                            err = "Store not initialized";
+                        }
+                    }
+                    catch (...)
+                    {
+                        updateDone.store(true);
+                        if (progressThread.joinable()) progressThread.join();
+                        networking_callback = nullptr;
+                        libget_status_callback = nullptr;
+                        networking_callback_data = nullptr;
+                        throw;
+                    }
+                }
+
+                updateDone.store(true);
+                if (progressThread.joinable()) progressThread.join();
+                networking_callback = nullptr;
+                libget_status_callback = nullptr;
+                networking_callback_data = nullptr;
             }
         }
         catch (const std::exception& e)
@@ -544,7 +716,14 @@ void StoreManager::refresh(std::function<void(bool success, const std::string& e
         }
         }
 
+        if (!ok)
+        {
+            finishRefresh(false, err);
+            return;
+        }
+
         // Fix up generic "Default Repo" names from remote repo.json
+        notifyProgress(0.78f, "Loading repo names...");
         std::vector<std::pair<std::string, std::string>> reposToName; // url, name
         {
             std::lock_guard<std::mutex> lock(mutex);
@@ -603,6 +782,7 @@ void StoreManager::refresh(std::function<void(bool success, const std::string& e
         // (GetRepo::loadPackages), so no separate remote fetch is needed here.
 
         // Download repo icons.zip bundles (compatible cache prefill)
+        notifyProgress(0.85f, "Loading icons...");
         std::vector<std::pair<std::string, std::string>> repoIconZips; // slug, baseUrl
         {
             std::lock_guard<std::mutex> lock(mutex);
@@ -618,9 +798,11 @@ void StoreManager::refresh(std::function<void(bool success, const std::string& e
                 }
             }
         }
-        for (auto& rz : repoIconZips)
+        for (size_t zi = 0; zi < repoIconZips.size(); zi++)
         {
             if (shuttingDown.load()) break;
+            auto& rz = repoIconZips[zi];
+            notifyProgress(0.85f + (float)zi / (float)(repoIconZips.size() + 1) * 0.10f, "Loading icons...");
             std::string tmpDir = configPath + "tmp";
             mkpath(tmpDir);
             std::string tmpZip = tmpDir + "/icons.zip";
@@ -679,24 +861,46 @@ void StoreManager::refresh(std::function<void(bool success, const std::string& e
             std::remove(tmpZip.c_str());
         }
 
-        // Refresh the last-known-good cache while holding the lock briefly.
+        // Refresh the last-known-good cache: snapshots need `mutex` (libget
+        // state), publishing the result only needs cacheMutex (brief, so UI
+        // threads reading the cache never freeze).
+        notifyProgress(0.97f, "Finishing...");
         {
-            std::lock_guard<std::mutex> lock(mutex);
-            if (get)
+            std::vector<PackageSnapshot> pkgs;
+            std::vector<RepoSnapshot> repos;
             {
-                cachedPackages = getAllPackagesLocked();
-                cachedRepos = getReposLocked();
+                std::lock_guard<std::mutex> lock(mutex);
+                if (get)
+                {
+                    pkgs = getAllPackagesLocked();
+                    repos = getReposLocked();
+                }
+            }
+            {
+                std::lock_guard<std::mutex> lock(cacheMutex);
+                cachedPackages = std::move(pkgs);
+                cachedRepos = std::move(repos);
             }
         }
 
-        loading = false;
-        lastError = err;
-
-        if (onDone)
-        {
-            brls::sync([onDone, ok, err]() { onDone(ok, err); });
-        }
+        finishRefresh(ok, err);
     });
+}
+
+void StoreManager::refreshIfNeeded(std::function<void(bool success, const std::string& error)> onDone, ProgressCallback onProgress)
+{
+    if (loadedOnce.load(std::memory_order_acquire) && !loading.load(std::memory_order_acquire))
+    {
+        if (onDone)
+            brls::sync([onDone]() { onDone(true, ""); });
+        return;
+    }
+
+    float p = loadProgress.load(std::memory_order_acquire);
+    std::string phase = getLoadPhase();
+    refresh(std::move(onDone), onProgress);
+    if (onProgress)
+        brls::sync([onProgress, p, phase]() { onProgress(p, phase); });
 }
 
 std::vector<PackageSnapshot> StoreManager::getAllPackagesLocked()
@@ -721,10 +925,10 @@ std::vector<PackageSnapshot> StoreManager::getAllPackagesLocked()
 
 std::vector<PackageSnapshot> StoreManager::getAllPackages()
 {
-    // Never block the UI thread on an in-flight refresh: fall back to cache.
-    std::unique_lock<std::mutex> lock(mutex, std::try_to_lock);
-    if (lock.owns_lock() && get)
-        cachedPackages = getAllPackagesLocked();
+    // UI-safe: pure cache read under the short-lived cacheMutex. The cache is
+    // refreshed by background loads (refresh/install/remove); this never
+    // touches libget state and never blocks on network I/O.
+    std::lock_guard<std::mutex> lock(cacheMutex);
     return cachedPackages;
 }
 
@@ -767,9 +971,8 @@ std::vector<PackageSnapshot> StoreManager::searchPackages(const std::string& que
 
 PackageSnapshot StoreManager::getPackage(const std::string& name)
 {
-    std::unique_lock<std::mutex> lock(mutex, std::try_to_lock);
-    if (lock.owns_lock() && get)
-        cachedPackages = getAllPackagesLocked();
+    // UI-safe cache read; no libget access, no blocking.
+    std::lock_guard<std::mutex> lock(cacheMutex);
     for (auto& s : cachedPackages)
     {
         if (s.name == name)
@@ -784,15 +987,16 @@ PackageSnapshot StoreManager::getPackage(const std::string& name)
 
 std::vector<std::pair<std::string, std::string>> StoreManager::getDependencyViolations(const std::string& name, const std::string& newVersion)
 {
+    // UI-safe: answered from the cache only. Installed state is already baked
+    // into each snapshot (see snapshotFrom), so no libget/disk access here and
+    // no chance of blocking on an in-flight refresh.
     std::vector<std::pair<std::string, std::string>> out;
-    std::lock_guard<std::mutex> lock(mutex);
-    if (!get)
-        return out;
-    for (auto& p : get->getPackages())
+    std::lock_guard<std::mutex> lock(cacheMutex);
+    for (auto& p : cachedPackages)
     {
-        if (!p || p->getPackageName() == name)
+        if (p.name == name)
             continue;
-        for (auto& dep : p->getDependencies())
+        for (auto& dep : p.dependencies)
         {
             if (dep.name != name)
                 continue;
@@ -800,16 +1004,8 @@ std::vector<std::pair<std::string, std::string>> StoreManager::getDependencyViol
                 continue; // unconstrained: can never break
             if (versionSatisfies(newVersion, dep.version))
                 continue;
-            bool installed = false;
-            if (!p->file.empty())
-                installed = snapshotFrom(*p).installed();
-            else
-            {
-                int st = p->getStatus();
-                installed = (st == INSTALLED || st == LOCAL || st == UPDATE);
-            }
-            if (installed)
-                out.push_back({p->getPackageName(), dep.version});
+            if (p.installed() || p.hasUpdate())
+                out.push_back({p.name, dep.version});
             break;
         }
     }
@@ -1202,9 +1398,16 @@ void StoreManager::installPackage(const std::string& name, std::function<void(bo
 
             // Refresh the last-known-good cache (statuses changed).
             {
-                std::lock_guard<std::mutex> lock(mutex);
-                if (get)
-                    cachedPackages = getAllPackagesLocked();
+                std::vector<PackageSnapshot> pkgs;
+                {
+                    std::lock_guard<std::mutex> lock(mutex);
+                    if (get)
+                        pkgs = getAllPackagesLocked();
+                }
+                {
+                    std::lock_guard<std::mutex> lock(cacheMutex);
+                    cachedPackages = std::move(pkgs);
+                }
             }
         }
         catch (const std::exception& e)
@@ -1244,10 +1447,8 @@ std::vector<RepoSnapshot> StoreManager::getReposLocked()
 
 std::vector<RepoSnapshot> StoreManager::getRepos()
 {
-    // Never block the UI thread on an in-flight refresh: fall back to cache.
-    std::unique_lock<std::mutex> lock(mutex, std::try_to_lock);
-    if (lock.owns_lock() && get)
-        cachedRepos = getReposLocked();
+    // UI-safe: pure cache read. Refreshed by background loads.
+    std::lock_guard<std::mutex> lock(cacheMutex);
     return cachedRepos;
 }
 
@@ -1334,6 +1535,19 @@ void StoreManager::addRepo(const std::string& url, std::function<void(bool succe
         catch (...)
         {
             err = "Unknown error adding source";
+        }
+        // Publish updated sources to the UI cache (brief locks only).
+        {
+            std::vector<RepoSnapshot> repos;
+            {
+                std::lock_guard<std::mutex> lock(mutex);
+                if (get)
+                    repos = getReposLocked();
+            }
+            {
+                std::lock_guard<std::mutex> lock(cacheMutex);
+                cachedRepos = std::move(repos);
+            }
         }
         if (onDone)
             brls::sync([onDone, ok, err]() { onDone(ok, err); });
@@ -1506,9 +1720,16 @@ void StoreManager::removePackage(const std::string& name, std::function<void(boo
 
             // Refresh the last-known-good cache (statuses changed).
             {
-                std::lock_guard<std::mutex> lock(mutex);
-                if (get)
-                    cachedPackages = getAllPackagesLocked();
+                std::vector<PackageSnapshot> pkgs;
+                {
+                    std::lock_guard<std::mutex> lock(mutex);
+                    if (get)
+                        pkgs = getAllPackagesLocked();
+                }
+                {
+                    std::lock_guard<std::mutex> lock(cacheMutex);
+                    cachedPackages = std::move(pkgs);
+                }
             }
         }
         catch (const std::exception& e)
@@ -1530,35 +1751,71 @@ void StoreManager::removePackage(const std::string& name, std::function<void(boo
 std::vector<std::string> StoreManager::getUnusedDependencies(const std::string& removedName)
 {
     std::vector<std::string> orphans;
-    std::lock_guard<std::mutex> lock(mutex);
-    if (!get)
+    std::vector<PackageSnapshot> pkgs;
+    {
+        std::lock_guard<std::mutex> lock(cacheMutex);
+        pkgs = cachedPackages;
+    }
+    if (pkgs.empty())
         return orphans;
 
-    // Transitive closure of the removed package (dependencies first, root last).
-    // Fails on circular dependencies or missing packages -> no orphans reported.
+    std::unordered_map<std::string, const PackageSnapshot*> byName;
+    for (auto& p : pkgs)
+        byName[p.name] = &p;
+
     std::vector<std::string> order;
     std::unordered_set<std::string> visiting, visited;
-    std::string err;
-    if (!get->resolveDependencies(removedName, order, visiting, visited, err))
-        return orphans;
-
-    auto isInstalled = [this](const std::shared_ptr<Package>& p) {
-        if (!p)
+    std::function<bool(const std::string&, std::string&)> dfs = [&](const std::string& cur, std::string& err) -> bool {
+        if (visited.count(cur))
+            return true;
+        if (visiting.count(cur))
+        {
+            err = "Dependency cycle involving '" + cur + "'";
             return false;
-        if (!p->file.empty())
-            return snapshotFrom(*p).installed();
-        int st = p->getStatus();
-        return st == INSTALLED || st == LOCAL || st == UPDATE;
+        }
+        auto it = byName.find(cur);
+        if (it == byName.end())
+        {
+            err = "Package '" + cur + "' not found";
+            return false;
+        }
+        visiting.insert(cur);
+        for (auto& dep : it->second->dependencies)
+        {
+            if (dep.name.empty() || dep.name == cur)
+                continue;
+            // Missing optional? Treat like libget: unresolvable -> abort.
+            if (!byName.count(dep.name))
+            {
+                err = "Package '" + cur + "' depends on missing package '" + dep.name + "'";
+                return false;
+            }
+            if (!dfs(dep.name, err))
+                return false;
+        }
+        visiting.erase(cur);
+        visited.insert(cur);
+        order.push_back(cur);
+        return true;
+    };
+    {
+        std::string err;
+        if (!dfs(removedName, err))
+            return orphans;
+    }
+
+    auto isInstalledSnap = [](const PackageSnapshot& p) {
+        return p.installed() || p.hasUpdate();
     };
 
     // Packages still required: every direct dependency of an installed package
     // other than the removed one.
     std::unordered_set<std::string> used;
-    for (auto& p : get->getPackages())
+    for (auto& p : pkgs)
     {
-        if (!p || p->getPackageName() == removedName || !isInstalled(p))
+        if (p.name == removedName || !isInstalledSnap(p))
             continue;
-        for (auto& dep : p->getDependencies())
+        for (auto& dep : p.dependencies)
             used.insert(dep.name);
     }
 
@@ -1570,8 +1827,8 @@ std::vector<std::string> StoreManager::getUnusedDependencies(const std::string& 
             continue;
         if (used.find(*it) != used.end())
             continue;
-        auto pkg = findPackageLocked(*it);
-        if (pkg && isInstalled(pkg))
+        auto jt = byName.find(*it);
+        if (jt != byName.end() && isInstalledSnap(*jt->second))
             orphans.push_back(*it);
     }
     return orphans;
@@ -1585,11 +1842,13 @@ void StoreManager::removeRepo(const std::string& url, std::function<void(bool su
         try
         {
             init();
-            std::lock_guard<std::mutex> lock(mutex);
-            std::unordered_map<std::string, std::string> toAdd;
-            std::unordered_set<std::string> toRemove;
-            toRemove.insert(url);
-            get->addAndRemoveReposByURL(toAdd, toRemove);
+            {
+                std::lock_guard<std::mutex> lock(mutex);
+                std::unordered_map<std::string, std::string> toAdd;
+                std::unordered_set<std::string> toRemove;
+                toRemove.insert(url);
+                get->addAndRemoveReposByURL(toAdd, toRemove);
+            }
             ok = true;
         }
         catch (const std::exception& e)
@@ -1599,6 +1858,19 @@ void StoreManager::removeRepo(const std::string& url, std::function<void(bool su
         catch (...)
         {
             err = "Unknown error removing source";
+        }
+        // Publish updated sources to the UI cache (brief locks only).
+        {
+            std::vector<RepoSnapshot> repos;
+            {
+                std::lock_guard<std::mutex> lock(mutex);
+                if (get)
+                    repos = getReposLocked();
+            }
+            {
+                std::lock_guard<std::mutex> lock(cacheMutex);
+                cachedRepos = std::move(repos);
+            }
         }
         if (onDone)
             brls::sync([onDone, ok, err]() { onDone(ok, err); });

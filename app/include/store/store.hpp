@@ -71,12 +71,21 @@ class StoreManager
   public:
     static StoreManager& instance();
 
+    using ProgressCallback = std::function<void(float progress, const std::string& phase)>;
+
     void init();
-    bool isInitialized() const { return initialized; }
+    void ensureInitializedAsync(std::function<void()> onDone = nullptr);
+    bool isInitialized() const { return initialized.load(); }
     bool isLoading() const { return loading.load(); }
+    bool hasLoadedOnce() const { return loadedOnce.load(); }
+    float getLoadProgress() const { return loadProgress.load(); }
+    std::string getLoadPhase() const;
     std::string getLastError() const;
 
-    void refresh(std::function<void(bool success, const std::string& error)> onDone = nullptr);
+    void refresh(std::function<void(bool success, const std::string& error)> onDone = nullptr,
+        ProgressCallback onProgress = nullptr);
+    void refreshIfNeeded(std::function<void(bool success, const std::string& error)> onDone = nullptr,
+        ProgressCallback onProgress = nullptr);
 
     std::vector<PackageSnapshot> getAllPackages();
     std::vector<PackageSnapshot> getInstalledPackages();
@@ -90,8 +99,6 @@ class StoreManager
     std::vector<RepoSnapshot> getRepos();
     void addRepo(const std::string& url, std::function<void(bool success, const std::string& error)> onDone = nullptr);
     void removeRepo(const std::string& url, std::function<void(bool success, const std::string& error)> onDone = nullptr);
-
-    using ProgressCallback = std::function<void(float progress, const std::string& phase)>;
 
     void installPackage(const std::string& name, std::function<void(bool success, const std::string& error)> onDone = nullptr, ProgressCallback onProgress = nullptr);
     void removePackage(const std::string& name, std::function<void(bool success, const std::string& error)> onDone = nullptr, ProgressCallback onProgress = nullptr, bool removeUserData = true);
@@ -125,9 +132,25 @@ class StoreManager
 
     std::unique_ptr<Get> get;
     std::mutex mutex;
+    std::mutex initMutex;
+    mutable std::mutex cacheMutex;
+    std::mutex callbackMutex;
+    struct PendingRefresh
+    {
+        std::function<void(bool success, const std::string& error)> onDone;
+        ProgressCallback onProgress;
+    };
+    std::vector<PendingRefresh> pendingRefresh;
+    void setLoadProgress(float p, const std::string& phase);
+    void notifyProgress(float p, const std::string& phase);
+    void finishRefresh(bool ok, const std::string& err);
+
     std::string configPath = "sdmc:/packages/.get/";
-    bool initialized = false;
+    std::atomic<bool> initialized{false};
     std::atomic<bool> loading{false};
+    std::atomic<bool> loadedOnce{false};
+    std::atomic<float> loadProgress{0.0f};
+    std::string loadPhase;
     std::string lastError;
     std::atomic<bool> shuttingDown{false};
     // Last-known-good snapshots so UI threads never block on a refresh.

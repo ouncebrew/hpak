@@ -24,6 +24,9 @@ UpdatesTab::UpdatesTab()
         return true;
     });
 
+    loadingBadge = new LoadingBadge();
+    insertBadge();
+
     loadData();
 }
 
@@ -37,8 +40,27 @@ void UpdatesTab::willAppear(bool resetState)
     brls::Box::willAppear(resetState);
     if (!dataSource)
         return;
+    auto& store = StoreManager::instance();
+    if (store.isLoading())
+    {
+        auto items = store.getUpdatablePackages();
+        if (!items.empty())
+            refreshView();
+        else
+        {
+            if (loadingBadge)
+                loadingBadge->setProgress(store.getLoadProgress(), store.getLoadPhase());
+            header->setSubtitle("Loading...");
+        }
+        return;
+    }
+    refreshView();
+}
+
+void UpdatesTab::refreshView()
+{
     auto items = StoreManager::instance().getUpdatablePackages();
-    if (!dataSource->sameItems(items))
+    if (dataSource && !dataSource->sameItems(items))
     {
         dataSource->setItems(items);
         recycler->reloadData();
@@ -49,37 +71,65 @@ void UpdatesTab::willAppear(bool resetState)
         header->setSubtitle(std::to_string(items.size()) + " updates available");
 }
 
+void UpdatesTab::insertBadge()
+{
+    if (!loadingBadge)
+        return;
+    auto& kids = this->getChildren();
+    size_t pos = kids.size();
+    for (size_t i = 0; i < kids.size(); i++)
+    {
+        if (kids[i] == header)
+        {
+            pos = i + 1;
+            break;
+        }
+    }
+    this->addView(loadingBadge, pos);
+}
+
+void UpdatesTab::showLoading()
+{
+    auto& store = StoreManager::instance();
+    header->setSubtitle("Loading...");
+    if (loadingBadge)
+        loadingBadge->showBadge(store.getLoadPhase());
+}
+
+void UpdatesTab::hideLoading()
+{
+    if (loadingBadge)
+        loadingBadge->hideBadge();
+}
+
 void UpdatesTab::loadData()
 {
-    header->setSubtitle("Checking for updates...");
-
     auto& store = StoreManager::instance();
-    store.init();
 
-    auto refreshView = [this]() {
-        auto items = StoreManager::instance().getUpdatablePackages();
-        if (!dataSource->sameItems(items))
-        {
-            dataSource->setItems(items);
-            recycler->reloadData();
-        }
-        if (items.empty())
-            header->setSubtitle("Everything is up to date");
-        else
-            header->setSubtitle(std::to_string(items.size()) + " updates available");
-    };
-
-    refreshView();
-    std::weak_ptr<bool> aliveWeak = alive;
-    store.refresh([this, aliveWeak, refreshView](bool success, const std::string& error) {
-        auto token = aliveWeak.lock();
-        if (!token || !*token)
-            return;
-
+    auto cached = store.getUpdatablePackages();
+    if (!cached.empty())
         refreshView();
-        if (!success && StoreManager::instance().getUpdatablePackages().empty())
-            header->setSubtitle(error.empty() ? "Failed to load packages" : error);
-    });
+    else
+        showLoading();
+
+    std::weak_ptr<bool> aliveWeak = alive;
+    store.refreshIfNeeded(
+        [this, aliveWeak](bool success, const std::string& error) {
+            auto t = aliveWeak.lock();
+            if (!t || !*t)
+                return;
+            hideLoading();
+            refreshView();
+            if (!success && StoreManager::instance().getUpdatablePackages().empty())
+                header->setSubtitle(error.empty() ? "Failed to load packages" : error);
+        },
+        [this, aliveWeak](float progress, const std::string& phase) {
+            auto t = aliveWeak.lock();
+            if (!t || !*t)
+                return;
+            if (loadingBadge)
+                loadingBadge->setProgress(progress, phase);
+        });
 }
 
 void UpdatesTab::updateAll()

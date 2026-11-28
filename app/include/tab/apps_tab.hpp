@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "view/loading_badge.hpp"
 
 struct CategoryEntry
 {
@@ -40,10 +41,14 @@ class AppsTab : public brls::Box
   private:
     void loadData();
     void refreshCategories();
+    void insertBadge();
+    void showLoading();
+    void hideLoading();
 
     BRLS_BIND(brls::RecyclerFrame, recycler, "recycler");
     BRLS_BIND(brls::Header, header, "header");
 
     CategoryListDataSource* dataSource = nullptr;
+    LoadingBadge* loadingBadge = nullptr;
     std::shared_ptr<bool> alive = std::make_shared<bool>(true);
 };

@@ -9,7 +9,9 @@ OptionsTab::OptionsTab()
 
     auto& settings = HpSettings::instance();
     auto& store = StoreManager::instance();
-    store.init();
+    // Async warm-up: never block the UI thread on disk/network init here.
+    // The toggle below only reads the cache and queues background repo ops.
+    store.ensureInitializedAsync();
 
     optRepos->init("Default sources", settings.addDefaultRepos, [this](bool value) {
         auto& s = HpSettings::instance();
@@ -35,35 +37,38 @@ OptionsTab::OptionsTab()
 void OptionsTab::syncDefaultReposToggle(bool on)
 {
     auto& store = StoreManager::instance();
-    store.init();
-
-    if (on)
-    {
-        for (auto& d : StoreManager::getDefaultRepos())
+    // addRepo/removeRepo run on background threads and publish to the cache;
+    // getRepos() here is a non-blocking cache read.
+    store.ensureInitializedAsync([on]() {
+        auto& s = StoreManager::instance();
+        if (on)
         {
-            if (d.url.empty())
-                continue;
-            bool has = false;
-            for (auto& r : store.getRepos())
+            for (auto& d : StoreManager::getDefaultRepos())
             {
-                if (r.url == d.url)
+                if (d.url.empty())
+                    continue;
+                bool has = false;
+                for (auto& r : s.getRepos())
                 {
-                    has = true;
-                    break;
+                    if (r.url == d.url)
+                    {
+                        has = true;
+                        break;
+                    }
                 }
+                if (!has)
+                    s.addRepo(d.url);
             }
-            if (!has)
-                store.addRepo(d.url);
         }
-    }
-    else
-    {
-        for (auto& d : StoreManager::getDefaultRepos())
+        else
         {
-            if (!d.url.empty())
-                store.removeRepo(d.url);
+            for (auto& d : StoreManager::getDefaultRepos())
+            {
+                if (!d.url.empty())
+                    s.removeRepo(d.url);
+            }
         }
-    }
+    });
 }
 
 brls::View* OptionsTab::create()
