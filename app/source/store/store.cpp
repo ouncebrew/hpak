@@ -16,6 +16,9 @@
 #include "Utils.hpp"
 #include "ZipUtil.hpp"
 #include "rapidjson/document.h"
+#include "util/http_cache.hpp"
+#include "util/icon_decode.hpp"
+#include "util/icon_loader.hpp"
 #include "util/net_gate.hpp"
 #include "util/settings.hpp"
 #include <borealis/extern/nlohmann/json.hpp>
@@ -599,6 +602,65 @@ std::shared_ptr<Package> StoreManager::findPackageLocked(const std::string& name
     return get->findPackage(name);
 }
 
+void StoreManager::extractRepoIcons(const std::string& zipPath, const std::string& slug)
+{
+    UnZip zip(zipPath);
+    if (!zip.IsValid())
+    {
+        zip.Close();
+        return;
+    }
+
+    auto mapping = zip.GetPathToFilePosMapping();
+    for (auto& entry : mapping)
+    {
+        const std::string& name = entry.first;
+        std::string lower = toLowerStr(name);
+        std::string pkgName, ext;
+        if (lower.size() > 10 && lower.rfind("/icon.png") == lower.size() - 9)
+        {
+            pkgName = name.substr(0, name.size() - 9);
+            ext = ".png";
+        }
+        else if (lower.size() > 10 && lower.rfind("/icon.jpg") == lower.size() - 9)
+        {
+            pkgName = name.substr(0, name.size() - 9);
+            ext = ".jpg";
+        }
+        else if (lower.size() > 11 && lower.rfind("/icon.jpeg") == lower.size() - 10)
+        {
+            pkgName = name.substr(0, name.size() - 10);
+            ext = ".jpeg";
+        }
+        else
+            continue;
+
+        while (!pkgName.empty() && (pkgName.front() == '/' || pkgName.front() == '\\')) pkgName.erase(pkgName.begin());
+        while (!pkgName.empty() && (pkgName.back() == '/' || pkgName.back() == '\\')) pkgName.pop_back();
+        if (pkgName.empty()) continue;
+
+        std::string outDir = configPath + "packages/" + slug + "/" + pkgName;
+        // Incremental prefill: an icon already on disk (any extension) is
+        // left alone, so repeat refreshes do ~zero SD writes here.
+        bool haveIcon = false;
+        for (const char* oldExt : {".png", ".jpg", ".jpeg"})
+        {
+            struct stat st{};
+            if (stat((outDir + "/icon" + oldExt).c_str(), &st) == 0 && st.st_size > 0)
+            {
+                haveIcon = true;
+                break;
+            }
+        }
+        if (haveIcon)
+            continue;
+        mkpath(outDir);
+        zip.Extract(outDir + "/icon" + ext, entry.second);
+    }
+
+    zip.Close();
+}
+
 void StoreManager::refresh(std::function<void(bool success, const std::string& error)> onDone, ProgressCallback onProgress)
 {
     {
@@ -741,8 +803,14 @@ void StoreManager::refresh(std::function<void(bool success, const std::string& e
             if (shuttingDown.load()) break;
             std::string base = rn.first;
             while (!base.empty() && base.back() == '/') base.pop_back();
+            // Conditional GET with on-disk cache (304 when unchanged); falls
+            // back to the previous cache file when the network fails, so names
+            // still resolve from stale data instead of host strings.
+            std::string cacheFile = configPath + "tmp/httpcache/" + StoreManager::repoCacheSlug(base) + ".repo.json";
             std::string repoJson;
-            if (downloadFileToMemory(base + "/repo.json", &repoJson))
+            if (util::downloadCached(base + "/repo.json", cacheFile) || fileExistsLocal(cacheFile))
+                repoJson = readFileToString(cacheFile);
+            if (!repoJson.empty())
             {
                 rapidjson::Document doc;
                 doc.Parse(repoJson.c_str());
@@ -781,7 +849,10 @@ void StoreManager::refresh(std::function<void(bool success, const std::string& e
         // Direct-download metadata is overlaid onto packages at load time
         // (GetRepo::loadPackages), so no separate remote fetch is needed here.
 
-        // Download repo icons.zip bundles (compatible cache prefill)
+        // Download repo icons.zip bundles with bounded-parallel workers using
+        // conditional GET: unchanged bundles answer 304 and skip extraction
+        // entirely; changed ones are extracted incrementally (icons already on
+        // disk are left alone). Repeat refreshes therefore do ~zero icon work.
         notifyProgress(0.85f, "Loading icons...");
         std::vector<std::pair<std::string, std::string>> repoIconZips; // slug, baseUrl
         {
@@ -798,73 +869,52 @@ void StoreManager::refresh(std::function<void(bool success, const std::string& e
                 }
             }
         }
-        for (size_t zi = 0; zi < repoIconZips.size(); zi++)
+        if (!repoIconZips.empty())
         {
-            if (shuttingDown.load()) break;
-            auto& rz = repoIconZips[zi];
-            notifyProgress(0.85f + (float)zi / (float)(repoIconZips.size() + 1) * 0.10f, "Loading icons...");
-            std::string tmpDir = configPath + "tmp";
-            mkpath(tmpDir);
-            std::string tmpZip = tmpDir + "/icons.zip";
-            if (!downloadFileToDisk(rz.second + "/icons.zip", tmpZip))
-                continue;
-
-            UnZip zip(tmpZip);
-            if (!zip.IsValid())
+            std::atomic<size_t> next{0};
+            std::atomic<size_t> doneCount{0};
+            size_t workerCount = std::min<size_t>(repoIconZips.size(), 4);
+            std::vector<std::thread> workers;
+            workers.reserve(workerCount);
+            for (size_t w = 0; w < workerCount; w++)
             {
-                zip.Close();
-                std::remove(tmpZip.c_str());
-                continue;
+                workers.emplace_back([this, &repoIconZips, &next, &doneCount]() {
+                    for (;;)
+                    {
+                        size_t zi = next.fetch_add(1);
+                        if (zi >= repoIconZips.size() || shuttingDown.load())
+                            break;
+                        auto& rz = repoIconZips[zi];
+                        float slice0 = 0.85f + (float)zi / (float)repoIconZips.size() * 0.10f;
+                        float slice1 = 0.85f + (float)(zi + 1) / (float)repoIconZips.size() * 0.10f;
+                        int lastPct = -1;
+                        std::string zipPath = configPath + "tmp/httpcache/" + rz.first + ".icons.zip";
+                        bool notModified = false;
+                        bool dlOk = util::downloadCached(rz.second + "/icons.zip", zipPath, &notModified,
+                            [this, slice0, slice1, &lastPct](double frac) {
+                                int pct = (int)(frac * 100.0);
+                                if (pct == lastPct)
+                                    return;
+                                lastPct = pct;
+                                notifyProgress(slice0 + (float)pct / 100.0f * (slice1 - slice0), "Loading icons...");
+                            });
+                        if (dlOk && !notModified && !shuttingDown.load())
+                            extractRepoIcons(zipPath, rz.first);
+                        size_t d = ++doneCount;
+                        notifyProgress(0.85f + (float)d / (float)repoIconZips.size() * 0.10f, "Loading icons...");
+                    }
+                });
             }
-
-            auto mapping = zip.GetPathToFilePosMapping();
-            for (auto& entry : mapping)
-            {
-                const std::string& name = entry.first;
-                std::string lower = toLowerStr(name);
-                std::string pkgName, ext;
-                if (lower.size() > 10 && lower.rfind("/icon.png") == lower.size() - 9)
-                {
-                    pkgName = name.substr(0, name.size() - 9);
-                    ext = ".png";
-                }
-                else if (lower.size() > 10 && lower.rfind("/icon.jpg") == lower.size() - 9)
-                {
-                    pkgName = name.substr(0, name.size() - 9);
-                    ext = ".jpg";
-                }
-                else if (lower.size() > 11 && lower.rfind("/icon.jpeg") == lower.size() - 10)
-                {
-                    pkgName = name.substr(0, name.size() - 10);
-                    ext = ".jpeg";
-                }
-                else
-                    continue;
-
-                while (!pkgName.empty() && (pkgName.front() == '/' || pkgName.front() == '\\')) pkgName.erase(pkgName.begin());
-                while (!pkgName.empty() && (pkgName.back() == '/' || pkgName.back() == '\\')) pkgName.pop_back();
-                if (pkgName.empty()) continue;
-
-                std::string outDir = configPath + "packages/" + rz.first + "/" + pkgName;
-                mkpath(outDir);
-                for (const char* oldExt : {".png", ".jpg", ".jpeg"})
-                {
-                    std::string oldPath = outDir + "/icon" + oldExt;
-                    if (oldPath != outDir + "/icon" + ext)
-                        std::remove(oldPath.c_str());
-                }
-                std::string outPath = outDir + "/icon" + ext;
-                zip.Extract(outPath, entry.second);
-            }
-
-            zip.Close();
-            std::remove(tmpZip.c_str());
+            for (auto& t : workers)
+                if (t.joinable()) t.join();
+            // Prefill may have added/changed icon files: drop the in-memory
+            // path cache so binds re-resolve from disk once, then re-cache.
+            util::clearIconPathCache();
         }
 
         // Refresh the last-known-good cache: snapshots need `mutex` (libget
         // state), publishing the result only needs cacheMutex (brief, so UI
         // threads reading the cache never freeze).
-        notifyProgress(0.97f, "Finishing...");
         {
             std::vector<PackageSnapshot> pkgs;
             std::vector<RepoSnapshot> repos;
@@ -876,12 +926,33 @@ void StoreManager::refresh(std::function<void(bool success, const std::string& e
                     repos = getReposLocked();
                 }
             }
+            // Decode every icon on this background thread, right after the
+            // meta refresh: file I/O + PNG decode happen here, so list binds
+            // later only pay the cheap GPU upload on the UI thread.
+            if (!pkgs.empty() && !shuttingDown.load())
+            {
+                notifyProgress(0.95f, "Decoding icons...");
+                for (size_t i = 0; i < pkgs.size(); i++)
+                {
+                    if (shuttingDown.load())
+                        break;
+                    auto& p = pkgs[i];
+                    std::string dir = configPath + "packages/" + StoreManager::repoCacheSlug(p.repo_url) + "/" + p.name;
+                    std::string iconPath = util::resolveCachedIconPath(dir);
+                    if (!iconPath.empty())
+                        util::decodeIconNow(iconPath);
+                    if ((i % 8) == 7)
+                        notifyProgress(0.95f + 0.03f * (float)(i + 1) / (float)pkgs.size(), "Decoding icons...");
+                }
+            }
             {
                 std::lock_guard<std::mutex> lock(cacheMutex);
                 cachedPackages = std::move(pkgs);
                 cachedRepos = std::move(repos);
             }
         }
+
+        notifyProgress(0.99f, "Finishing...");
 
         finishRefresh(ok, err);
     });

@@ -2,6 +2,7 @@
 
 #include <sys/stat.h>
 #include "Utils.hpp"
+#include "util/icon_decode.hpp"
 #include "util/icon_loader.hpp"
 
 static bool fileExists(const std::string& path)
@@ -54,19 +55,33 @@ void AppCell::setPackage(const PackageSnapshot& pkg)
     std::string cacheDir = "sdmc:/packages/.get/packages/" + repoSlug + "/" + pkg.name;
     std::string cachePath = cacheDir + "/icon.png";
 
-    auto findCachedIcon = [&]() -> std::string {
-        for (const char* ext : {".png", ".jpg", ".jpeg"})
-        {
-            std::string p = cacheDir + "/icon" + ext;
-            if (fileExists(p)) return p;
-        }
-        return "";
-    };
-
-    std::string cached = findCachedIcon();
+    // In-memory icon path cache: repeat binds skip the disk stat() calls.
+    // (Decoded pixels live in util::DecodedIcon cache filled by worker
+    // threads; uploaded textures are cached by borealis' TextureCache. The
+    // loader thread invalidates the path entry on fresh downloads.)
+    std::string cached = util::resolveCachedIconPath(cacheDir);
     if (!cached.empty())
     {
-        this->icon->setImageFromFile(cached);
+        // Fast path: pre-decoded on a worker thread, so the UI thread only
+        // uploads pixels to the GPU (no file I/O, no PNG decode here).
+        util::DecodedIcon decoded;
+        if (util::getDecodedIcon(cached, decoded) && util::uploadDecodedIcon(this->icon, cached, decoded))
+            return;
+        // Rare miss (icon landed after the refresh pre-decode): decode off
+        // the UI thread and pop the icon in when ready.
+        std::string name = pkg.name;
+        std::weak_ptr<bool> aliveWeak = alive;
+        util::ensureDecodedIcon(cached, [this, aliveWeak, name, cached](bool ok) {
+            auto aliveToken = aliveWeak.lock();
+            if (!aliveToken || !*aliveToken)
+                return;
+            if (this->package.name != name)
+                return;
+            util::DecodedIcon di;
+            if (ok && util::getDecodedIcon(cached, di) && util::uploadDecodedIcon(this->icon, cached, di))
+                return;
+            this->icon->setImageFromFile(cached); // last resort (also warms TextureCache)
+        });
         return;
     }
 
@@ -94,10 +109,22 @@ void AppCell::setPackage(const PackageSnapshot& pkg)
                 return;
             if (this->package.name != name)
                 return;
-            if (ok && !resolvedPath.empty() && fileExists(resolvedPath))
-                this->icon->setImageFromFile(resolvedPath);
-            else
-                this->icon->setVisibility(brls::Visibility::GONE);
+            if (ok && !resolvedPath.empty())
+            {
+                // The loader thread decodes right after downloading, so this
+                // is normally a hit: the UI thread only uploads pixels.
+                util::DecodedIcon di;
+                if (!util::getDecodedIcon(resolvedPath, di) ||
+                    !util::uploadDecodedIcon(this->icon, resolvedPath, di))
+                {
+                    if (fileExists(resolvedPath))
+                        this->icon->setImageFromFile(resolvedPath);
+                    else
+                        this->icon->setVisibility(brls::Visibility::GONE);
+                }
+                return;
+            }
+            this->icon->setVisibility(brls::Visibility::GONE);
         }
     });
 }

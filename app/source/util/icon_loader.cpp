@@ -1,4 +1,5 @@
 #include "util/icon_loader.hpp"
+#include "util/icon_decode.hpp"
 
 #include <atomic>
 #include <condition_variable>
@@ -6,6 +7,7 @@
 #include <mutex>
 #include <set>
 #include <thread>
+#include <unordered_map>
 #include <vector>
 #include <sys/stat.h>
 
@@ -68,14 +70,69 @@ static bool downloadIconToDisk(const std::string& url, const std::string& localP
     return true;
 }
 
+namespace
+{
+// Resolved icon path per cache dir ("" = checked, nothing on disk).
+// Guarded by its own mutex; only ever holds tiny strings.
+std::mutex g_iconPathMutex;
+std::unordered_map<std::string, std::string> g_iconPaths;
+} // namespace
+
+std::string resolveCachedIconPath(const std::string& cacheDir)
+{
+    if (cacheDir.empty())
+        return "";
+    {
+        std::lock_guard<std::mutex> lock(g_iconPathMutex);
+        auto it = g_iconPaths.find(cacheDir);
+        if (it != g_iconPaths.end())
+            return it->second;
+    }
+    std::string resolved;
+    for (const char* ext : {".png", ".jpg", ".jpeg"})
+    {
+        std::string p = cacheDir + "/icon" + ext;
+        if (fileExists(p))
+        {
+            resolved = p;
+            break;
+        }
+    }
+    {
+        std::lock_guard<std::mutex> lock(g_iconPathMutex);
+        g_iconPaths[cacheDir] = resolved;
+    }
+    return resolved;
+}
+
+void invalidateIconPath(const std::string& cacheDir)
+{
+    if (cacheDir.empty())
+        return;
+    std::lock_guard<std::mutex> lock(g_iconPathMutex);
+    g_iconPaths.erase(cacheDir);
+}
+
+void clearIconPathCache()
+{
+    std::lock_guard<std::mutex> lock(g_iconPathMutex);
+    g_iconPaths.clear();
+}
+
 struct IconLoader
 {
     std::mutex mtx;
     std::condition_variable cv;
     std::deque<IconLoadRequest> queue;
     std::set<std::string> queuedPaths;
+    // Background PNG/JPEG decodes (file I/O + stb, never on the UI thread).
+    struct DecodeJob
+    {
+        std::string path;
+        std::function<void(bool ok)> onDone;
+    };
+    std::deque<DecodeJob> decodeQueue;
     std::atomic<bool> running{false};
-
 #if defined(__SWITCH__)
     Thread thread{};
     bool threadCreated = false;
@@ -125,16 +182,42 @@ struct IconLoader
         while (running.load())
         {
             IconLoadRequest req;
+            DecodeJob dec;
+            bool isDecode = false;
             {
                 std::unique_lock<std::mutex> lock(mtx);
-                cv.wait_for(lock, std::chrono::milliseconds(200), [this]() { return !queue.empty() || !running.load(); });
-                if (!running.load() && queue.empty())
+                cv.wait_for(lock, std::chrono::milliseconds(200), [this]() {
+                    return !queue.empty() || !decodeQueue.empty() || !running.load();
+                });
+                if (!running.load() && queue.empty() && decodeQueue.empty())
                     break;
-                if (queue.empty())
+                if (!queue.empty())
+                {
+                    req = std::move(queue.front());
+                    queue.pop_front();
+                    queuedPaths.erase(req.cachePath);
+                }
+                else if (!decodeQueue.empty())
+                {
+                    dec = std::move(decodeQueue.front());
+                    decodeQueue.pop_front();
+                    isDecode = true;
+                }
+                else
                     continue;
-                req = std::move(queue.front());
-                queue.pop_front();
-                queuedPaths.erase(req.cachePath);
+            }
+
+            if (isDecode)
+            {
+                // Pure decode job: file I/O + stb stay on this thread; the UI
+                // thread only uploads the pixels later.
+                bool ok = decodeIconNow(dec.path);
+                if (dec.onDone)
+                {
+                    auto cb = dec.onDone;
+                    brls::sync([cb, ok]() { cb(ok); });
+                }
+                continue;
             }
 
             bool ok = false;
@@ -208,6 +291,19 @@ struct IconLoader
 
             if (req.onDone)
             {
+                // A fresh download may have resolved a previously cached
+                // negative (or added a new extension variant): drop the entry
+                // so the next bind re-stats the directory.
+                if (ok)
+                {
+                    size_t slash = req.cachePath.find_last_of('/');
+                    if (slash != std::string::npos)
+                        invalidateIconPath(req.cachePath.substr(0, slash));
+                    // Decode here on the loader thread so the UI thread only
+                    // uploads pixels in onDone, never file I/O + PNG decode.
+                    if (!resolvedPath.empty())
+                        decodeIconNow(resolvedPath);
+                }
                 auto cb = req.onDone;
                 brls::sync([cb, ok, resolvedPath]() { cb(ok, resolvedPath); });
             }
@@ -229,6 +325,22 @@ struct IconLoader
         if (!req.cachePath.empty())
             queuedPaths.insert(req.cachePath);
         queue.push_back(std::move(req));
+        cv.notify_one();
+    }
+
+    void enqueueDecode(const std::string& path, std::function<void(bool ok)> onDone)
+    {
+        if (!running.load())
+            start();
+        if (!running.load())
+        {
+            if (onDone)
+                brls::sync([onDone]() { onDone(false); });
+            return;
+        }
+
+        std::lock_guard<std::mutex> lock(mtx);
+        decodeQueue.push_back(DecodeJob{path, std::move(onDone)});
         cv.notify_one();
     }
 
@@ -263,6 +375,26 @@ static IconLoader& getLoader()
 void enqueueIconLoad(IconLoadRequest req)
 {
     getLoader().enqueue(std::move(req));
+}
+
+void enqueueIconDecode(const std::string& path, std::function<void(bool ok)> onDecoded)
+{
+    if (path.empty())
+    {
+        if (onDecoded)
+            brls::sync([onDecoded]() { onDecoded(false); });
+        return;
+    }
+    DecodedIcon probe;
+    if (getDecodedIcon(path, probe))
+    {
+        // Already decoded: invoke directly (callers are on the UI thread and
+        // just upload from here).
+        if (onDecoded)
+            onDecoded(true);
+        return;
+    }
+    getLoader().enqueueDecode(path, std::move(onDecoded));
 }
 
 void shutdownIconLoader()

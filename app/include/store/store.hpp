@@ -129,6 +129,10 @@ class StoreManager
     bool installDirectOne(const std::string& name, float p0, float p1, ProgressCallback onProgress, std::string& err);
     // Install a single regular (zip) package via libget; progress scaled into [p0, p1].
     bool installRegularOne(const std::string& name, float p0, float p1, ProgressCallback onProgress, std::string& err);
+    // Extract icons from a repo's icons.zip into packages/<slug>/<pkg>/,
+    // skipping icons already on disk (incremental prefill). Thread-safe
+    // across repos (distinct slugs); called from refresh worker threads.
+    void extractRepoIcons(const std::string& zipPath, const std::string& slug);
 
     std::unique_ptr<Get> get;
     std::mutex mutex;
